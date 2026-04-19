@@ -1,4 +1,4 @@
-import type { BaseChartProps, LineStyle, AxisConfig } from '../core'
+import type { BaseChartProps } from '../core'
 
 export interface HeatmapChartProps extends BaseChartProps {
   // ── Data ─────────────────────────────────────────────────────────────────
@@ -33,8 +33,4 @@ export interface HeatmapChartProps extends BaseChartProps {
    * Defaults to GRAD_METAL (purple → orange gradient, 15 colors).
    */
   palette?: string[]
-
-  // ── Layout ────────────────────────────────────────────────────────────────
-  gridStyle?: LineStyle | false
-  axisStyle?: AxisConfig | false
 }

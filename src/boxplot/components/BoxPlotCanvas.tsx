@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import uPlot from 'uplot'
-import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH } from '../../core'
+import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH, makeAxisValues } from '../../core'
 import type { AxisConfig, LineStyle } from '../../core'
 import { boxPlotPlugin } from '../utils/boxPlotPlugin'
 import type { BoxSeriesConfig } from '../types'
@@ -79,14 +79,7 @@ export function BoxPlotCanvas({
           stroke: mutedFgColor,
           ticks:  resolvedTicks,
           grid:   resolvedGrid,
-          values: (_u, vals) =>
-            vals.map(v => {
-              if (v == null) return ''
-              const n = Math.abs(v) >= 1000
-                ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
-                : String(parseFloat(v.toPrecision(3)))
-              return yUnit ? `${n}\u202f${yUnit}` : n
-            }),
+          values: makeAxisValues(yUnit),
         },
       ],
       series: [

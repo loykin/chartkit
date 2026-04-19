@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import uPlot from 'uplot'
-import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH } from '../../core'
+import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH, makeAxisValues } from '../../core'
 import type { AxisConfig, LineStyle } from '../../core'
 import { heatmapPaths } from '../utils/heatmapPaths'
 import { GRAD_METAL } from '../utils/palette'
@@ -33,20 +33,12 @@ export function HeatmapCanvas({
     const { mutedFgColor, borderColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
 
-    const yAxisValues: uPlot.Axis['values'] = (_u, vals) =>
-      vals.map(v => {
-        if (v == null) return ''
-        const n = Math.abs(v) >= 1000
-          ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
-          : String(parseFloat(v.toPrecision(3)))
-        return yUnit ? `${n}\u202f${yUnit}` : n
-      })
+    const yAxisValues = makeAxisValues(yUnit)
 
     return {
       width:  300,
       height,
       mode:   2 as uPlot.Mode,
-      ms:     xTime ? undefined : undefined,
       legend: { show: false },
       cursor: { drag: { x: true, y: true }, points: { show: false } },
       scales: {

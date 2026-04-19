@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import uPlot from 'uplot'
-import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH } from '../../core'
+import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH, makeAxisValues } from '../../core'
 import type { AxisConfig, LineStyle } from '../../core'
 import type { ScatterSeriesConfig } from '../types'
 
@@ -59,13 +59,6 @@ function makeScatterPaths(color: string, size: number): uPlot.Series.PathBuilder
   }
 }
 
-function formatNum(v: number, unit?: string) {
-  const n = Math.abs(v) >= 1000
-    ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
-    : String(parseFloat(v.toPrecision(3)))
-  return unit ? `${n}\u202f${unit}` : n
-}
-
 export function ScatterCanvas({
   containerRef,
   series,
@@ -96,14 +89,14 @@ export function ScatterCanvas({
           stroke: mutedFgColor,
           ticks:  resolvedTicks,
           grid:   resolvedGrid,
-          values: (_u, vals) => vals.map(v => v == null ? '' : formatNum(v, xUnit)),
+          values: makeAxisValues(xUnit),
         },
         {
           size:   54,
           stroke: mutedFgColor,
           ticks:  resolvedTicks,
           grid:   resolvedGrid,
-          values: (_u, vals) => vals.map(v => v == null ? '' : formatNum(v, yUnit)),
+          values: makeAxisValues(yUnit),
         },
       ],
       series: [

@@ -1,4 +1,4 @@
-import type { BaseChartProps, LineStyle, AxisConfig } from '../core'
+import type { BaseChartProps } from '../core'
 
 export interface ScatterSeriesConfig {
   label:      string
@@ -12,11 +12,9 @@ export interface ScatterSeriesConfig {
 }
 
 export interface ScatterChartProps extends BaseChartProps {
-  series:     ScatterSeriesConfig[]
+  series: ScatterSeriesConfig[]
   /** Unit label shown on the x axis */
-  xUnit?:     string
+  xUnit?: string
   /** Unit label shown on the y axis */
-  yUnit?:     string
-  gridStyle?: LineStyle | false
-  axisStyle?: AxisConfig | false
+  yUnit?: string
 }

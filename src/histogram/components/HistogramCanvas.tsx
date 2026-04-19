@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
-import { useChart, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH } from '../../core'
+import { useChart, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, formatNum } from '../../core'
 import type { AxisConfig, LineStyle } from '../../core'
 
 interface HistogramCanvasProps {
@@ -20,12 +20,6 @@ interface HistogramCanvasProps {
   yMax?:        number
   gridStyle?:   LineStyle | false
   axisStyle?:   AxisConfig | false
-}
-
-function formatNum(v: number): string {
-  return Math.abs(v) >= 1000
-    ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
-    : Number.isInteger(v) ? String(v) : parseFloat(v.toPrecision(3)).toString()
 }
 
 export function HistogramCanvas({

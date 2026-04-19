@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import type uPlot from 'uplot'
-import { Loader2 } from 'lucide-react'
+import { ChartError, ChartLoader } from '../core'
 import { ChartCanvas } from './components/ChartCanvas'
 import { ChartLegend } from './components/ChartLegend'
 import { useLegendState } from './hooks/useLegendState'
@@ -70,20 +70,7 @@ export function TimeSeriesChart({
     onSelect?.({ timeRange: result.xRange, yRange: result.yRange })
   }, [onSelect, onTimeRangeChange])
 
-  if (error) {
-    return (
-      <div style={{
-        height,
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        fontSize:       '0.875rem',
-        color:          'var(--destructive, #ef4444)',
-      }}>
-        {error.message}
-      </div>
-    )
-  }
+  if (error) return <ChartError message={error.message} height={height} />
 
   // Custom renderer takes priority over built-in legend
   const customLegend = renderLegend ? renderLegend(items) : null
@@ -119,24 +106,7 @@ export function TimeSeriesChart({
 
       {/* Chart canvas */}
       <div style={{ position: 'relative', minWidth: 0, flex: 1 }}>
-        {isLoading && (
-          <div style={{
-            position:        'absolute',
-            inset:           0,
-            zIndex:          20,
-            display:         'flex',
-            alignItems:      'center',
-            justifyContent:  'center',
-            borderRadius:    4,
-            backgroundColor: 'color-mix(in srgb, var(--background, #ffffff) 60%, transparent)',
-            backdropFilter:  'blur(4px)',
-          }}>
-            <Loader2
-              className="ck-spin"
-              style={{ width: 24, height: 24, color: 'var(--muted-foreground, #737373)' }}
-            />
-          </div>
-        )}
+        {isLoading && <ChartLoader />}
         <div ref={containerRef} style={{ width: '100%' }} />
         {/* Custom tooltip overlay — rendered inside position:relative wrapper */}
         {renderTooltipRef.current && tooltipPayload && (

@@ -1,13 +1,13 @@
-import type { BaseChartProps, LineStyle, AxisConfig } from '../core'
+import type { BaseChartProps } from '../core'
 
 export interface BoxStats {
-  min:        number
-  q1:         number
-  median:     number
-  q3:         number
-  max:        number
+  min:       number
+  q1:        number
+  median:    number
+  q3:        number
+  max:       number
   /** Values outside the whiskers rendered as individual dots */
-  outliers?:  number[]
+  outliers?: number[]
 }
 
 export interface BoxSeriesConfig {
@@ -23,6 +23,4 @@ export interface BoxPlotChartProps extends BaseChartProps {
   series:     BoxSeriesConfig[]
   /** Unit label shown on the y axis */
   yUnit?:     string
-  gridStyle?: LineStyle | false
-  axisStyle?: AxisConfig | false
 }

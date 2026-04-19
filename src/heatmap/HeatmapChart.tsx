@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react'
-import { Loader2 } from 'lucide-react'
+import { ChartError, ChartLoader } from '../core'
 import { HeatmapCanvas } from './components/HeatmapCanvas'
 import { binHeatmap } from './utils/binData'
 import type { HeatmapChartProps } from './types'
@@ -26,41 +26,11 @@ export function HeatmapChart({
     [xs, ys, xBinSize, yBinSize],
   )
 
-  if (error) {
-    return (
-      <div style={{
-        height,
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        fontSize:       '0.875rem',
-        color:          'var(--destructive, #ef4444)',
-      }}>
-        {error.message}
-      </div>
-    )
-  }
+  if (error) return <ChartError message={error.message} height={height} />
 
   return (
     <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
-      {isLoading && (
-        <div style={{
-          position:        'absolute',
-          inset:           0,
-          zIndex:          20,
-          display:         'flex',
-          alignItems:      'center',
-          justifyContent:  'center',
-          borderRadius:    4,
-          backgroundColor: 'color-mix(in srgb, var(--background, #ffffff) 60%, transparent)',
-          backdropFilter:  'blur(4px)',
-        }}>
-          <Loader2
-            className="ck-spin"
-            style={{ width: 24, height: 24, color: 'var(--muted-foreground, #737373)' }}
-          />
-        </div>
-      )}
+      {isLoading && <ChartLoader />}
       <div ref={containerRef} style={{ width: '100%' }} />
       <HeatmapCanvas
         containerRef={containerRef}
