@@ -10,4 +10,5 @@ export type {
   SelectionMode,
   SelectionResult,
   AlignedData,
+  TooltipPayload,
 } from './types'

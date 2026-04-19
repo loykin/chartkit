@@ -1,10 +1,10 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type uPlot from 'uplot'
 import { Loader2 } from 'lucide-react'
 import { ChartCanvas } from './components/ChartCanvas'
 import { ChartLegend } from './components/ChartLegend'
 import { useLegendState } from './hooks/useLegendState'
-import type { SelectionResult, TimeSeriesChartProps } from './types'
+import type { SelectionResult, TimeSeriesChartProps, TooltipPayload } from './types'
 
 export function TimeSeriesChart({
   data,
@@ -25,6 +25,7 @@ export function TimeSeriesChart({
   axisStyle,
   barStack,
   renderLegend,
+  renderTooltip,
   selectionMode  = 'x',
   onSelect,
   timeRange,
@@ -35,12 +36,32 @@ export function TimeSeriesChart({
   const containerRef = useRef<HTMLDivElement>(null)
   const { items, setChart, toggle, updateValues } = useLegendState(series, data)
 
+  // Stable ref so renderTooltip changes never recreate the chart
+  const renderTooltipRef = useRef(renderTooltip)
+  renderTooltipRef.current = renderTooltip
+
+  const [tooltipPayload, setTooltipPayload] = useState<Omit<TooltipPayload, 'items'> | null>(null)
+
   const handleReady = useCallback((chart: uPlot) => {
     setChart(chart)
   }, [setChart])
 
   const handleCursorMove = useCallback((chart: uPlot, idx: number | null) => {
     updateValues(chart, idx)
+
+    const left = chart.cursor.left ?? -1
+    const top  = chart.cursor.top  ?? -1
+
+    if (left < 0 || idx === null) {
+      setTooltipPayload(null)
+      return
+    }
+
+    // Offset cursor position from plot area (u.over) to full wrapper (u.wrap)
+    const x         = left + (chart.over.offsetLeft ?? 0)
+    const y         = top  + (chart.over.offsetTop  ?? 0)
+    const timestamp = (chart.data[0]?.[idx] as number) ?? null
+    setTooltipPayload({ x, y, timestamp })
   }, [updateValues])
 
   // Bridge generic SelectionResult → time-series API
@@ -117,6 +138,13 @@ export function TimeSeriesChart({
           </div>
         )}
         <div ref={containerRef} style={{ width: '100%' }} />
+        {/* Custom tooltip overlay — rendered inside position:relative wrapper */}
+        {renderTooltipRef.current && tooltipPayload && (
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 30, overflow: 'visible' }}>
+            {renderTooltipRef.current({ items, ...tooltipPayload })}
+          </div>
+        )}
+
         <ChartCanvas
           containerRef={containerRef}
           data={data}

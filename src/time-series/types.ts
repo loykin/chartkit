@@ -89,4 +89,29 @@ export interface TimeSeriesChartProps extends BaseChartProps {
 
   // ── Custom legend ────────────────────────────────────────────────────────
   renderLegend?: (items: import('./hooks/useLegendState').LegendItem[]) => React.ReactNode
+
+  // ── Custom tooltip ───────────────────────────────────────────────────────
+  renderTooltip?: (payload: TooltipPayload) => React.ReactNode
+}
+
+/**
+ * Payload passed to `renderTooltip`. All coordinates are relative to the
+ * chart wrapper element so consumers can use them directly with
+ * `position: absolute`.
+ */
+export interface TooltipPayload {
+  /** Series values and stats at the current cursor position */
+  items: import('./hooks/useLegendState').LegendItem[]
+  /** Unix timestamp (seconds) at cursor — null when cursor is off-chart */
+  timestamp: number | null
+  /**
+   * Cursor x in px relative to the chart wrapper div (y-axis space included).
+   * Use as `style={{ left: x + offset }}` on an absolutely-positioned element.
+   */
+  x: number
+  /**
+   * Cursor y in px relative to the chart wrapper div.
+   * Use as `style={{ top: y }}` on an absolutely-positioned element.
+   */
+  y: number
 }

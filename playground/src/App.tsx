@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { TimeSeriesChart, HistogramChart } from '@loykin/chartkit'
 import type {
   AlignedData, SeriesConfig, AxisConfig, LineStyle,
-  LegendPosition, LegendFormat, LegendItem, SelectionMode,
+  LegendPosition, LegendFormat, LegendItem, SelectionMode, TooltipPayload,
 } from '@loykin/chartkit'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -223,6 +223,48 @@ function CustomLegend({ items }: { items: LegendItem[] }) {
   )
 }
 
+// ── Custom tooltip example ────────────────────────────────────────────────────
+
+function CustomTooltip({ items, timestamp, x, y }: TooltipPayload) {
+  const visible = items.filter(i => i.visible && i.value != null)
+  if (!visible.length) return null
+
+  const date = timestamp != null ? new Date(timestamp * 1000) : null
+  const timeStr = date
+    ? `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`
+    : ''
+
+  return (
+    <div style={{
+      position:     'absolute',
+      left:         x + 14,
+      top:          Math.max(0, y - 8),
+      background:   '#1f2937',
+      color:        '#f9fafb',
+      borderRadius: 6,
+      padding:      '8px 10px',
+      fontSize:     '0.75rem',
+      lineHeight:   1.5,
+      whiteSpace:   'nowrap',
+      boxShadow:    '0 4px 12px rgba(0,0,0,0.25)',
+      pointerEvents: 'none',
+    }}>
+      {timeStr && (
+        <div style={{ color: '#9ca3af', marginBottom: 4 }}>{timeStr}</div>
+      )}
+      {visible.map(item => (
+        <div key={item.index} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: item.color, flexShrink: 0 }} />
+          <span style={{ color: '#d1d5db' }}>{item.label}</span>
+          <span style={{ fontWeight: 600, marginLeft: 'auto', paddingLeft: 12 }}>
+            {item.value!.toFixed(1)}{item.unit ? ` ${item.unit}` : ''}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ── Tab 1: Configurator ───────────────────────────────────────────────────────
 
 function ConfiguratorDemo() {
@@ -230,6 +272,7 @@ function ConfiguratorDemo() {
   const [legendPosition,  setLegendPosition ] = useState<LegendPosition>('bottom')
   const [legendFormat,    setLegendFormat   ] = useState<LegendFormat>('list')
   const [useCustomLegend, setUseCustomLegend] = useState(false)
+  const [useTooltip,      setUseTooltip     ] = useState(false)
 
   // Grid
   const [showGrid,  setShowGrid ] = useState(true)
@@ -299,6 +342,10 @@ function ConfiguratorDemo() {
             <Btn key={f} active={legendFormat === f} onClick={() => setLegendFormat(f)}>{f}</Btn>
           ))}
           <Btn active={useCustomLegend} onClick={() => setUseCustomLegend(v => !v)}>custom</Btn>
+        </CtrlRow>
+        <CtrlRow label="Tooltip">
+          <Btn active={!useTooltip} onClick={() => setUseTooltip(false)}>off</Btn>
+          <Btn active={useTooltip}  onClick={() => setUseTooltip(true)}>custom</Btn>
         </CtrlRow>
 
         <SectionDivider title="Series" />
@@ -420,6 +467,7 @@ function ConfiguratorDemo() {
           legendPosition={legendPosition}
           legendFormat={legendFormat}
           renderLegend={useCustomLegend ? items => <CustomLegend items={items} /> : undefined}
+          renderTooltip={useTooltip ? payload => <CustomTooltip {...payload} /> : undefined}
           selectionMode={selectionMode}
           xShowDate={xShowDate}
           locale={locale}

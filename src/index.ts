@@ -10,6 +10,7 @@ export type {
   LegendFormat,
   LegendItem,
   AlignedData,
+  TooltipPayload,
 } from './time-series'
 
 // Histogram types
