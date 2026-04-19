@@ -5,6 +5,9 @@ export { HeatmapChart    } from './heatmap'
 export { ScatterChart    } from './scatter'
 export { BoxPlotChart    } from './boxplot'
 export { PieChart        } from './pie'
+export { StatChart       } from './stat'
+export { GaugeChart      } from './gauge'
+export { BarChart        } from './bar'
 
 // Time-series types
 export type {
@@ -15,6 +18,7 @@ export type {
   LegendItem,
   AlignedData,
   TooltipPayload,
+  Threshold,
 } from './time-series'
 
 // Histogram types
@@ -35,6 +39,15 @@ export type { BoxPlotChartProps, BoxSeriesConfig, BoxStats } from './boxplot'
 
 // Pie types
 export type { PieChartProps, PieSliceConfig, PieLabelType } from './pie'
+
+// Stat types
+export type { StatChartProps } from './stat'
+
+// Gauge types
+export type { GaugeChartProps } from './gauge'
+
+// Bar types
+export type { BarChartProps, BarSeriesConfig } from './bar'
 
 // Shared primitives (re-exported for consumers who compose custom charts)
 export type {

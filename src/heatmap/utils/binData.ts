@@ -32,6 +32,8 @@ export function binHeatmap(
   yBinSize: number,
 ): HeatmapBinnedData {
   const len = xs.length
+  if (len === 0) return { xs: [], ys: [], counts: [] }
+
   const binX = (v: number) => incrRoundDn(v, xBinSize)
   const binY = (v: number) => incrRoundDn(v, yBinSize)
 

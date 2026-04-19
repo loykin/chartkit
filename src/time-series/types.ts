@@ -1,6 +1,6 @@
 import type React from 'react'
 import type uPlot from 'uplot'
-import type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartProps } from '../core'
+import type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartProps, Threshold } from '../core'
 
 // uPlot's aligned data format:
 // [timestamps, series1, series2, ...]  — all arrays must be the same length.
@@ -8,7 +8,7 @@ import type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartPr
 export type AlignedData = uPlot.AlignedData
 
 // Re-export shared chart primitives from core so consumers can import from one place
-export type { LineStyle, AxisConfig, SelectionMode, SelectionResult }
+export type { LineStyle, AxisConfig, SelectionMode, SelectionResult, Threshold }
 
 export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none'
 
@@ -78,6 +78,10 @@ export interface TimeSeriesChartProps extends BaseChartProps {
 
   // ── Bar stacking ─────────────────────────────────────────────────────────
   barStack?: boolean
+
+  // ── Thresholds ───────────────────────────────────────────────────────────
+  /** Horizontal reference lines drawn on the primary y-axis */
+  thresholds?: Threshold[]
 
   // ── Selection ────────────────────────────────────────────────────────────
   selectionMode?: SelectionMode

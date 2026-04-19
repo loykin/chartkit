@@ -27,6 +27,20 @@ export interface SelectionResult {
   yRange?: [number, number]
 }
 
+/** A single threshold: at `value` the color transitions */
+export interface Threshold {
+  /** The boundary value at which this color activates */
+  value: number
+  /** CSS color string */
+  color: string
+  /** Optional label drawn near the line (TimeSeriesChart only) */
+  label?: string
+  /** Line width in px (default 1, TimeSeriesChart only) */
+  width?: number
+  /** Dash pattern e.g. [4, 2] (TimeSeriesChart only) */
+  dash?: number[]
+}
+
 /** Shared props common to all chart components */
 export interface BaseChartProps {
   /** Canvas height in px (default 300) */

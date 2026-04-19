@@ -1,34 +1,28 @@
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import { ChartError, ChartLoader } from '../core'
-import { HeatmapCanvas } from './components/HeatmapCanvas'
-import { binHeatmap } from './utils/binData'
-import type { HeatmapChartProps } from './types'
+import { BarCanvas } from './components/BarCanvas'
+import type { BarChartProps } from './types'
 
-export function HeatmapChart({
-  xs,
-  ys,
-  xBinSize,
-  yBinSize,
+export function BarChart({
+  categories,
+  series,
   height      = 300,
-  xTime       = true,
-  locale,
+  orientation = 'vertical',
+  stacked     = false,
+  xUnit,
   yUnit,
-  palette,
+  yMin,
+  yMax,
   gridStyle,
   axisStyle,
   isLoading,
   error,
-}: HeatmapChartProps) {
+}: BarChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-
-  const binned = useMemo(
-    () => binHeatmap(xs, ys, xBinSize, yBinSize),
-    [xs, ys, xBinSize, yBinSize],
-  )
 
   if (error) return <ChartError message={error.message} height={height} />
 
-  if (!xs.length && !isLoading) {
+  if (!categories.length && !isLoading) {
     return (
       <div style={{
         height,
@@ -44,14 +38,17 @@ export function HeatmapChart({
     <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
       {isLoading && <ChartLoader />}
       <div ref={containerRef} style={{ width: '100%' }} />
-      <HeatmapCanvas
+      <BarCanvas
         containerRef={containerRef}
-        binned={binned}
+        categories={categories}
+        series={series}
+        orientation={orientation}
+        stacked={stacked}
         height={height}
-        xTime={xTime}
-        locale={locale}
+        xUnit={xUnit}
         yUnit={yUnit}
-        palette={palette}
+        yMin={yMin}
+        yMax={yMax}
         gridStyle={gridStyle}
         axisStyle={axisStyle}
       />

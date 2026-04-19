@@ -17,6 +17,18 @@ export function BoxPlotChart({
 
   if (error) return <ChartError message={error.message} height={height} />
 
+  if (!categories.length && !isLoading) {
+    return (
+      <div style={{
+        height,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '0.875rem', color: 'var(--muted-foreground, #737373)',
+      }}>
+        No data
+      </div>
+    )
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
       {isLoading && <ChartLoader />}

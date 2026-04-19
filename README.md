@@ -11,11 +11,15 @@ A lightweight React chart library built on [uPlot](https://github.com/leeoniya/u
 
 ## Features
 
-- **TimeSeriesChart** — line, area, bars, and points; dual y-axis; stacking; zoom/selection; custom tooltip & legend
+- **TimeSeriesChart** — line, area, bars, and points; dual y-axis; stacking; threshold lines; zoom/selection; custom tooltip & legend
 - **HistogramChart** — auto-binning (Sturges rule), normalization to relative frequency
 - **HeatmapChart** — density heatmap from flat (x, y) scatter data; customizable color palette
 - **ScatterChart** — multi-series scatter plot; configurable point sizes
 - **BoxPlotChart** — box-and-whisker with outlier dots; multi-series per category
+- **PieChart** — pie and donut; inside/outside labels with leader lines; center text
+- **StatChart** — single big-number panel; trend indicator; sparkline; threshold coloring
+- **GaugeChart** — 270° speedometer gauge; threshold color zones; min/max labels
+- **BarChart** — categorical bar chart; grouped or stacked; vertical and horizontal orientation
 - CSS variable theming — drop in any design system
 - Loading and error states built-in
 
@@ -69,6 +73,18 @@ import { TimeSeriesChart } from '@loykin/chartkit'
   ]}
   yUnit="%" yUnit2="MB"
   height={300}
+/>
+```
+
+#### Threshold lines
+
+```tsx
+<TimeSeriesChart
+  data={data} series={series}
+  thresholds={[
+    { value: 80, color: '#f59e0b', label: 'Warning',  dash: [4, 2] },
+    { value: 90, color: '#ef4444', label: 'Critical', width: 1.5  },
+  ]}
 />
 ```
 
@@ -147,6 +163,102 @@ import { BoxPlotChart } from '@loykin/chartkit'
 />
 ```
 
+### PieChart
+
+```tsx
+import { PieChart } from '@loykin/chartkit'
+
+// Pie
+<PieChart
+  slices={[
+    { label: 'Nginx',      value: 42, color: '#3b82f6' },
+    { label: 'PostgreSQL', value: 27, color: '#10b981' },
+    { label: 'Redis',      value: 13, color: '#f59e0b' },
+  ]}
+  labelType="percent"
+  height={300}
+/>
+
+// Donut with center label and outside labels
+<PieChart
+  slices={slices}
+  innerRadius={0.6}
+  labelType="name+percent"
+  labelPosition="outside"
+  centerLabel={"99\nTotal"}
+  legendPosition="right"
+  height={300}
+/>
+```
+
+### StatChart
+
+```tsx
+import { StatChart } from '@loykin/chartkit'
+
+<StatChart
+  value={94.2}
+  unit="%"
+  label="CPU Usage"
+  previousValue={78.5}
+  thresholds={[
+    { value: 0,  color: '#10b981' },
+    { value: 80, color: '#f59e0b' },
+    { value: 90, color: '#ef4444' },
+  ]}
+  sparkline={recentValues}
+  height={130}
+/>
+```
+
+### GaugeChart
+
+```tsx
+import { GaugeChart } from '@loykin/chartkit'
+
+<GaugeChart
+  value={67}
+  min={0}
+  max={100}
+  unit="%"
+  label="CPU Usage"
+  thresholds={[
+    { value: 0,  color: '#10b981' },
+    { value: 60, color: '#f59e0b' },
+    { value: 80, color: '#ef4444' },
+  ]}
+  height={200}
+/>
+```
+
+### BarChart
+
+```tsx
+import { BarChart } from '@loykin/chartkit'
+
+// Grouped vertical (default)
+<BarChart
+  categories={['Jan', 'Feb', 'Mar', 'Apr']}
+  series={[
+    { label: 'Service A', color: '#3b82f6', values: [42, 55, 38, 61] },
+    { label: 'Service B', color: '#10b981', values: [28, 34, 45, 32] },
+  ]}
+  yUnit="ms"
+  height={300}
+/>
+
+// Stacked horizontal
+<BarChart
+  categories={categories}
+  series={series}
+  orientation="horizontal"
+  stacked
+  height={300}
+/>
+```
+
+> **TimeSeriesChart vs BarChart** — `TimeSeriesChart` bars use a time-based x-axis (Unix timestamps, zoom/pan supported). `BarChart` uses string categories with no time concept, supporting grouped/stacked layout and horizontal orientation.
+
 ---
 
 ## Props
@@ -171,12 +283,23 @@ import { BoxPlotChart } from '@loykin/chartkit'
 | `stroke` | `string`   | CSS color (default: `--border`)          |
 | `dash`   | `number[]` | Dash pattern e.g. `[4, 2]`; solid if omitted |
 
+### `Threshold`
+
+| Prop    | Type       | Description                                    |
+|---------|------------|------------------------------------------------|
+| `value` | `number`   | Boundary value at which this color activates   |
+| `color` | `string`   | CSS color string                               |
+| `label` | `string`   | Label drawn near the line (TimeSeries only)    |
+| `width` | `number`   | Line width in px (TimeSeries only)             |
+| `dash`  | `number[]` | Dash pattern (TimeSeries only)                 |
+
 ### `TimeSeriesChart`
 
 | Prop               | Type                      | Default     | Description                                        |
 |--------------------|---------------------------|-------------|----------------------------------------------------|
 | `data`             | `AlignedData`             | **required**| `[timestamps, ...seriesValues]`                    |
 | `series`           | `SeriesConfig[]`          | **required**| One entry per data series                          |
+| `thresholds`       | `Threshold[]`             | —           | Horizontal reference lines on the primary y-axis   |
 | `legendPosition`   | `'top'\|'bottom'\|'left'\|'right'\|'none'` | `'bottom'` | Legend placement      |
 | `legendFormat`     | `'list'\|'table'`         | `'list'`    | Legend display mode                                |
 | `yUnit`            | `string`                  | —           | Primary y-axis unit                                |
@@ -260,24 +383,79 @@ import { BoxPlotChart } from '@loykin/chartkit'
 | `series`     | `BoxSeriesConfig[]`  | **required** | One entry per data series         |
 | `yUnit`      | `string`             | —            | Y-axis unit label                 |
 
-**`BoxSeriesConfig`**
-
-| Prop    | Type         | Default  | Description                          |
-|---------|--------------|----------|--------------------------------------|
-| `label` | `string`     | required | Display name                         |
-| `color` | `string`     | required | Box/whisker color                    |
-| `data`  | `BoxStats[]` | required | One `BoxStats` entry per category    |
-
-**`BoxStats`**
+**`BoxSeriesConfig`** / **`BoxStats`**
 
 | Prop       | Type       | Description                                    |
 |------------|------------|------------------------------------------------|
+| `label`    | `string`   | Display name                                   |
+| `color`    | `string`   | Box/whisker color                              |
+| `data`     | `BoxStats[]`| One entry per category                        |
 | `min`      | `number`   | Whisker bottom                                 |
 | `q1`       | `number`   | Box bottom (25th percentile)                   |
 | `median`   | `number`   | Median line                                    |
 | `q3`       | `number`   | Box top (75th percentile)                      |
 | `max`      | `number`   | Whisker top                                    |
 | `outliers` | `number[]` | Values outside whiskers — rendered as dots     |
+
+### `PieChart`
+
+| Prop             | Type                              | Default    | Description                                  |
+|------------------|-----------------------------------|------------|----------------------------------------------|
+| `slices`         | `PieSliceConfig[]`                | **required**| One entry per slice                         |
+| `innerRadius`    | `number`                          | `0`        | Inner radius fraction 0–1 (0=pie, 0.6=donut) |
+| `labelType`      | `PieLabelType`                    | `'percent'`| What to print on each slice                  |
+| `labelPosition`  | `'inside'\|'outside'`             | `'inside'` | Where to place slice labels                  |
+| `centerLabel`    | `string`                          | —          | Text in the center hole (donut only). `\n` for line break |
+| `legendPosition` | `'right'\|'bottom'\|'none'`       | `'right'`  | Legend placement                             |
+| `unit`           | `string`                          | —          | Unit shown in tooltip and legend             |
+
+**`PieLabelType`**: `'name'` · `'value'` · `'percent'` · `'name+percent'` · `'none'`
+
+### `StatChart`
+
+| Prop            | Type         | Default    | Description                                      |
+|-----------------|--------------|------------|--------------------------------------------------|
+| `value`         | `number\|null`| **required**| Current value                                  |
+| `label`         | `string`     | —          | Label shown above the value                      |
+| `unit`          | `string`     | —          | Unit suffix                                      |
+| `previousValue` | `number`     | —          | Previous value for trend indicator               |
+| `thresholds`    | `Threshold[]`| —          | Color zones (highest threshold ≤ value wins)     |
+| `color`         | `string`     | —          | Override color (takes priority over thresholds)  |
+| `sparkline`     | `number[]`   | —          | Raw values for the sparkline                     |
+| `sparklineColor`| `string`     | —          | Sparkline color (defaults to value color)        |
+| `height`        | `number`     | `120`      | Component height in px                           |
+
+### `GaugeChart`
+
+| Prop         | Type         | Default  | Description                                        |
+|--------------|--------------|----------|----------------------------------------------------|
+| `value`      | `number`     | **required**| Current value                                   |
+| `min`        | `number`     | `0`      | Gauge range minimum                                |
+| `max`        | `number`     | `100`    | Gauge range maximum                                |
+| `unit`       | `string`     | —        | Unit suffix shown inside the gauge                 |
+| `label`      | `string`     | —        | Label shown below the value                        |
+| `thresholds` | `Threshold[]`| —        | Color zones painted as arc segments                |
+| `arcWidth`   | `number`     | `0.18`   | Arc thickness as a fraction of the radius (0–1)    |
+| `height`     | `number`     | `200`    | Component height in px                             |
+
+### `BarChart`
+
+| Prop          | Type                | Default      | Description                              |
+|---------------|---------------------|--------------|------------------------------------------|
+| `categories`  | `string[]`          | **required** | Category labels                          |
+| `series`      | `BarSeriesConfig[]` | **required** | One entry per data series                |
+| `stacked`     | `boolean`           | `false`      | Stack bars instead of grouping           |
+| `orientation` | `'vertical'\|'horizontal'` | `'vertical'` | Bar orientation              |
+| `xUnit`       | `string`            | —            | Unit on the category axis                |
+| `yUnit`       | `string`            | —            | Unit on the value axis                   |
+
+**`BarSeriesConfig`**
+
+| Prop     | Type               | Description                          |
+|----------|--------------------|--------------------------------------|
+| `label`  | `string`           | Display name                         |
+| `color`  | `string`           | Bar fill color                       |
+| `values` | `(number\|null)[]` | One value per category; null = skip  |
 
 ---
 

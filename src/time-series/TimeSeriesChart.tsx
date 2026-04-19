@@ -24,6 +24,7 @@ export function TimeSeriesChart({
   gridStyle,
   axisStyle,
   barStack,
+  thresholds,
   renderLegend,
   renderTooltip,
   selectionMode  = 'x',
@@ -133,6 +134,7 @@ export function TimeSeriesChart({
           gridStyle={gridStyle}
           axisStyle={axisStyle}
           barStack={barStack}
+          thresholds={thresholds}
           timeRange={timeRange}
           onSelect={handleSelect}
           onReady={handleReady}

@@ -17,6 +17,19 @@ export function ScatterChart({
 
   if (error) return <ChartError message={error.message} height={height} />
 
+  const isEmpty = series.every(s => s.xs.length === 0)
+  if (isEmpty && !isLoading) {
+    return (
+      <div style={{
+        height,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '0.875rem', color: 'var(--muted-foreground, #737373)',
+      }}>
+        No data
+      </div>
+    )
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
       {isLoading && <ChartLoader />}

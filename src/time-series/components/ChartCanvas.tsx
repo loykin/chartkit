@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import uPlot from 'uplot'
-import { useChart, selectionPlugin, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH } from '../../core'
+import { useChart, selectionPlugin, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, thresholdPlugin } from '../../core'
 import type { SeriesConfig, SelectionMode, SelectionResult } from '../types'
-import type { AxisConfig, LineStyle } from '../../core'
+import type { AxisConfig, LineStyle, Threshold } from '../../core'
 
 interface ChartCanvasProps {
   containerRef:  React.RefObject<HTMLDivElement | null>
@@ -23,6 +23,7 @@ interface ChartCanvasProps {
   yUnit2?:       string
   y2Min?:        number
   y2Max?:        number
+  thresholds?:   Threshold[]
   onSelect?:     (result: SelectionResult) => void
   onReady?:      (chart: uPlot) => void
   onCursorMove?: (chart: uPlot, idx: number | null) => void
@@ -47,6 +48,7 @@ export function ChartCanvas({
   yUnit2,
   y2Min,
   y2Max,
+  thresholds,
   onSelect,
   onReady,
   onCursorMove,
@@ -205,6 +207,7 @@ export function ChartCanvas({
       axes,
       plugins: [
         makeAxisBorderPlugin(axisLineStyle, borderColor, CHART_DEFAULT_LINE_WIDTH),
+        ...(thresholds?.length ? [thresholdPlugin(thresholds)] : []),
         selectionPlugin({ mode: selectionMode, onSelect }),
         ...(onCursorMove
           ? [{
@@ -217,7 +220,8 @@ export function ChartCanvas({
           : []),
       ],
     }
-  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, onSelect, onCursorMove])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, onSelect, onCursorMove])
 
   // Bar stacking: transform data to cumulative sums, then reverse order
   const resolvedData = useMemo<uPlot.AlignedData>(() => {

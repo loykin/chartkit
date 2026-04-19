@@ -1,10 +1,14 @@
 import { useState, useMemo } from 'react'
-import { TimeSeriesChart, HistogramChart, HeatmapChart, ScatterChart, BoxPlotChart, PieChart, GRAD_METAL } from '@loykin/chartkit'
+import {
+  TimeSeriesChart, HistogramChart, HeatmapChart, ScatterChart,
+  BoxPlotChart, PieChart, StatChart, GaugeChart, BarChart, GRAD_METAL,
+} from '@loykin/chartkit'
 import type {
   AlignedData, SeriesConfig, AxisConfig, LineStyle,
   LegendPosition, LegendFormat, LegendItem, SelectionMode, TooltipPayload,
   ScatterSeriesConfig, BoxSeriesConfig, BoxStats,
   PieSliceConfig, PieLabelType,
+  BarSeriesConfig, Threshold,
 } from '@loykin/chartkit'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -910,6 +914,135 @@ function PieDemo() {
   )
 }
 
+// ── Tab: Stat / Gauge / Bar ───────────────────────────────────────────────────
+
+const STAT_SPARKLINE = Array.from({ length: 30 }, (_, i) =>
+  40 + Math.sin(i / 5) * 15 + Math.random() * 8,
+)
+
+const GAUGE_THRESHOLDS: Threshold[] = [
+  { value: 0,  color: '#10b981' },
+  { value: 60, color: '#f59e0b' },
+  { value: 80, color: '#ef4444' },
+]
+
+const BAR_CATEGORIES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+
+const BAR_SERIES: BarSeriesConfig[] = [
+  { label: 'Service A', color: '#3b82f6', values: [42, 55, 38, 61, 49, 70] },
+  { label: 'Service B', color: '#10b981', values: [28, 34, 45, 32, 58, 41] },
+  { label: 'Service C', color: '#f59e0b', values: [15, 22, 18, 27, 20, 33] },
+]
+
+const TS_THRESHOLDS: Threshold[] = [
+  { value: 80, color: '#f59e0b', label: 'Warning',  dash: [4, 2] },
+  { value: 90, color: '#ef4444', label: 'Critical', width: 1.5  },
+]
+
+function NewChartsDemo() {
+  const [barStacked,     setBarStacked    ] = useState(false)
+  const [barOrientation, setBarOrientation] = useState<'vertical' | 'horizontal'>('vertical')
+  const [gaugeValue,     setGaugeValue    ] = useState(67)
+  const [showThresholds, setShowThresholds] = useState(true)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* ── Stat ── */}
+      <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, margin: '0 0 2px' }}>Stat</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+        <Card padding="0">
+          <StatChart value={94.2} unit="%" label="CPU Usage"
+            thresholds={GAUGE_THRESHOLDS} previousValue={78.5}
+            sparkline={STAT_SPARKLINE} height={130} />
+        </Card>
+        <Card padding="0">
+          <StatChart value={1847} unit="req/s" label="Throughput"
+            color="#3b82f6" previousValue={2100}
+            sparkline={STAT_SPARKLINE.map(v => v * 40)} height={130} />
+        </Card>
+        <Card padding="0">
+          <StatChart value={42} unit="ms" label="p50 Latency"
+            thresholds={[{ value: 0, color: '#10b981' }, { value: 100, color: '#ef4444' }]}
+            height={130} />
+        </Card>
+        <Card padding="0">
+          <StatChart value={null} label="No data" height={130} />
+        </Card>
+      </div>
+
+      {/* ── Gauge ── */}
+      <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, margin: '8px 0 2px' }}>Gauge</h2>
+      <ControlPanel>
+        <CtrlRow label="Value">
+          {[20, 45, 67, 85, 95].map(v => (
+            <Btn key={v} active={gaugeValue === v} onClick={() => setGaugeValue(v)}>{v}</Btn>
+          ))}
+        </CtrlRow>
+      </ControlPanel>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <Card>
+          <SectionHeader>CPU Usage</SectionHeader>
+          <GaugeChart value={gaugeValue} min={0} max={100} unit="%"
+            thresholds={GAUGE_THRESHOLDS} height={180} />
+        </Card>
+        <Card>
+          <SectionHeader>Memory</SectionHeader>
+          <GaugeChart value={gaugeValue * 0.8} min={0} max={100} unit="GB"
+            label="Used / 64 GB"
+            thresholds={GAUGE_THRESHOLDS} arcWidth={0.25} height={180} />
+        </Card>
+        <Card>
+          <SectionHeader>Latency (no thresholds)</SectionHeader>
+          <GaugeChart value={gaugeValue * 2} min={0} max={200} unit="ms" height={180} />
+        </Card>
+      </div>
+
+      {/* ── Bar ── */}
+      <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, margin: '8px 0 2px' }}>Bar Chart</h2>
+      <ControlPanel>
+        <CtrlRow label="Orientation">
+          <Btn active={barOrientation === 'vertical'}   onClick={() => setBarOrientation('vertical')}>vertical</Btn>
+          <Btn active={barOrientation === 'horizontal'} onClick={() => setBarOrientation('horizontal')}>horizontal</Btn>
+        </CtrlRow>
+        <CtrlRow label="Stack">
+          <Btn active={!barStacked} onClick={() => setBarStacked(false)}>grouped</Btn>
+          <Btn active={barStacked}  onClick={() => setBarStacked(true)}>stacked</Btn>
+        </CtrlRow>
+      </ControlPanel>
+      <Card>
+        <SectionHeader>Response time by service</SectionHeader>
+        <BarChart
+          categories={BAR_CATEGORIES}
+          series={BAR_SERIES}
+          orientation={barOrientation}
+          stacked={barStacked}
+          height={280}
+          yUnit="ms"
+        />
+      </Card>
+
+      {/* ── Threshold lines ── */}
+      <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, margin: '8px 0 2px' }}>Threshold Lines</h2>
+      <ControlPanel>
+        <CtrlRow label="Show">
+          <Btn active={showThresholds}  onClick={() => setShowThresholds(true)}>on</Btn>
+          <Btn active={!showThresholds} onClick={() => setShowThresholds(false)}>off</Btn>
+        </CtrlRow>
+      </ControlPanel>
+      <Card>
+        <SectionHeader>CPU (warning=80%, critical=90%)</SectionHeader>
+        <TimeSeriesChart
+          data={cpuData} series={cpuSeries}
+          height={200} yUnit="%" yMin={0} yMax={100}
+          thresholds={showThresholds ? TS_THRESHOLDS : []}
+          legendPosition="bottom"
+        />
+      </Card>
+    </div>
+  )
+}
+
 // ── Tab 4: States ─────────────────────────────────────────────────────────────
 
 function StatesDemo() {
@@ -959,14 +1092,15 @@ function StatesDemo() {
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'configurator', label: 'Configurator'  },
-  { id: 'zoom',         label: 'Linked zoom'   },
-  { id: 'heatmap',      label: 'Heatmap'       },
-  { id: 'scatter',      label: 'Scatter'       },
-  { id: 'boxplot',      label: 'Box Plot'      },
-  { id: 'histogram',    label: 'Histogram'     },
-  { id: 'pie',          label: 'Pie / Donut'   },
-  { id: 'states',       label: 'States'        },
+  { id: 'configurator', label: 'Configurator'       },
+  { id: 'zoom',         label: 'Linked zoom'        },
+  { id: 'heatmap',      label: 'Heatmap'            },
+  { id: 'scatter',      label: 'Scatter'            },
+  { id: 'boxplot',      label: 'Box Plot'           },
+  { id: 'histogram',    label: 'Histogram'          },
+  { id: 'pie',          label: 'Pie / Donut'        },
+  { id: 'new',          label: 'Stat / Gauge / Bar' },
+  { id: 'states',       label: 'States'             },
 ] as const
 
 type TabId = typeof TABS[number]['id']
@@ -1006,6 +1140,7 @@ export default function App() {
       {tab === 'boxplot'      && <BoxPlotDemo />}
       {tab === 'histogram'    && <HistogramDemo />}
       {tab === 'pie'          && <PieDemo />}
+      {tab === 'new'          && <NewChartsDemo />}
       {tab === 'states'       && <StatesDemo />}
     </div>
   )
