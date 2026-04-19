@@ -4,6 +4,7 @@ export { HistogramChart  } from './histogram'
 export { HeatmapChart    } from './heatmap'
 export { ScatterChart    } from './scatter'
 export { BoxPlotChart    } from './boxplot'
+export { PieChart        } from './pie'
 
 // Time-series types
 export type {
@@ -31,6 +32,9 @@ export type { ScatterChartProps, ScatterSeriesConfig } from './scatter'
 
 // Box plot types
 export type { BoxPlotChartProps, BoxSeriesConfig, BoxStats } from './boxplot'
+
+// Pie types
+export type { PieChartProps, PieSliceConfig, PieLabelType } from './pie'
 
 // Shared primitives (re-exported for consumers who compose custom charts)
 export type {

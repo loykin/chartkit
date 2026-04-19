@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react'
-import { TimeSeriesChart, HistogramChart, HeatmapChart, ScatterChart, BoxPlotChart, GRAD_METAL } from '@loykin/chartkit'
+import { TimeSeriesChart, HistogramChart, HeatmapChart, ScatterChart, BoxPlotChart, PieChart, GRAD_METAL } from '@loykin/chartkit'
 import type {
   AlignedData, SeriesConfig, AxisConfig, LineStyle,
   LegendPosition, LegendFormat, LegendItem, SelectionMode, TooltipPayload,
   ScatterSeriesConfig, BoxSeriesConfig, BoxStats,
+  PieSliceConfig, PieLabelType,
 } from '@loykin/chartkit'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -809,6 +810,106 @@ function HistogramDemo() {
   )
 }
 
+// ── Tab 7: Pie / Donut ────────────────────────────────────────────────────────
+
+const PIE_SLICES: PieSliceConfig[] = [
+  { label: 'Nginx',      value: 42, color: '#3b82f6' },
+  { label: 'PostgreSQL', value: 27, color: '#10b981' },
+  { label: 'Redis',      value: 13, color: '#f59e0b' },
+  { label: 'Worker',     value: 11, color: '#8b5cf6' },
+  { label: 'Other',      value:  7, color: '#6b7280' },
+]
+
+function PieDemo() {
+  const [innerRadius,    setInnerRadius   ] = useState(0.55)
+  const [labelType,      setLabelType     ] = useState<PieLabelType>('percent')
+  const [labelPosition,  setLabelPosition ] = useState<'inside' | 'outside'>('inside')
+  const [legendPosition, setLegendPosition] = useState<'right' | 'bottom' | 'none'>('right')
+  const [showCenter,     setShowCenter    ] = useState(true)
+
+  const LABEL_TYPES: PieLabelType[] = ['percent', 'name', 'value', 'name+percent', 'none']
+
+  const total = PIE_SLICES.reduce((s, d) => s + d.value, 0)
+  const centerLabel = showCenter && innerRadius > 0
+    ? `${total}%\nCPU usage`
+    : undefined
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <ControlPanel>
+        <SectionDivider title="Shape" />
+        <CtrlRow label="Inner radius">
+          {([0, 0.4, 0.55, 0.7] as const).map(r => (
+            <Btn key={r} active={innerRadius === r} onClick={() => setInnerRadius(r)}>
+              {r === 0 ? 'pie' : r}
+            </Btn>
+          ))}
+        </CtrlRow>
+        <SectionDivider title="Labels" />
+        <CtrlRow label="Label type">
+          {LABEL_TYPES.map(l => (
+            <Btn key={l} active={labelType === l} onClick={() => setLabelType(l)}>{l}</Btn>
+          ))}
+        </CtrlRow>
+        <CtrlRow label="Position">
+          <Btn active={labelPosition === 'inside'}  onClick={() => setLabelPosition('inside')}>inside</Btn>
+          <Btn active={labelPosition === 'outside'} onClick={() => setLabelPosition('outside')}>outside</Btn>
+        </CtrlRow>
+        {innerRadius > 0 && (
+          <CtrlRow label="Center text">
+            <Btn active={showCenter}  onClick={() => setShowCenter(true)}>on</Btn>
+            <Btn active={!showCenter} onClick={() => setShowCenter(false)}>off</Btn>
+          </CtrlRow>
+        )}
+        <SectionDivider title="Legend" />
+        <CtrlRow label="Position">
+          {(['right', 'bottom', 'none'] as const).map(p => (
+            <Btn key={p} active={legendPosition === p} onClick={() => setLegendPosition(p)}>{p}</Btn>
+          ))}
+        </CtrlRow>
+      </ControlPanel>
+
+      <Card>
+        <SectionHeader>CPU usage by service</SectionHeader>
+        <PieChart
+          slices={PIE_SLICES}
+          height={300}
+          innerRadius={innerRadius}
+          labelType={labelType}
+          labelPosition={labelPosition}
+          centerLabel={centerLabel}
+          legendPosition={legendPosition}
+          unit="%"
+        />
+      </Card>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <Card>
+          <SectionHeader>Pie (no legend)</SectionHeader>
+          <PieChart
+            slices={PIE_SLICES}
+            height={220}
+            innerRadius={0}
+            labelType="name+percent"
+            legendPosition="none"
+          />
+        </Card>
+        <Card>
+          <SectionHeader>Donut — bottom legend</SectionHeader>
+          <PieChart
+            slices={PIE_SLICES}
+            height={220}
+            innerRadius={0.6}
+            labelType="none"
+            centerLabel={`${total}%\nTotal`}
+            legendPosition="bottom"
+          />
+        </Card>
+      </div>
+    </div>
+  )
+}
+
 // ── Tab 4: States ─────────────────────────────────────────────────────────────
 
 function StatesDemo() {
@@ -864,6 +965,7 @@ const TABS = [
   { id: 'scatter',      label: 'Scatter'       },
   { id: 'boxplot',      label: 'Box Plot'      },
   { id: 'histogram',    label: 'Histogram'     },
+  { id: 'pie',          label: 'Pie / Donut'   },
   { id: 'states',       label: 'States'        },
 ] as const
 
@@ -903,6 +1005,7 @@ export default function App() {
       {tab === 'scatter'      && <ScatterDemo />}
       {tab === 'boxplot'      && <BoxPlotDemo />}
       {tab === 'histogram'    && <HistogramDemo />}
+      {tab === 'pie'          && <PieDemo />}
       {tab === 'states'       && <StatesDemo />}
     </div>
   )
