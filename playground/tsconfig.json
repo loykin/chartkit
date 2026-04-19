@@ -8,8 +8,7 @@
     "strict":           true,
     "skipLibCheck":     true,
     "paths": {
-      "@loykin/chartkit":         ["../src/index.ts"],
-      "@loykin/chartkit/styles":  ["../src/styles/index.css"]
+      "@loykin/chartkit": ["../src/index.ts"]
     }
   },
   "include": ["src"]

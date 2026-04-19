@@ -1,15 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'path'
 
 export default defineConfig({
   base: process.env.VITE_BASE_PATH ?? '/',
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      // dev: resolve directly from source so Vite HMR works without a dist rebuild
-      '@loykin/chartkit':         resolve(__dirname, '../src/index.ts'),
-      '@loykin/chartkit/styles':  resolve(__dirname, '../src/styles/index.css'),
+      '@loykin/chartkit': resolve(__dirname, '../src/index.ts'),
     },
   },
 })
