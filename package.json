@@ -1,0 +1,61 @@
+{
+  "name": "@loykin/chartkit",
+  "version": "0.0.1-beta.1",
+  "description": "A React chart component library built on uPlot — TimeSeriesChart, HistogramChart, and more.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types":   "./dist/index.d.ts",
+      "import":  "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles": {
+      "types":   "./dist/styles.d.ts",
+      "default": "./dist/styles.css"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build":       "tsc --noEmit && eslint src --ext .ts,.tsx && tsup && node scripts/build-css.mjs && echo 'declare const styles: string; export default styles;' > dist/styles.d.ts",
+    "build:js":    "tsup",
+    "build:css":   "node scripts/build-css.mjs",
+    "dev":         "concurrently \"tsup --watch\" \"pnpm --filter chartkit-playground dev\"",
+    "type-check":  "tsc --noEmit",
+    "lint":        "eslint src --ext .ts,.tsx",
+    "lint:fix":    "eslint src --ext .ts,.tsx --fix"
+  },
+  "dependencies": {
+    "lucide-react": "^1.8.0"
+  },
+  "peerDependencies": {
+    "react":     "^19.0.0",
+    "react-dom": "^19.0.0",
+    "uplot":     "^1.6.0"
+  },
+  "devDependencies": {
+    "@eslint/js":              "^9.39.4",
+    "@types/react":            "^19.2.14",
+    "@types/react-dom":        "^19.2.3",
+    "concurrently":            "^9.2.1",
+    "eslint":                  "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "tsup":                    "^8.4.0",
+    "typescript":              "^6.0.2",
+    "typescript-eslint":       "^8.58.2",
+    "uplot":                   "^1.6.32"
+  },
+  "keywords": [
+    "react",
+    "chart",
+    "timeseries",
+    "histogram",
+    "uplot",
+    "canvas"
+  ],
+  "license": "MIT"
+}
