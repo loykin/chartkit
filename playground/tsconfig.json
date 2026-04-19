@@ -6,7 +6,11 @@
     "moduleResolution": "bundler",
     "jsx":              "react-jsx",
     "strict":           true,
-    "skipLibCheck":     true
+    "skipLibCheck":     true,
+    "paths": {
+      "@loykin/chartkit":         ["../src/index.ts"],
+      "@loykin/chartkit/styles":  ["../src/styles/index.css"]
+    }
   },
   "include": ["src"]
 }
