@@ -220,7 +220,6 @@ export function ChartCanvas({
           : []),
       ],
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, onSelect, onCursorMove])
 
   // Bar stacking: transform data to cumulative sums, then reverse order
