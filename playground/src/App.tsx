@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { TimeSeriesChart, HistogramChart } from '@loykin/chartkit'
+import { useState, useMemo } from 'react'
+import { TimeSeriesChart, HistogramChart, HeatmapChart, ScatterChart, BoxPlotChart, GRAD_METAL } from '@loykin/chartkit'
 import type {
   AlignedData, SeriesConfig, AxisConfig, LineStyle,
   LegendPosition, LegendFormat, LegendItem, SelectionMode, TooltipPayload,
+  ScatterSeriesConfig, BoxSeriesConfig, BoxStats,
 } from '@loykin/chartkit'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -586,7 +587,187 @@ function LinkedZoomDemo() {
   )
 }
 
-// ── Tab 3: Histogram ──────────────────────────────────────────────────────────
+// ── Tab 3: Heatmap ────────────────────────────────────────────────────────────
+
+function generateHeatmapData() {
+  const now  = Math.floor(Date.now() / 1000)
+  const xs: number[] = []
+  const ys: number[] = []
+  // 60 x-buckets × ~300 points each ≈ 18k points
+  for (let xi = 0; xi < 60; xi++) {
+    const t     = now - (60 - xi) * 60
+    const count = 200 + Math.floor(Math.random() * 200)
+    for (let i = 0; i < count; i++) {
+      // skewed-normal-ish latency distribution
+      const u1 = Math.random(), u2 = Math.random()
+      const z  = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+      const v  = Math.max(5, 40 + z * 25 + (Math.random() < 0.05 ? 200 + Math.random() * 300 : 0))
+      xs.push(t)
+      ys.push(v)
+    }
+  }
+  return { xs, ys }
+}
+
+const HM_DATA = generateHeatmapData()
+
+const BLUE_FLAME: string[] = [
+  'rgb(0,0,128)',
+  'rgb(0,0,200)',
+  'rgb(0,80,255)',
+  'rgb(0,160,255)',
+  'rgb(0,220,220)',
+  'rgb(0,255,160)',
+  'rgb(80,255,80)',
+  'rgb(160,255,0)',
+  'rgb(220,220,0)',
+  'rgb(255,160,0)',
+  'rgb(255,80,0)',
+  'rgb(255,0,0)',
+  'rgb(200,0,0)',
+  'rgb(140,0,0)',
+  'rgb(80,0,0)',
+]
+
+function HeatmapDemo() {
+  const [yBinSize, setYBinSize] = useState(10)
+  const [xBinSize, setXBinSize] = useState(60)
+  const [palette,  setPalette ] = useState<'metal' | 'flame'>('metal')
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <ControlPanel>
+        <SectionDivider title="Binning" />
+        <CtrlRow label="X bin (s)">
+          {[30, 60, 120].map(v => (
+            <Btn key={v} active={xBinSize === v} onClick={() => setXBinSize(v)}>{v}s</Btn>
+          ))}
+        </CtrlRow>
+        <CtrlRow label="Y bin (ms)">
+          {[5, 10, 20, 50].map(v => (
+            <Btn key={v} active={yBinSize === v} onClick={() => setYBinSize(v)}>{v}</Btn>
+          ))}
+        </CtrlRow>
+        <SectionDivider title="Palette" />
+        <CtrlRow label="Color">
+          <Btn active={palette === 'metal'} onClick={() => setPalette('metal')}>metal</Btn>
+          <Btn active={palette === 'flame'} onClick={() => setPalette('flame')}>blue flame</Btn>
+        </CtrlRow>
+      </ControlPanel>
+
+      <Card>
+        <SectionHeader>Latency heatmap — {HM_DATA.xs.length.toLocaleString()} points</SectionHeader>
+        <HeatmapChart
+          xs={HM_DATA.xs}
+          ys={HM_DATA.ys}
+          xBinSize={xBinSize}
+          yBinSize={yBinSize}
+          height={340}
+          yUnit="ms"
+          palette={palette === 'metal' ? GRAD_METAL : BLUE_FLAME}
+        />
+      </Card>
+    </div>
+  )
+}
+
+// ── Tab 4: Scatter ────────────────────────────────────────────────────────────
+
+function generateScatterData() {
+  function cluster(cx: number, cy: number, n: number, spread: number) {
+    const xs: number[] = [], ys: number[] = []
+    for (let i = 0; i < n; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const r     = Math.random() * spread
+      xs.push(cx + Math.cos(angle) * r + (Math.random() - 0.5) * spread * 0.3)
+      ys.push(cy + Math.sin(angle) * r + (Math.random() - 0.5) * spread * 0.3)
+    }
+    return { xs, ys }
+  }
+  return {
+    a: cluster(30, 40, 300, 12),
+    b: cluster(70, 60, 280, 15),
+    c: cluster(50, 20, 250, 10),
+  }
+}
+
+const SC_DATA = generateScatterData()
+
+function ScatterDemo() {
+  const [pointSize, setPointSize] = useState(4)
+
+  const series = useMemo<ScatterSeriesConfig[]>(() => [
+    { label: 'Cluster A', color: '#3b82f6', ...SC_DATA.a, pointSize },
+    { label: 'Cluster B', color: '#ef4444', ...SC_DATA.b, pointSize },
+    { label: 'Cluster C', color: '#10b981', ...SC_DATA.c, pointSize },
+  ], [pointSize])
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <ControlPanel>
+        <SectionDivider title="Points" />
+        <CtrlRow label="Size">
+          {[2, 4, 6, 8].map(s => (
+            <Btn key={s} active={pointSize === s} onClick={() => setPointSize(s)}>{s}px</Btn>
+          ))}
+        </CtrlRow>
+      </ControlPanel>
+
+      <Card>
+        <SectionHeader>Three clusters — {Object.values(SC_DATA).reduce((s, d) => s + d.xs.length, 0).toLocaleString()} points</SectionHeader>
+        <ScatterChart series={series} height={340} xUnit="ms" yUnit="mb" />
+      </Card>
+    </div>
+  )
+}
+
+// ── Tab 5: Box Plot ───────────────────────────────────────────────────────────
+
+function randomBoxStats(base: number, spread: number): BoxStats {
+  const vals = Array.from({ length: 100 }, () => base + (Math.random() - 0.5) * spread * 2)
+  vals.sort((a, b) => a - b)
+  const q1  = vals[24], median = vals[49], q3 = vals[74]
+  const iqr = q3 - q1
+  const lo  = q1 - iqr * 1.5
+  const hi  = q3 + iqr * 1.5
+  return {
+    min:      vals.find(v => v >= lo) ?? vals[0],
+    q1,
+    median,
+    q3,
+    max:      [...vals].reverse().find(v => v <= hi) ?? vals[vals.length - 1],
+    outliers: vals.filter(v => v < lo || v > hi),
+  }
+}
+
+const BP_CATEGORIES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+
+function generateBoxData(base: number, spread: number): BoxStats[] {
+  return BP_CATEGORIES.map((_, i) => randomBoxStats(base + Math.sin(i) * 10, spread))
+}
+
+const BP_SERIES: BoxSeriesConfig[] = [
+  { label: 'Service A', color: '#3b82f6', data: generateBoxData(80, 40) },
+  { label: 'Service B', color: '#f59e0b', data: generateBoxData(100, 50) },
+]
+
+function BoxPlotDemo() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <Card>
+        <SectionHeader>Response time distribution — 2 services × 6 months</SectionHeader>
+        <BoxPlotChart
+          categories={BP_CATEGORIES}
+          series={BP_SERIES}
+          height={300}
+          yUnit="ms"
+        />
+      </Card>
+    </div>
+  )
+}
+
+// ── Tab 6: Histogram ──────────────────────────────────────────────────────────
 
 function HistogramDemo() {
   const [normalize, setNormalize] = useState(false)
@@ -679,6 +860,9 @@ function StatesDemo() {
 const TABS = [
   { id: 'configurator', label: 'Configurator'  },
   { id: 'zoom',         label: 'Linked zoom'   },
+  { id: 'heatmap',      label: 'Heatmap'       },
+  { id: 'scatter',      label: 'Scatter'       },
+  { id: 'boxplot',      label: 'Box Plot'      },
   { id: 'histogram',    label: 'Histogram'     },
   { id: 'states',       label: 'States'        },
 ] as const
@@ -715,6 +899,9 @@ export default function App() {
 
       {tab === 'configurator' && <ConfiguratorDemo />}
       {tab === 'zoom'         && <LinkedZoomDemo />}
+      {tab === 'heatmap'      && <HeatmapDemo />}
+      {tab === 'scatter'      && <ScatterDemo />}
+      {tab === 'boxplot'      && <BoxPlotDemo />}
       {tab === 'histogram'    && <HistogramDemo />}
       {tab === 'states'       && <StatesDemo />}
     </div>

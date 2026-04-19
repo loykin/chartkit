@@ -1,0 +1,5 @@
+export { HeatmapChart } from './HeatmapChart'
+export { GRAD_METAL, countsToFillIndices } from './utils/palette'
+export { binHeatmap } from './utils/binData'
+export type { HeatmapChartProps } from './types'
+export type { HeatmapBinnedData } from './utils/binData'
