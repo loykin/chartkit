@@ -1,3 +1,19 @@
+// Spec layer (AI-friendly declarative interface)
+export { ChartRenderer, CHART_SPEC_SCHEMA, CHART_SPEC_DESCRIPTION } from './spec'
+export type {
+  ChartSpec,
+  ChartRendererProps,
+  BarChartSpec,
+  PieChartSpec,
+  ScatterChartSpec,
+  TimeSeriesSpec,
+  HistogramSpec,
+  BoxPlotSpec,
+  GaugeSpec,
+  StatSpec,
+  HeatmapSpec,
+} from './spec'
+
 // Charts
 export { TimeSeriesChart } from './time-series'
 export { HistogramChart  } from './histogram'

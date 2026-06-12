@@ -137,7 +137,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build playground
-        run: VITE_BASE_PATH=/chartkit/playground/ pnpm --filter chartkit-playground build
+        run: VITE_BASE_PATH=/chartkit/ pnpm --filter chartkit-playground build
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
@@ -145,6 +145,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: playground/dist
-          destination_dir: playground
           keep_files: true
           commit_message: "chore(ci): deploy playground"

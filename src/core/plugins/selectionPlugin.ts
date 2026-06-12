@@ -27,9 +27,9 @@ interface DragState {
 export function selectionPlugin({ mode, onSelect }: SelectionPluginOptions): uPlot.Plugin {
   if (mode === 'none') return { hooks: {} }
 
-  let u:       uPlot
-  let overlay: HTMLDivElement
-  let selBox:  HTMLDivElement
+  let u:        uPlot
+  let prevOver: HTMLElement | null = null
+  let selBox:   HTMLDivElement
   let drag: DragState = { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 }
 
   function plotWidth()  { return u.bbox.width  / devicePixelRatio }
@@ -38,8 +38,9 @@ export function selectionPlugin({ mode, onSelect }: SelectionPluginOptions): uPl
   function clampX(x: number) { return Math.max(0, Math.min(plotWidth(),  x)) }
   function clampY(y: number) { return Math.max(0, Math.min(plotHeight(), y)) }
 
+  // Coords relative to u.over so they match posToVal()
   function getOverlayCoords(e: MouseEvent): { x: number; y: number } {
-    const rect = overlay.getBoundingClientRect()
+    const rect = u.over.getBoundingClientRect()
     return { x: e.clientX - rect.left, y: e.clientY - rect.top }
   }
 
@@ -111,19 +112,17 @@ export function selectionPlugin({ mode, onSelect }: SelectionPluginOptions): uPl
   return {
     hooks: {
       init(chart: uPlot) {
-        // Clean up if re-initialised (React StrictMode / hot reload)
-        overlay?.removeEventListener('mousedown', onMouseDown)
-        window.removeEventListener('mousemove',   onMouseMove)
-        window.removeEventListener('mouseup',     onMouseUp)
-        overlay?.remove()
+        // Clean up previous instance (React StrictMode / hot reload)
+        prevOver?.removeEventListener('mousedown', onMouseDown)
+        window.removeEventListener('mousemove',    onMouseMove)
+        window.removeEventListener('mouseup',      onMouseUp)
+        selBox?.remove()
+        if (prevOver) prevOver.style.cursor = ''
 
         u = chart
 
-        overlay = document.createElement('div')
-        overlay.style.cssText = [
-          'position:absolute', 'inset:0', 'cursor:crosshair', 'z-index:10',
-        ].join(';')
-
+        // selBox is the only injected element — no opaque overlay so uPlot's
+        // filtTarg check (e.target === u.over) continues to pass for mousemove
         selBox = document.createElement('div')
         selBox.style.cssText = [
           'position:absolute', 'display:none', 'pointer-events:none',
@@ -132,19 +131,23 @@ export function selectionPlugin({ mode, onSelect }: SelectionPluginOptions): uPl
           'z-index:11',
         ].join(';')
 
-        overlay.appendChild(selBox)
-        u.over.appendChild(overlay)
+        u.over.appendChild(selBox)
+        u.over.style.cursor = 'crosshair'
 
-        overlay.addEventListener('mousedown', onMouseDown)
+        // Listen on u.over directly so e.target stays u.over for uPlot's filtTarg
+        u.over.addEventListener('mousedown', onMouseDown)
         window.addEventListener('mousemove',  onMouseMove)
         window.addEventListener('mouseup',    onMouseUp)
+
+        prevOver = u.over
       },
 
       destroy() {
-        overlay?.removeEventListener('mousedown', onMouseDown)
-        window.removeEventListener('mousemove',   onMouseMove)
-        window.removeEventListener('mouseup',     onMouseUp)
-        overlay?.remove()
+        prevOver?.removeEventListener('mousedown', onMouseDown)
+        window.removeEventListener('mousemove',    onMouseMove)
+        window.removeEventListener('mouseup',      onMouseUp)
+        selBox?.remove()
+        if (prevOver) prevOver.style.cursor = ''
       },
     },
   }

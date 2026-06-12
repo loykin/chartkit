@@ -261,6 +261,85 @@ import { BarChart } from '@loykin/chartkit'
 
 ---
 
+## ChartRenderer — AI & Agent API
+
+AI agents reliably produce **JSON** but struggle with React component syntax — import paths break, prop names drift, and there's no runtime validation. `ChartRenderer` solves this by introducing a declarative `ChartSpec` format that any JSON-producing system can target.
+
+```
+AI / agent / backend  →  ChartSpec (JSON)  →  <ChartRenderer />  →  chart
+```
+
+### React usage
+
+```tsx
+import { ChartRenderer } from '@loykin/chartkit'
+import type { ChartSpec } from '@loykin/chartkit'
+
+const spec: ChartSpec = {
+  type: 'bar',
+  categories: ['Jan', 'Feb', 'Mar'],
+  series: [
+    { label: 'Revenue', color: '#3b82f6', values: [42, 55, 38] },
+  ],
+  yUnit: 'k$',
+  height: 300,
+}
+
+<ChartRenderer spec={spec} />
+```
+
+`isLoading` and `error` are passed separately (runtime state, not part of the spec):
+
+```tsx
+<ChartRenderer spec={spec} isLoading={loading} error={err} />
+```
+
+### MCP tool definition
+
+Expose `CHART_SPEC_SCHEMA` as the input schema for an MCP tool — the model then calls the tool with a valid spec directly:
+
+```ts
+import { CHART_SPEC_SCHEMA } from '@loykin/chartkit'
+
+const tools = [{
+  name: 'render_chart',
+  description: 'Render a chart from a declarative spec',
+  inputSchema: CHART_SPEC_SCHEMA,
+}]
+```
+
+### System prompt / function calling
+
+`CHART_SPEC_DESCRIPTION` is a compact plain-text summary of all chart types and their fields — paste it into a system prompt so the model knows what to generate:
+
+```ts
+import { CHART_SPEC_DESCRIPTION } from '@loykin/chartkit'
+
+const systemPrompt = `
+You are a data assistant. When the user asks for a chart, output a ChartSpec JSON object.
+
+${CHART_SPEC_DESCRIPTION}
+`
+```
+
+### Supported `type` values
+
+| `type`       | Required fields                                        |
+|--------------|--------------------------------------------------------|
+| `bar`        | `categories`, `series[].{label, color, values}`        |
+| `pie`        | `slices[].{label, value, color}`                       |
+| `scatter`    | `series[].{label, color, xs, ys}`                      |
+| `timeseries` | `data` (AlignedData), `series[].{label, color}`        |
+| `histogram`  | `values`                                               |
+| `boxplot`    | `categories`, `series[].{label, color, data[].{min,q1,median,q3,max}}` |
+| `gauge`      | `value`                                                |
+| `stat`       | `value`                                                |
+| `heatmap`    | `xs`, `ys`, `xBinSize`, `yBinSize`                     |
+
+All types accept the same optional base fields as the individual components (`height`, `yMin`, `yMax`, `gridStyle`, `axisStyle`).
+
+---
+
 ## Props
 
 ### Shared — `BaseChartProps`
