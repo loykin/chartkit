@@ -45,7 +45,7 @@ function TrendBadge({ current, previous }: { current: number; previous: number }
   const flat  = delta === 0
 
   const color = flat
-    ? 'var(--muted-foreground, #737373)'
+    ? 'var(--chartkit-muted-foreground, #737373)'
     : up ? '#10b981' : '#ef4444'
 
   const arrow = flat ? '→' : up ? '↑' : '↓'
@@ -108,7 +108,7 @@ export function StatChart({
       {label && (
         <div style={{
           fontSize:   12,
-          color:      'var(--muted-foreground, #737373)',
+          color:      'var(--chartkit-muted-foreground, #737373)',
           marginBottom: 2,
           textAlign:  'center',
         }}>

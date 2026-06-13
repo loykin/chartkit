@@ -27,7 +27,7 @@ export function BarChart({
       <div style={{
         height,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '0.875rem', color: 'var(--muted-foreground, #737373)',
+        fontSize: '0.875rem', color: 'var(--chartkit-muted-foreground, #737373)',
       }}>
         No data
       </div>

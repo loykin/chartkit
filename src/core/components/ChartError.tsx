@@ -11,7 +11,7 @@ export function ChartError({ message, height }: ChartErrorProps) {
       alignItems:     'center',
       justifyContent: 'center',
       fontSize:       '0.875rem',
-      color:          'var(--destructive, #ef4444)',
+      color:          'var(--chartkit-destructive, #ef4444)',
     }}>
       {message}
     </div>

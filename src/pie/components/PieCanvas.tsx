@@ -264,7 +264,7 @@ function draw(
 
       // Label text
       ctx.textAlign = lbl.isRight ? 'left' : 'right'
-      ctx.fillStyle = 'var(--foreground, #111111)'
+      ctx.fillStyle = 'var(--chartkit-foreground, #111111)'
       ctx.fillText(lbl.text, lbl.elbowX + (lbl.isRight ? 4 : -4), lbl.y)
     }
   }
@@ -281,7 +281,7 @@ function draw(
     lines.forEach((line, i) => {
       const isFirst = i === 0 && lines.length > 1
       ctx.font      = isFirst ? '600 13px system-ui, sans-serif' : '400 11px system-ui, sans-serif'
-      ctx.fillStyle = isFirst ? 'var(--foreground, #111111)' : 'var(--muted-foreground, #737373)'
+      ctx.fillStyle = isFirst ? 'var(--chartkit-foreground, #111111)' : 'var(--chartkit-muted-foreground, #737373)'
       ctx.fillText(line, cx, startY + i * lineH)
     })
   }
@@ -364,8 +364,8 @@ export function PieCanvas({
           position:      'absolute',
           left:          tooltip.x + 12,
           top:           tooltip.y - 8,
-          background:    'var(--background, #fff)',
-          border:        '1px solid var(--border, #e2e8f0)',
+          background:    'var(--chartkit-background, #fff)',
+          border:        '1px solid var(--chartkit-border, #e2e8f0)',
           borderRadius:  6,
           padding:       '6px 10px',
           fontSize:      12,
@@ -383,11 +383,11 @@ export function PieCanvas({
               background:   slices[tooltip.idx].color,
               flexShrink:   0,
             }} />
-            <span style={{ fontWeight: 600, color: 'var(--foreground, #111)' }}>
+            <span style={{ fontWeight: 600, color: 'var(--chartkit-foreground, #111)' }}>
               {slices[tooltip.idx].label}
             </span>
           </div>
-          <div style={{ color: 'var(--muted-foreground, #737373)', paddingLeft: 16 }}>
+          <div style={{ color: 'var(--chartkit-muted-foreground, #737373)', paddingLeft: 16 }}>
             {formatNum(slices[tooltip.idx].value, unit)}
             {' · '}
             {total > 0 ? ((slices[tooltip.idx].value / total) * 100).toFixed(1) : '0'}%

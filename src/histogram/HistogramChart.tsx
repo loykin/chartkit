@@ -40,7 +40,7 @@ export function HistogramChart({
         alignItems:     'center',
         justifyContent: 'center',
         fontSize:       '0.875rem',
-        color:          'var(--muted-foreground, #737373)',
+        color:          'var(--chartkit-muted-foreground, #737373)',
       }}>
         No data
       </div>

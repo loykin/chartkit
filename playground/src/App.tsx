@@ -1119,13 +1119,12 @@ async function askForChart(userMessage: string): Promise<ChartSpec> {
     messages: [{ role: 'user', content: userMessage }],
   })
 
-  const block = response.content.find(b => b.type === 'tool_use')
-  return block!.input as ChartSpec  // guaranteed to match ChartSpec schema
+  return response.content.find(b => b.type === 'tool_use')!.input as ChartSpec
 }
 
 // Usage
 const spec = await askForChart('Show last month response times by service as a bar chart')
-// → <ChartRenderer spec={spec} />`,
+return <ChartRenderer spec={spec} />`,
 
   prompt: `\
 import Anthropic from '@anthropic-ai/sdk'
@@ -1152,7 +1151,7 @@ async function askForChart(userMessage: string): Promise<ChartSpec> {
 
 // Usage
 const spec = await askForChart('Show last month response times by service as a bar chart')
-// → <ChartRenderer spec={spec} />`,
+return <ChartRenderer spec={spec} />`,
 
   mcp: `\
 // MCP server (Node.js) — one tool, zero React knowledge required on the agent side
@@ -1313,10 +1312,159 @@ function SpecDemo() {
 
 // ── Sidebar navigation ────────────────────────────────────────────────────────
 
+// ── Theme ─────────────────────────────────────────────────────────────────────
+
+const THEME_PRESETS = {
+  default: {
+    '--chartkit-background':       '#ffffff',
+    '--chartkit-foreground':       '#0a0a0a',
+    '--chartkit-muted':            '#f5f5f5',
+    '--chartkit-muted-foreground': '#737373',
+    '--chartkit-border':           '#e5e7eb',
+    '--chartkit-destructive':      '#ef4444',
+  },
+  dark: {
+    '--chartkit-background':       '#0a0a0a',
+    '--chartkit-foreground':       '#fafafa',
+    '--chartkit-muted':            '#262626',
+    '--chartkit-muted-foreground': '#a3a3a3',
+    '--chartkit-border':           '#404040',
+    '--chartkit-destructive':      '#f87171',
+  },
+  slate: {
+    '--chartkit-background':       '#f8fafc',
+    '--chartkit-foreground':       '#0f172a',
+    '--chartkit-muted':            '#f1f5f9',
+    '--chartkit-muted-foreground': '#64748b',
+    '--chartkit-border':           '#cbd5e1',
+    '--chartkit-destructive':      '#ef4444',
+  },
+} satisfies Record<string, Record<string, string>>
+
+type ThemePreset = keyof typeof THEME_PRESETS
+
+function ThemeDemo() {
+  const [preset,  setPreset ] = useState<ThemePreset>('default')
+  const [tokens,  setTokens ] = useState({ ...THEME_PRESETS.default })
+
+  function applyPreset(key: ThemePreset) {
+    setPreset(key)
+    setTokens({ ...THEME_PRESETS[key] })
+  }
+
+  function updateToken(key: string, value: string) {
+    setPreset('default')  // custom
+    setTokens(prev => ({ ...prev, [key]: value }))
+  }
+
+  const cssOverride = Object.entries(tokens)
+    .map(([k, v]) => `  ${k}: ${v};`)
+    .join('\n')
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+      {/* Explanation */}
+      <div style={{
+        background: '#f8faff', border: '1px solid #dbeafe',
+        borderRadius: 8, padding: '14px 16px',
+        fontSize: '0.8125rem', color: '#374151', lineHeight: 1.6,
+      }}>
+        <strong style={{ color: '#1e40af' }}>CSS theme tokens</strong>
+        {' '}— Import <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>@loykin/chartkit/styles</code> and
+        override <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--chartkit-*</code> variables to theme charts
+        independently of the rest of the app.
+        If shadcn/ui shared variables (<code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--background</code>, <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--border</code>, …) are already defined,
+        charts pick them up automatically with no extra setup.
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 320px', gap: 16, alignItems: 'start' }}>
+
+        {/* Live preview */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{
+            borderRadius: 8, border: '1px solid #e5e7eb',
+            padding: 20,
+            background: tokens['--chartkit-background'],
+            transition: 'background 0.2s',
+          }}>
+            <div style={{
+              fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em',
+              textTransform: 'uppercase', color: tokens['--chartkit-muted-foreground'],
+              marginBottom: 12,
+            }}>
+              Live Preview
+            </div>
+            {/* Apply tokens via inline style on container */}
+            <div style={tokens as React.CSSProperties}>
+              <TimeSeriesChart
+                data={cpuData}
+                series={cpuSeries}
+                height={200}
+                yUnit="%"
+                legendPosition="bottom"
+                selectionMode="none"
+              />
+            </div>
+          </div>
+
+          {/* CSS output */}
+          <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
+            <div style={{
+              background: '#f9fafb', borderBottom: '1px solid #e5e7eb',
+              padding: '8px 14px', fontSize: '0.75rem', fontWeight: 600, color: '#374151',
+            }}>
+              CSS to copy
+            </div>
+            <pre style={{
+              margin: 0, padding: '12px 16px',
+              background: '#0f172a', color: '#94a3b8',
+              fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.6,
+              overflowX: 'auto',
+            }}>
+{`:root {\n${cssOverride}\n}`}
+            </pre>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <ControlPanel>
+            <SectionDivider title="Presets" />
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {(Object.keys(THEME_PRESETS) as ThemePreset[]).map(key => (
+                <Btn key={key} active={preset === key} onClick={() => applyPreset(key)}>{key}</Btn>
+              ))}
+            </div>
+
+            <SectionDivider title="Tokens" />
+            {Object.entries(tokens).map(([key, value]) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="color"
+                  value={value.startsWith('#') ? value : '#888888'}
+                  onChange={e => updateToken(key, e.target.value)}
+                  style={{ width: 28, height: 28, border: '1px solid #e5e7eb', borderRadius: 4, cursor: 'pointer', padding: 2 }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.7rem', color: '#111827', fontFamily: 'monospace', fontWeight: 500 }}>
+                    {key.replace('--chartkit-', '--chartkit-')}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#9ca3af', fontFamily: 'monospace' }}>{value}</div>
+                </div>
+              </div>
+            ))}
+          </ControlPanel>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 type DemoId =
   | 'configurator' | 'zoom'
   | 'heatmap' | 'scatter' | 'boxplot' | 'histogram' | 'pie' | 'new'
-  | 'states' | 'spec'
+  | 'theme' | 'states' | 'spec'
 
 const NAV: { group: string; items: { id: DemoId; label: string }[] }[] = [
   {
@@ -1340,6 +1488,7 @@ const NAV: { group: string; items: { id: DemoId; label: string }[] }[] = [
   {
     group: 'Developer',
     items: [
+      { id: 'theme',  label: 'Theming'       },
       { id: 'states', label: 'States'        },
       { id: 'spec',   label: 'ChartRenderer' },
     ],
@@ -1433,6 +1582,7 @@ export default function App() {
           {activeId === 'histogram'    && <HistogramDemo />}
           {activeId === 'pie'          && <PieDemo />}
           {activeId === 'new'          && <NewChartsDemo />}
+          {activeId === 'theme'        && <ThemeDemo />}
           {activeId === 'states'       && <StatesDemo />}
           {activeId === 'spec'         && <SpecDemo />}
         </div>

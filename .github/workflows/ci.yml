@@ -18,9 +18,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
-          version: latest
+          version: 11
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -123,9 +123,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
-          version: latest
+          version: 11
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -138,6 +138,9 @@ jobs:
 
       - name: Build playground
         run: VITE_BASE_PATH=/chartkit/ pnpm --filter chartkit-playground build
+
+      - name: Add GitHub Pages SPA fallback
+        run: cp playground/dist/index.html playground/dist/404.html
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4

@@ -25,7 +25,7 @@ export function PieChart({
         alignItems:     'center',
         justifyContent: 'center',
         fontSize:       '0.875rem',
-        color:          'var(--muted-foreground, #737373)',
+        color:          'var(--chartkit-muted-foreground, #737373)',
       }}>
         No data
       </div>
@@ -56,18 +56,18 @@ export function PieChart({
             flexShrink:   0,
           }} />
           <span style={{
-            color:        'var(--foreground, #111)',
+            color:        'var(--chartkit-foreground, #111)',
             overflow:     'hidden',
             textOverflow: 'ellipsis',
             whiteSpace:   'nowrap',
           }}>
             {s.label}
           </span>
-          <span style={{ color: 'var(--muted-foreground, #737373)', marginLeft: 'auto', paddingLeft: 8, flexShrink: 0 }}>
+          <span style={{ color: 'var(--chartkit-muted-foreground, #737373)', marginLeft: 'auto', paddingLeft: 8, flexShrink: 0 }}>
             {total > 0 ? `${((s.value / total) * 100).toFixed(1)}%` : '—'}
           </span>
           {unit && (
-            <span style={{ color: 'var(--muted-foreground, #737373)', flexShrink: 0 }}>
+            <span style={{ color: 'var(--chartkit-muted-foreground, #737373)', flexShrink: 0 }}>
               {formatNum(s.value, unit)}
             </span>
           )}

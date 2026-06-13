@@ -10,12 +10,12 @@ export function ChartLoader() {
       alignItems:      'center',
       justifyContent:  'center',
       borderRadius:    4,
-      backgroundColor: 'color-mix(in srgb, var(--background, #ffffff) 60%, transparent)',
+      backgroundColor: 'color-mix(in srgb, var(--chartkit-background, #ffffff) 60%, transparent)',
       backdropFilter:  'blur(4px)',
     }}>
       <Loader2
         className="ck-spin"
-        style={{ width: 24, height: 24, color: 'var(--muted-foreground, #737373)' }}
+        style={{ width: 24, height: 24, color: 'var(--chartkit-muted-foreground, #737373)' }}
       />
     </div>
   )

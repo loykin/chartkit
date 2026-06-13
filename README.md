@@ -2,15 +2,25 @@
 
 A lightweight React chart library built on [uPlot](https://github.com/leeoniya/uPlot) — canvas-based, fast, and themeable via CSS variables.
 
-[![npm](https://img.shields.io/npm/v/@loykin/chartkit)](https://www.npmjs.com/package/@loykin/chartkit)
-[![license](https://img.shields.io/npm/l/@loykin/chartkit)](./LICENSE)
+---
 
-**[Live Playground](https://loykin.github.io/chartkit)** · **[GitHub](https://github.com/loykin/chartkit)**
+## AI & Agent ready
+
+`ChartRenderer` accepts a plain JSON spec — no React component knowledge required. Any system that outputs JSON can drive charts: LLM tool calls, MCP servers, backend APIs.
+
+```ts
+// AI generates this ↓                   you render this ↓
+const spec: ChartSpec = { type: 'bar', categories: [...], series: [...] }
+<ChartRenderer spec={spec} />
+```
+
+Pass `CHART_SPEC_SCHEMA` as a tool input schema for structured output, or `CHART_SPEC_DESCRIPTION` as a system prompt. [See full docs →](#chartrenderer--ai--agent-api)
 
 ---
 
 ## Features
 
+- **ChartRenderer** — declarative JSON spec interface for AI agents and MCP tools
 - **TimeSeriesChart** — line, area, bars, and points; dual y-axis; stacking; threshold lines; zoom/selection; custom tooltip & legend
 - **HistogramChart** — auto-binning (Sturges rule), normalization to relative frequency
 - **HeatmapChart** — density heatmap from flat (x, y) scatter data; customizable color palette

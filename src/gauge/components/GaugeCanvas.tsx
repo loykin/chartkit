@@ -66,7 +66,7 @@ function draw(
   ctx.arc(cx, cy, outerR, degToRad(START_DEG), degToRad(START_DEG + SPAN_DEG), false)
   ctx.arc(cx, cy, innerR, degToRad(START_DEG + SPAN_DEG), degToRad(START_DEG), true)
   ctx.closePath()
-  ctx.fillStyle = 'var(--border, #e5e7eb)'
+  ctx.fillStyle = 'var(--chartkit-border, #e5e7eb)'
   ctx.fill()
 
   // ── Threshold zone arcs ──────────────────────────────────────────────────
@@ -121,7 +121,7 @@ function draw(
   const scy = cy + Math.sin(degToRad(START_DEG)) * midR
   ctx.beginPath()
   ctx.arc(scx, scy, capR, 0, Math.PI * 2)
-  ctx.fillStyle = 'var(--background, #ffffff)'
+  ctx.fillStyle = 'var(--chartkit-background, #ffffff)'
   ctx.fill()
 
   // End cap
@@ -130,7 +130,7 @@ function draw(
   const ecy = cy + Math.sin(degToRad(endDeg)) * midR
   ctx.beginPath()
   ctx.arc(ecx, ecy, capR, 0, Math.PI * 2)
-  ctx.fillStyle = 'var(--background, #ffffff)'
+  ctx.fillStyle = 'var(--chartkit-background, #ffffff)'
   ctx.fill()
 
   // ── Value text ───────────────────────────────────────────────────────────
@@ -146,7 +146,7 @@ function draw(
   // ── Min / Max labels ─────────────────────────────────────────────────────
   const labelFSize = Math.max(9, outerR * 0.13)
   ctx.font      = `400 ${labelFSize}px system-ui, sans-serif`
-  ctx.fillStyle = 'var(--muted-foreground, #737373)'
+  ctx.fillStyle = 'var(--chartkit-muted-foreground, #737373)'
 
   const minX = cx + Math.cos(degToRad(START_DEG)) * (outerR + 8)
   const minY = cy + Math.sin(degToRad(START_DEG)) * (outerR + 4)
@@ -160,7 +160,7 @@ function draw(
   // ── Bottom label ─────────────────────────────────────────────────────────
   if (label) {
     ctx.font         = `400 ${labelFSize}px system-ui, sans-serif`
-    ctx.fillStyle    = 'var(--muted-foreground, #737373)'
+    ctx.fillStyle    = 'var(--chartkit-muted-foreground, #737373)'
     ctx.textAlign    = 'center'
     ctx.textBaseline = 'top'
     ctx.fillText(label, cx, textY + valueFSize * 0.65)

@@ -47,11 +47,11 @@ function ListLegend({ items, position, onToggle }: Omit<ChartLegendProps, 'forma
           }}
         >
           <Swatch color={item.color} />
-          <span style={{ fontWeight: 500, color: 'var(--foreground, #0a0a0a)' }}>
+          <span style={{ fontWeight: 500, color: 'var(--chartkit-foreground, #0a0a0a)' }}>
             {item.label}
           </span>
           {item.value != null && (
-            <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--muted-foreground, #737373)' }}>
+            <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--chartkit-muted-foreground, #737373)' }}>
               {fmt(item.value, item.unit)}
             </span>
           )}
@@ -70,7 +70,7 @@ function TableLegend({ items, onToggle }: Omit<ChartLegendProps, 'format' | 'pos
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse', userSelect: 'none' }}>
         <thead>
-          <tr style={{ borderBottom: '1px solid var(--border, #e5e7eb)', color: 'var(--muted-foreground, #737373)' }}>
+          <tr style={{ borderBottom: '1px solid var(--chartkit-border, #e5e7eb)', color: 'var(--chartkit-muted-foreground, #737373)' }}>
             <th style={{ padding: '4px 16px 4px 0', textAlign: 'left', fontWeight: 500 }}>Name</th>
             {TABLE_COLS.map((col) => (
               <th key={col} style={{ padding: '4px 8px', textAlign: 'right', fontWeight: 500, width: 80 }}>
@@ -87,24 +87,24 @@ function TableLegend({ items, onToggle }: Omit<ChartLegendProps, 'format' | 'pos
               className="ck-legend-row"
               style={{
                 opacity:      item.visible ? 1 : 0.35,
-                borderBottom: '1px solid color-mix(in srgb, var(--border, #e5e7eb) 50%, transparent)',
+                borderBottom: '1px solid color-mix(in srgb, var(--chartkit-border, #e5e7eb) 50%, transparent)',
               }}
             >
               <td style={{ padding: '4px 16px 4px 0' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Swatch color={item.color} />
-                  <span style={{ fontWeight: 500, color: 'var(--foreground, #0a0a0a)' }}>
+                  <span style={{ fontWeight: 500, color: 'var(--chartkit-foreground, #0a0a0a)' }}>
                     {item.label}
                   </span>
                 </span>
               </td>
-              <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--muted-foreground, #737373)' }}>
+              <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--chartkit-muted-foreground, #737373)' }}>
                 {fmt(item.stats.min, item.unit)}
               </td>
-              <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--muted-foreground, #737373)' }}>
+              <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--chartkit-muted-foreground, #737373)' }}>
                 {fmt(item.stats.max, item.unit)}
               </td>
-              <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--muted-foreground, #737373)' }}>
+              <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--chartkit-muted-foreground, #737373)' }}>
                 {fmt(item.stats.avg, item.unit)}
               </td>
               <td style={{
@@ -113,8 +113,8 @@ function TableLegend({ items, onToggle }: Omit<ChartLegendProps, 'format' | 'pos
                 fontVariantNumeric: 'tabular-nums',
                 fontWeight:        500,
                 color:             item.value != null
-                  ? 'var(--foreground, #0a0a0a)'
-                  : 'var(--muted-foreground, #737373)',
+                  ? 'var(--chartkit-foreground, #0a0a0a)'
+                  : 'var(--chartkit-muted-foreground, #737373)',
               }}>
                 {/* Show cursor value while hovering, fall back to last data point */}
                 {fmt(item.value ?? item.stats.last, item.unit)}

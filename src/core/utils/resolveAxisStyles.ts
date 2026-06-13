@@ -22,8 +22,8 @@ export function resolveAxisStyles(
   gridStyle: LineStyle | false | undefined,
   axisStyle: AxisConfig | false | undefined,
 ): ResolvedAxisStyles {
-  const mutedFgColor = resolveCssVar('--muted-foreground', '#737373')
-  const borderColor  = resolveCssVar('--border',           '#e5e7eb')
+  const mutedFgColor = resolveCssVar('--chartkit-muted-foreground', '#737373')
+  const borderColor  = resolveCssVar('--chartkit-border',           '#e5e7eb')
   const w = CHART_DEFAULT_LINE_WIDTH
 
   const resolvedGrid: uPlot.Axis.Grid =
