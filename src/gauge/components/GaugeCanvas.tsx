@@ -66,7 +66,7 @@ function draw(
   ctx.arc(cx, cy, outerR, degToRad(START_DEG), degToRad(START_DEG + SPAN_DEG), false)
   ctx.arc(cx, cy, innerR, degToRad(START_DEG + SPAN_DEG), degToRad(START_DEG), true)
   ctx.closePath()
-  ctx.fillStyle = 'var(--chartkit-border, #e5e7eb)'
+  ctx.fillStyle = 'var(--chartkit-grid, #e5e7eb)'
   ctx.fill()
 
   // ── Threshold zone arcs ──────────────────────────────────────────────────

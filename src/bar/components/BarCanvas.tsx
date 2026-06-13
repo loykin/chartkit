@@ -58,7 +58,7 @@ export function BarCanvas({
   }, [series, stacked, n])
 
   const getOptions = useCallback((): uPlot.Options => {
-    const { mutedFgColor, borderColor, resolvedGrid, resolvedTicks, axisLineStyle } =
+    const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
 
     const valMin = yMin ?? computedMin
@@ -111,7 +111,7 @@ export function BarCanvas({
       ],
       plugins: [
         barPlugin(series, orientation, stacked),
-        makeAxisBorderPlugin(axisLineStyle, borderColor, CHART_DEFAULT_LINE_WIDTH),
+        makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
       ],
     }
   }, [categories, series, orientation, stacked, height, xUnit, yUnit, yMin, yMax, gridStyle, axisStyle, computedMin, computedMax, n])

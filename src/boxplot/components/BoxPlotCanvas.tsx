@@ -43,7 +43,7 @@ export function BoxPlotCanvas({
   }, [series])
 
   const getOptions = useCallback((): uPlot.Options => {
-    const { mutedFgColor, borderColor, resolvedGrid, resolvedTicks, axisLineStyle } =
+    const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
 
     const n = categories.length
@@ -89,7 +89,7 @@ export function BoxPlotCanvas({
       ],
       plugins: [
         boxPlotPlugin(series),
-        makeAxisBorderPlugin(axisLineStyle, borderColor, CHART_DEFAULT_LINE_WIDTH),
+        makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
       ],
     }
   }, [categories, series, height, yUnit, yMin, yMax, gridStyle, axisStyle])

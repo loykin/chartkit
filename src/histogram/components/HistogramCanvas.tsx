@@ -47,7 +47,7 @@ export function HistogramCanvas({
   yUnitRef.current = yUnit
 
   const getOptions = useCallback((): uPlot.Options => {
-    const { mutedFgColor, borderColor, resolvedGrid, resolvedTicks, axisLineStyle } =
+    const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
 
     // Closures capture refs so label format updates on next redraw (setData)
@@ -107,7 +107,7 @@ export function HistogramCanvas({
         },
       ],
       plugins: [
-        makeAxisBorderPlugin(axisLineStyle, borderColor, CHART_DEFAULT_LINE_WIDTH),
+        makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
       ],
     }
   // normalize / xUnit / yUnit intentionally omitted — handled via refs above

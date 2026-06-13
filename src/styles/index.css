@@ -12,7 +12,9 @@
   --chartkit-foreground:       var(--foreground,       #0a0a0a);
   --chartkit-muted:            var(--muted,            #f5f5f5);
   --chartkit-muted-foreground: var(--muted-foreground, #737373);
-  --chartkit-border:           var(--border,           #e5e7eb);
+  --chartkit-grid:             var(--border,           #e5e7eb);  /* canvas: grid lines, gauge background arc */
+  --chartkit-axis:             var(--border,           #e5e7eb);  /* canvas: axis frame border, tick marks */
+  --chartkit-border:           var(--border,           #e5e7eb);  /* DOM: tooltip border, legend dividers */
   --chartkit-destructive:      var(--destructive,      #ef4444);
 }
 

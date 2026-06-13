@@ -30,7 +30,7 @@ export function HeatmapCanvas({
   axisStyle,
 }: HeatmapCanvasProps) {
   const getOptions = useCallback((): uPlot.Options => {
-    const { mutedFgColor, borderColor, resolvedGrid, resolvedTicks, axisLineStyle } =
+    const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
 
     const yAxisValues = makeAxisValues(yUnit)
@@ -81,7 +81,7 @@ export function HeatmapCanvas({
         },
       ],
       plugins: [
-        makeAxisBorderPlugin(axisLineStyle, borderColor, CHART_DEFAULT_LINE_WIDTH),
+        makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
       ],
     }
   }, [height, xTime, locale, yUnit, palette, gridStyle, axisStyle])

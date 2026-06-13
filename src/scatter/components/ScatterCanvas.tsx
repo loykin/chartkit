@@ -69,7 +69,7 @@ export function ScatterCanvas({
   axisStyle,
 }: ScatterCanvasProps) {
   const getOptions = useCallback((): uPlot.Options => {
-    const { mutedFgColor, borderColor, resolvedGrid, resolvedTicks, axisLineStyle } =
+    const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
 
     return {
@@ -114,7 +114,7 @@ export function ScatterCanvas({
         })),
       ],
       plugins: [
-        makeAxisBorderPlugin(axisLineStyle, borderColor, CHART_DEFAULT_LINE_WIDTH),
+        makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
       ],
     }
   }, [series, height, xUnit, yUnit, gridStyle, axisStyle])

@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useLayoutEffect } from 'react'
+import { useNavigate, useParams, Routes, Route, Navigate } from 'react-router-dom'
 import CodeMirror from '@uiw/react-codemirror'
 import { json as jsonLang } from '@codemirror/lang-json'
 import { javascript } from '@codemirror/lang-javascript'
@@ -1320,6 +1321,8 @@ const THEME_PRESETS = {
     '--chartkit-foreground':       '#0a0a0a',
     '--chartkit-muted':            '#f5f5f5',
     '--chartkit-muted-foreground': '#737373',
+    '--chartkit-grid':             '#e5e7eb',
+    '--chartkit-axis':             '#d1d5db',
     '--chartkit-border':           '#e5e7eb',
     '--chartkit-destructive':      '#ef4444',
   },
@@ -1328,6 +1331,8 @@ const THEME_PRESETS = {
     '--chartkit-foreground':       '#fafafa',
     '--chartkit-muted':            '#262626',
     '--chartkit-muted-foreground': '#a3a3a3',
+    '--chartkit-grid':             '#2e2e2e',
+    '--chartkit-axis':             '#3f3f3f',
     '--chartkit-border':           '#404040',
     '--chartkit-destructive':      '#f87171',
   },
@@ -1336,6 +1341,8 @@ const THEME_PRESETS = {
     '--chartkit-foreground':       '#0f172a',
     '--chartkit-muted':            '#f1f5f9',
     '--chartkit-muted-foreground': '#64748b',
+    '--chartkit-grid':             '#e2e8f0',
+    '--chartkit-axis':             '#cbd5e1',
     '--chartkit-border':           '#cbd5e1',
     '--chartkit-destructive':      '#ef4444',
   },
@@ -1343,9 +1350,33 @@ const THEME_PRESETS = {
 
 type ThemePreset = keyof typeof THEME_PRESETS
 
+const TOKEN_LABELS: Record<string, string> = {
+  '--chartkit-background':       'tooltip · loading overlay · gauge end caps',
+  '--chartkit-foreground':       'legend text · stat value · pie labels',
+  '--chartkit-muted':            'legend item hover background',
+  '--chartkit-muted-foreground': 'axis tick labels · unit labels · stat label',
+  '--chartkit-grid':             'grid lines · gauge background arc (canvas)',
+  '--chartkit-axis':             'axis frame border · tick marks (canvas)',
+  '--chartkit-border':           'tooltip border · legend dividers (DOM)',
+  '--chartkit-destructive':      'error state',
+}
+
 function ThemeDemo() {
-  const [preset,  setPreset ] = useState<ThemePreset>('default')
-  const [tokens,  setTokens ] = useState({ ...THEME_PRESETS.default })
+  const [preset, setPreset] = useState<ThemePreset>('default')
+  const [tokens, setTokens] = useState({ ...THEME_PRESETS.default })
+
+  // useLayoutEffect: inject before paint so charts created in the same
+  // render cycle read the updated CSS variables via getComputedStyle
+  useLayoutEffect(() => {
+    const style = document.createElement('style')
+    style.id = 'chartkit-theme-preview'
+    style.textContent = `:root {\n${Object.entries(tokens).map(([k, v]) => `  ${k}: ${v};`).join('\n')}\n}`
+    document.head.appendChild(style)
+    return () => document.getElementById('chartkit-theme-preview')?.remove()
+  }, [tokens])
+
+  // Force uPlot to recreate when tokens change so it re-reads CSS variables
+  const themeKey = Object.values(tokens).join(',')
 
   function applyPreset(key: ThemePreset) {
     setPreset(key)
@@ -1353,18 +1384,15 @@ function ThemeDemo() {
   }
 
   function updateToken(key: string, value: string) {
-    setPreset('default')  // custom
+    setPreset('default')
     setTokens(prev => ({ ...prev, [key]: value }))
   }
 
-  const cssOverride = Object.entries(tokens)
-    .map(([k, v]) => `  ${k}: ${v};`)
-    .join('\n')
+  const cssOverride = Object.entries(tokens).map(([k, v]) => `  ${k}: ${v};`).join('\n')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* Explanation */}
       <div style={{
         background: '#f8faff', border: '1px solid #dbeafe',
         borderRadius: 8, padding: '14px 16px',
@@ -1372,10 +1400,8 @@ function ThemeDemo() {
       }}>
         <strong style={{ color: '#1e40af' }}>CSS theme tokens</strong>
         {' '}— Import <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>@loykin/chartkit/styles</code> and
-        override <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--chartkit-*</code> variables to theme charts
-        independently of the rest of the app.
-        If shadcn/ui shared variables (<code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--background</code>, <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--border</code>, …) are already defined,
-        charts pick them up automatically with no extra setup.
+        override <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--chartkit-*</code> variables.
+        If shadcn/ui variables (<code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--background</code>, <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>--border</code>, …) are already defined, charts pick them up automatically.
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 320px', gap: 16, alignItems: 'start' }}>
@@ -1383,27 +1409,44 @@ function ThemeDemo() {
         {/* Live preview */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{
-            borderRadius: 8, border: '1px solid #e5e7eb',
-            padding: 20,
-            background: tokens['--chartkit-background'],
-            transition: 'background 0.2s',
+            borderRadius: 8, border: `1px solid ${tokens['--chartkit-border']}`,
+            padding: 20, background: tokens['--chartkit-background'],
+            transition: 'background 0.15s, border-color 0.15s',
           }}>
+            <SectionHeader>border · tick labels · grid lines</SectionHeader>
+            <TimeSeriesChart
+              key={themeKey}
+              data={cpuData} series={cpuSeries}
+              height={180} yUnit="%" legendPosition="bottom" selectionMode="none"
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div style={{
-              fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em',
-              textTransform: 'uppercase', color: tokens['--chartkit-muted-foreground'],
-              marginBottom: 12,
+              borderRadius: 8, border: `1px solid ${tokens['--chartkit-border']}`,
+              padding: 16, background: tokens['--chartkit-background'],
+              transition: 'background 0.15s',
             }}>
-              Live Preview
+              <SectionHeader>foreground · muted-foreground · destructive</SectionHeader>
+              <StatChart
+                key={themeKey}
+                value={94.2} unit="%" label="CPU Usage"
+                previousValue={78.5}
+                sparkline={STAT_SPARKLINE}
+                thresholds={[{ value: 0, color: '#10b981' }, { value: 80, color: tokens['--chartkit-destructive'] }]}
+                height={120}
+              />
             </div>
-            {/* Apply tokens via inline style on container */}
-            <div style={tokens as React.CSSProperties}>
+            <div style={{
+              borderRadius: 8, border: `1px solid ${tokens['--chartkit-border']}`,
+              padding: 16, background: tokens['--chartkit-background'],
+              transition: 'background 0.15s',
+            }}>
+              <SectionHeader>destructive (error state)</SectionHeader>
               <TimeSeriesChart
-                data={cpuData}
-                series={cpuSeries}
-                height={200}
-                yUnit="%"
-                legendPosition="bottom"
-                selectionMode="none"
+                key={themeKey}
+                data={cpuData} series={cpuSeries} height={120}
+                error={new Error('Failed to fetch: connection timeout')}
               />
             </div>
           </div>
@@ -1428,7 +1471,7 @@ function ThemeDemo() {
         </div>
 
         {/* Controls */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ position: 'sticky', top: 24 }}>
           <ControlPanel>
             <SectionDivider title="Presets" />
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1439,18 +1482,20 @@ function ThemeDemo() {
 
             <SectionDivider title="Tokens" />
             {Object.entries(tokens).map(([key, value]) => (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div key={key} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <input
                   type="color"
                   value={value.startsWith('#') ? value : '#888888'}
                   onChange={e => updateToken(key, e.target.value)}
-                  style={{ width: 28, height: 28, border: '1px solid #e5e7eb', borderRadius: 4, cursor: 'pointer', padding: 2 }}
+                  style={{ width: 28, height: 28, border: '1px solid #e5e7eb', borderRadius: 4, cursor: 'pointer', padding: 2, flexShrink: 0, marginTop: 1 }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '0.7rem', color: '#111827', fontFamily: 'monospace', fontWeight: 500 }}>
-                    {key.replace('--chartkit-', '--chartkit-')}
+                    {key}
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: '#9ca3af', fontFamily: 'monospace' }}>{value}</div>
+                  <div style={{ fontSize: '0.65rem', color: '#9ca3af', marginTop: 1 }}>
+                    {TOKEN_LABELS[key]}
+                  </div>
                 </div>
               </div>
             ))}
@@ -1495,7 +1540,9 @@ const NAV: { group: string; items: { id: DemoId; label: string }[] }[] = [
   },
 ]
 
-function AppSidebar({ activeId, onSelect }: { activeId: DemoId; onSelect: (id: DemoId) => void }) {
+function AppSidebar({ activeId }: { activeId: DemoId }) {
+  const navigate = useNavigate()
+
   return (
     <aside style={{
       width: 212,
@@ -1537,7 +1584,7 @@ function AppSidebar({ activeId, onSelect }: { activeId: DemoId; onSelect: (id: D
               return (
                 <button
                   key={item.id}
-                  onClick={() => onSelect(item.id)}
+                  onClick={() => navigate(`/${item.id}`)}
                   style={{
                     width: '100%', display: 'block', textAlign: 'left',
                     padding: '6px 10px', borderRadius: 6, border: 'none',
@@ -1564,29 +1611,45 @@ function AppSidebar({ activeId, onSelect }: { activeId: DemoId; onSelect: (id: D
   )
 }
 
-// ── App ───────────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function App() {
-  const [activeId, setActiveId] = useState<DemoId>('configurator')
+const ALL_IDS = new Set<string>([
+  'configurator','zoom','heatmap','scatter','boxplot','histogram','pie','new','theme','states','spec',
+])
+
+function DemoPage() {
+  const { demo } = useParams<{ demo: string }>()
+  const id = (ALL_IDS.has(demo ?? '') ? demo : 'configurator') as DemoId
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#f9fafb' }}>
-      <AppSidebar activeId={activeId} onSelect={setActiveId} />
+      <AppSidebar activeId={id} />
       <main style={{ flex: 1, overflowY: 'auto' }}>
         <div style={{ padding: '24px' }}>
-          {activeId === 'configurator' && <ConfiguratorDemo />}
-          {activeId === 'zoom'         && <LinkedZoomDemo />}
-          {activeId === 'heatmap'      && <HeatmapDemo />}
-          {activeId === 'scatter'      && <ScatterDemo />}
-          {activeId === 'boxplot'      && <BoxPlotDemo />}
-          {activeId === 'histogram'    && <HistogramDemo />}
-          {activeId === 'pie'          && <PieDemo />}
-          {activeId === 'new'          && <NewChartsDemo />}
-          {activeId === 'theme'        && <ThemeDemo />}
-          {activeId === 'states'       && <StatesDemo />}
-          {activeId === 'spec'         && <SpecDemo />}
+          {id === 'configurator' && <ConfiguratorDemo />}
+          {id === 'zoom'         && <LinkedZoomDemo />}
+          {id === 'heatmap'      && <HeatmapDemo />}
+          {id === 'scatter'      && <ScatterDemo />}
+          {id === 'boxplot'      && <BoxPlotDemo />}
+          {id === 'histogram'    && <HistogramDemo />}
+          {id === 'pie'          && <PieDemo />}
+          {id === 'new'          && <NewChartsDemo />}
+          {id === 'theme'        && <ThemeDemo />}
+          {id === 'states'       && <StatesDemo />}
+          {id === 'spec'         && <SpecDemo />}
         </div>
       </main>
     </div>
+  )
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/:demo" element={<DemoPage />} />
+      <Route path="/" element={<Navigate to="/configurator" replace />} />
+    </Routes>
   )
 }

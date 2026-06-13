@@ -6,7 +6,8 @@ export const CHART_DEFAULT_LINE_WIDTH = 0.5
 
 export interface ResolvedAxisStyles {
   mutedFgColor:  string
-  borderColor:   string
+  gridColor:     string
+  axisColor:     string
   resolvedGrid:  uPlot.Axis.Grid
   resolvedTicks: uPlot.Axis.Ticks
   axisLineStyle: LineStyle | false | undefined
@@ -23,14 +24,15 @@ export function resolveAxisStyles(
   axisStyle: AxisConfig | false | undefined,
 ): ResolvedAxisStyles {
   const mutedFgColor = resolveCssVar('--chartkit-muted-foreground', '#737373')
-  const borderColor  = resolveCssVar('--chartkit-border',           '#e5e7eb')
+  const gridColor    = resolveCssVar('--chartkit-grid',             '#e5e7eb')
+  const axisColor    = resolveCssVar('--chartkit-axis',             '#e5e7eb')
   const w = CHART_DEFAULT_LINE_WIDTH
 
   const resolvedGrid: uPlot.Axis.Grid =
     gridStyle === false
       ? { show: false }
       : {
-          stroke: gridStyle?.stroke ?? borderColor,
+          stroke: gridStyle?.stroke ?? gridColor,
           width:  gridStyle?.width  ?? w,
           dash:   gridStyle?.dash,
         }
@@ -40,7 +42,7 @@ export function resolveAxisStyles(
     tickConfig === false
       ? { show: false }
       : {
-          stroke: tickConfig?.stroke ?? borderColor,
+          stroke: tickConfig?.stroke ?? axisColor,
           width:  tickConfig?.width  ?? w,
           dash:   tickConfig?.dash,
         }
@@ -48,5 +50,5 @@ export function resolveAxisStyles(
   const axisLineStyle: LineStyle | false | undefined =
     axisStyle === false ? false : axisStyle?.line
 
-  return { mutedFgColor, borderColor, resolvedGrid, resolvedTicks, axisLineStyle }
+  return { mutedFgColor, gridColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle }
 }
