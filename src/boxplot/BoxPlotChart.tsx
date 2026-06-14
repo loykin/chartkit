@@ -6,7 +6,7 @@ import type { BoxPlotChartProps } from './types'
 export function BoxPlotChart({
   categories,
   series,
-  height    = 300,
+  height     = 300,
   yUnit,
   gridStyle,
   axisStyle,
@@ -15,12 +15,12 @@ export function BoxPlotChart({
 }: BoxPlotChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
-  if (error) return <ChartError message={error.message} height={height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   if (!categories.length && !isLoading) {
     return (
       <div style={{
-        height,
+        height: height === 'fill' ? '100%' : height,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '0.875rem', color: 'var(--chartkit-muted-foreground, #737373)',
       }}>
@@ -30,9 +30,9 @@ export function BoxPlotChart({
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
+    <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
       {isLoading && <ChartLoader />}
-      <div ref={containerRef} style={{ width: '100%' }} />
+      <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
       <BoxPlotCanvas
         containerRef={containerRef}
         categories={categories}

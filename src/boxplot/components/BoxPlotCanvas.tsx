@@ -9,7 +9,7 @@ interface BoxPlotCanvasProps {
   containerRef: React.RefObject<HTMLDivElement | null>
   categories:   string[]
   series:       BoxSeriesConfig[]
-  height:       number
+  height:       number | 'fill'
   yUnit?:       string
   gridStyle?:   LineStyle | false
   axisStyle?:   AxisConfig | false
@@ -50,7 +50,7 @@ export function BoxPlotCanvas({
 
     return {
       width:     300,
-      height,
+      height:    height === 'fill' ? 300 : height,
       legend:    { show: false },
       cursor:    { drag: { x: false, y: false }, points: { show: false } },
       scales: {
@@ -100,7 +100,7 @@ export function BoxPlotCanvas({
     return [xs, xs.map(() => 0)]
   }, [categories])
 
-  useChart({ containerRef, getOptions, data })
+  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
 
   return null
 }

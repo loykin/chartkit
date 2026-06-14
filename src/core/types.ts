@@ -43,8 +43,12 @@ export interface Threshold {
 
 /** Shared props common to all chart components */
 export interface BaseChartProps {
-  /** Canvas height in px (default 300) */
-  height?:    number
+  /**
+   * Canvas height. Pass a number for a fixed px height, or `'fill'` to expand
+   * to the parent container's height (parent must have an explicit height).
+   * Default varies per chart (typically 300).
+   */
+  height?: number | 'fill'
   /** Grid lines inside the plot area. `false` = hide */
   gridStyle?: LineStyle | false
   /** Axis border + ticks. `false` = hide both */

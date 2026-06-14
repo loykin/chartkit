@@ -9,7 +9,7 @@ import type { HeatmapBinnedData } from '../utils/binData'
 interface HeatmapCanvasProps {
   containerRef: React.RefObject<HTMLDivElement | null>
   binned:       HeatmapBinnedData
-  height:       number
+  height:       number | 'fill'
   xTime?:       boolean
   locale?:      string
   yUnit?:       string
@@ -37,7 +37,7 @@ export function HeatmapCanvas({
 
     return {
       width:  300,
-      height,
+      height: height === 'fill' ? 300 : height,
       mode:   2 as uPlot.Mode,
       legend: { show: false },
       cursor: { drag: { x: true, y: true }, points: { show: false } },
@@ -92,7 +92,7 @@ export function HeatmapCanvas({
     [binned],
   )
 
-  useChart({ containerRef, getOptions, data })
+  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
 
   return null
 }

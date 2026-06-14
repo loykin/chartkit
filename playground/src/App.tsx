@@ -1,4 +1,4 @@
-import { useState, useMemo, useLayoutEffect } from 'react'
+import { useState, useRef, useEffect, useMemo, useLayoutEffect } from 'react'
 import { useNavigate, useParams, Routes, Route, Navigate } from 'react-router-dom'
 import CodeMirror from '@uiw/react-codemirror'
 import { json as jsonLang } from '@codemirror/lang-json'
@@ -1506,10 +1506,133 @@ function ThemeDemo() {
   )
 }
 
+function ResizableBox({ children, initialHeight = 300 }: { children: React.ReactNode; initialHeight?: number }) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [size, setSize] = useState({ w: 0, h: initialHeight })
+  const drag = useRef<{ startX: number; startY: number; startW: number; startH: number } | null>(null)
+
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    setSize(s => ({ ...s, w: el.offsetWidth }))
+  }, [])
+
+  useEffect(() => {
+    function onMove(e: MouseEvent) {
+      if (!drag.current) return
+      setSize({
+        w: Math.max(150, drag.current.startW + (e.clientX - drag.current.startX)),
+        h: Math.max(80,  drag.current.startH + (e.clientY - drag.current.startY)),
+      })
+    }
+    function onUp() { drag.current = null }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [])
+
+  const w = size.w || '100%'
+
+  return (
+    <div ref={wrapRef}>
+      <div style={{ width: w, height: size.h, overflow: 'hidden', border: '1px solid #e5e7eb', borderRadius: 6, position: 'relative' }}>
+        {children}
+        <div
+          onMouseDown={e => {
+            e.preventDefault()
+            drag.current = {
+              startX: e.clientX, startY: e.clientY,
+              startW: size.w || (wrapRef.current?.offsetWidth ?? 400),
+              startH: size.h,
+            }
+          }}
+          style={{
+            position: 'absolute', bottom: 0, right: 0,
+            width: 18, height: 18, cursor: 'se-resize', userSelect: 'none',
+          }}
+        >
+          <svg width="18" height="18" style={{ display: 'block' }}>
+            <polygon points="18,0 18,18 0,18" fill="#d1d5db" />
+          </svg>
+        </div>
+      </div>
+      <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: 4 }}>
+        {size.w ? `${Math.round(size.w)}px` : '—'} × {size.h}px
+      </div>
+    </div>
+  )
+}
+
+function FillParentDemo() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+      {/* Drag the handle — left chart stays fixed, right chart follows */}
+      <Card>
+        <SectionHeader>Drag the corner handle to resize</SectionHeader>
+        <div style={{ fontSize: '0.75rem', color: '#9ca3af', margin: '2px 0 12px' }}>
+          Width always adapts (ResizeObserver was always there). height="fill" adds height tracking.
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
+              height=300 — width follows, height stays fixed
+            </div>
+            <ResizableBox initialHeight={300}>
+              <TimeSeriesChart data={cpuData} series={cpuSeries} yUnit="%" legendPosition="none" />
+            </ResizableBox>
+          </div>
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>
+              height="fill" — width and height both follow
+            </div>
+            <ResizableBox initialHeight={300}>
+              <TimeSeriesChart height="fill" data={cpuData} series={cpuSeries} yUnit="%" legendPosition="none" />
+            </ResizableBox>
+          </div>
+        </div>
+      </Card>
+
+      {/* Real use case: flex layout distributes height, charts adapt without knowing px */}
+      <Card>
+        <SectionHeader>Dashboard — flex:2 / flex:1 split, no px height on charts</SectionHeader>
+        <div style={{ height: 480, display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+          <div style={{ flex: 2, border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+            <TimeSeriesChart height="fill" data={cpuData} series={cpuSeries} yUnit="%" legendPosition="bottom" />
+          </div>
+          <div style={{ flex: 1, border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+            <TimeSeriesChart height="fill" data={cpuData} series={[{ label: 'RPS', color: '#10b981', type: 'bars' }]} yUnit="req/s" legendPosition="none" />
+          </div>
+        </div>
+      </Card>
+
+      {/* Mixed chart types sharing the same row height */}
+      <Card>
+        <SectionHeader>Mixed chart types — flex row, same height, no px on any chart</SectionHeader>
+        <div style={{ height: 260, display: 'flex', gap: 8, marginTop: 8 }}>
+          <div style={{ flex: 2, border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+            <BarChart height="fill" categories={BAR_CATEGORIES} series={BAR_SERIES} yUnit="ms" />
+          </div>
+          <div style={{ flex: 1, border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+            <PieChart height="fill" slices={PIE_SLICES} innerRadius={0.55} labelType="none" centerLabel="Traffic" legendPosition="none" />
+          </div>
+          <div style={{ flex: 1, border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+            <GaugeChart height="fill" value={72} min={0} max={100} unit="%" thresholds={GAUGE_THRESHOLDS} />
+          </div>
+        </div>
+      </Card>
+
+    </div>
+  )
+}
+
 type DemoId =
   | 'configurator' | 'zoom'
   | 'heatmap' | 'scatter' | 'boxplot' | 'histogram' | 'pie' | 'new'
-  | 'theme' | 'states' | 'spec'
+  | 'theme' | 'states' | 'spec' | 'fill-parent'
 
 const NAV: { group: string; items: { id: DemoId; label: string }[] }[] = [
   {
@@ -1533,9 +1656,10 @@ const NAV: { group: string; items: { id: DemoId; label: string }[] }[] = [
   {
     group: 'Developer',
     items: [
-      { id: 'theme',  label: 'Theming'       },
-      { id: 'states', label: 'States'        },
-      { id: 'spec',   label: 'ChartRenderer' },
+      { id: 'theme',       label: 'Theming'       },
+      { id: 'states',      label: 'States'        },
+      { id: 'spec',        label: 'ChartRenderer' },
+      { id: 'fill-parent', label: 'height="fill"'  },
     ],
   },
 ]
@@ -1614,7 +1738,7 @@ function AppSidebar({ activeId }: { activeId: DemoId }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const ALL_IDS = new Set<string>([
-  'configurator','zoom','heatmap','scatter','boxplot','histogram','pie','new','theme','states','spec',
+  'configurator','zoom','heatmap','scatter','boxplot','histogram','pie','new','theme','states','spec','fill-parent',
 ])
 
 function DemoPage() {
@@ -1637,6 +1761,7 @@ function DemoPage() {
           {id === 'theme'        && <ThemeDemo />}
           {id === 'states'       && <StatesDemo />}
           {id === 'spec'         && <SpecDemo />}
+          {id === 'fill-parent'  && <FillParentDemo />}
         </div>
       </main>
     </div>

@@ -14,7 +14,7 @@ interface BarCanvasProps {
   series:      BarSeriesConfig[]
   orientation: 'vertical' | 'horizontal'
   stacked:     boolean
-  height:      number
+  height:      number | 'fill'
   xUnit?:      string
   yUnit?:      string
   yMin?:       number
@@ -98,7 +98,7 @@ export function BarCanvas({
 
     return {
       width:  300,
-      height,
+      height: height === 'fill' ? 300 : height,
       legend: { show: false },
       cursor: { drag: { x: false, y: false }, points: { show: false } },
       scales,
@@ -122,7 +122,7 @@ export function BarCanvas({
     return [xs, xs.map(() => 0)]
   }, [categories])
 
-  useChart({ containerRef, getOptions, data })
+  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
 
   return null
 }

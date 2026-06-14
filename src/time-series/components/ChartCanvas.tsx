@@ -8,7 +8,7 @@ interface ChartCanvasProps {
   containerRef:  React.RefObject<HTMLDivElement | null>
   data:          uPlot.AlignedData
   series:        SeriesConfig[]
-  height:        number
+  height:        number | 'fill'
   selectionMode: SelectionMode
   yUnit?:        string
   yUnitDisplay?: 'label' | 'tick'
@@ -195,7 +195,7 @@ export function ChartCanvas({
 
     return {
       width:     300,  // overridden by ResizeObserver in useChart
-      height,
+      height:    height === 'fill' ? 300 : height,  // placeholder; ResizeObserver overrides when fill
       drawOrder: ['axes', 'series'] as uPlot.DrawOrderKey[],
       legend:    { show: false },
       cursor:    {
@@ -244,7 +244,7 @@ export function ChartCanvas({
     return [data[0], ...cumulative.reverse()] as uPlot.AlignedData
   }, [data, barStack, series])
 
-  useChart({ containerRef, getOptions, data: resolvedData, onReady })
+  useChart({ containerRef, getOptions, data: resolvedData, fillParent: height === 'fill', onReady })
 
   return null
 }

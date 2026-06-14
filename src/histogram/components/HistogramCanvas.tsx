@@ -9,7 +9,7 @@ interface HistogramCanvasProps {
   edges:        number[]
   /** Count or percentage (0–100) per bin */
   counts:       number[]
-  height:       number
+  height:       number | 'fill'
   color:        string
   fillOpacity:  number
   /** When true, y-axis shows "%" suffix */
@@ -69,7 +69,7 @@ export function HistogramCanvas({
 
     return {
       width:     300,
-      height,
+      height:    height === 'fill' ? 300 : height,
       drawOrder: ['axes', 'series'] as uPlot.DrawOrderKey[],
       legend:    { show: false },
       cursor:    { drag: { x: false, y: false } },
@@ -118,7 +118,7 @@ export function HistogramCanvas({
     [edges, counts],
   )
 
-  useChart({ containerRef, getOptions, data })
+  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
 
   return null
 }

@@ -9,8 +9,8 @@ export function HeatmapChart({
   ys,
   xBinSize,
   yBinSize,
-  height      = 300,
-  xTime       = true,
+  height     = 300,
+  xTime      = true,
   locale,
   yUnit,
   palette,
@@ -26,12 +26,12 @@ export function HeatmapChart({
     [xs, ys, xBinSize, yBinSize],
   )
 
-  if (error) return <ChartError message={error.message} height={height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   if (!xs.length && !isLoading) {
     return (
       <div style={{
-        height,
+        height: height === 'fill' ? '100%' : height,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '0.875rem', color: 'var(--chartkit-muted-foreground, #737373)',
       }}>
@@ -41,9 +41,9 @@ export function HeatmapChart({
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
+    <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
       {isLoading && <ChartLoader />}
-      <div ref={containerRef} style={{ width: '100%' }} />
+      <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
       <HeatmapCanvas
         containerRef={containerRef}
         binned={binned}

@@ -55,7 +55,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 
 ## Key Types & Patterns
 
-- `BaseChartProps` — shared props: `height`, `yMin`, `yMax`, `gridStyle`, `axisStyle`, `isLoading`, `error`
+- `BaseChartProps` — shared props: `height` (`number` for fixed px, `'fill'` to expand to parent container height), `yMin`, `yMax`, `gridStyle`, `axisStyle`, `isLoading`, `error`
 - `Threshold` — `{ value: number; color: string; label?; width?; dash? }`
 - `LineStyle` — `{ width?: number; stroke?: string; dash?: number[] }`
 - `AlignedData` — uPlot's format: `[timestamps, series1, series2, ...]` (all same length)
@@ -110,3 +110,16 @@ pnpm build
 ```
 
 For visual changes, also verify in the playground.
+
+## Documentation
+
+Keep docs in sync whenever code changes:
+
+| What changed | What to update |
+|---|---|
+| New prop on `BaseChartProps` or any chart | `AGENTS.md` Key Types section + `README.md` props table |
+| New chart type | `AGENTS.md` Source Layout + `README.md` + `docs/` if design is non-trivial |
+| New shared type or pattern | `AGENTS.md` Key Types section |
+| Public API added or removed | `README.md` |
+| `ChartSpec` / schema changed | `AGENTS.md` Spec Layer section + `src/spec/schema.ts` description strings |
+| Non-trivial implementation design | `docs/<topic>.md` |

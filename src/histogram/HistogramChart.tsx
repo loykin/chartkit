@@ -30,12 +30,12 @@ export function HistogramChart({
     ? counts.map(c => (c / n) * 100)
     : counts
 
-  if (error) return <ChartError message={error.message} height={height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   if (!values.length && !isLoading) {
     return (
       <div style={{
-        height,
+        height: height === 'fill' ? '100%' : height,
         display:        'flex',
         alignItems:     'center',
         justifyContent: 'center',
@@ -48,9 +48,9 @@ export function HistogramChart({
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
+    <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
       {isLoading && <ChartLoader />}
-      <div ref={containerRef} style={{ width: '100%' }} />
+      <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
       {edges.length > 0 && (
         <HistogramCanvas
           containerRef={containerRef}

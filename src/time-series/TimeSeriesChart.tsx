@@ -71,7 +71,7 @@ export function TimeSeriesChart({
     onSelect?.({ timeRange: result.xRange, yRange: result.yRange })
   }, [onSelect, onTimeRangeChange])
 
-  if (error) return <ChartError message={error.message} height={height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   // Custom renderer takes priority over built-in legend
   const customLegend = renderLegend ? renderLegend(items) : null
@@ -95,8 +95,9 @@ export function TimeSeriesChart({
         minWidth:      0,
         display:       'flex',
         flexDirection: isVertical ? 'row' : 'column',
-        alignItems:    isVertical ? 'flex-start' : 'stretch',
+        alignItems:    height === 'fill' ? 'stretch' : (isVertical ? 'flex-start' : 'stretch'),
         gap:           isVertical ? 8 : 4,
+        height:        height === 'fill' ? '100%' : undefined,
       }}
     >
       {/* custom legend — rendered above canvas by default */}
@@ -106,9 +107,9 @@ export function TimeSeriesChart({
       {(legendPosition === 'top' || legendPosition === 'left') && legend}
 
       {/* Chart canvas */}
-      <div style={{ position: 'relative', minWidth: 0, flex: 1 }}>
+      <div style={{ position: 'relative', minWidth: 0, minHeight: 0, flex: 1 }}>
         {isLoading && <ChartLoader />}
-        <div ref={containerRef} style={{ width: '100%' }} />
+        <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
         {/* Custom tooltip overlay — rendered inside position:relative wrapper */}
         {renderTooltipRef.current && tooltipPayload && (
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 30, overflow: 'visible' }}>

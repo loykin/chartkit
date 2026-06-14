@@ -19,8 +19,8 @@ export interface GaugeChartProps {
   thresholds?: Threshold[]
   /** Arc thickness as a fraction of the radius. Default 0.18 */
   arcWidth?: number
-  /** Component height in px. Default 200 */
-  height?: number
+  /** Canvas height in px, or `'fill'` to expand to the parent container's height. Default 200. */
+  height?: number | 'fill'
   isLoading?: boolean
   error?: Error | null
 }

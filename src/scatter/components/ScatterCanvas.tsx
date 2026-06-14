@@ -7,7 +7,7 @@ import type { ScatterSeriesConfig } from '../types'
 interface ScatterCanvasProps {
   containerRef: React.RefObject<HTMLDivElement | null>
   series:       ScatterSeriesConfig[]
-  height:       number
+  height:       number | 'fill'
   xUnit?:       string
   yUnit?:       string
   gridStyle?:   LineStyle | false
@@ -74,7 +74,7 @@ export function ScatterCanvas({
 
     return {
       width:  300,
-      height,
+      height: height === 'fill' ? 300 : height,
       mode:   2 as uPlot.Mode,
       legend: { show: false },
       cursor: { points: { show: false } },
@@ -125,7 +125,7 @@ export function ScatterCanvas({
     [series],
   )
 
-  useChart({ containerRef, getOptions, data })
+  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
 
   return null
 }

@@ -14,10 +14,10 @@ export function GaugeChart({
   isLoading,
   error,
 }: GaugeChartProps) {
-  if (error) return <ChartError message={error.message} height={height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   return (
-    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
+    <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
       {isLoading && <ChartLoader />}
       <GaugeCanvas
         value={value}

@@ -3,14 +3,14 @@ import { formatNum, resolveThresholdColor } from '../../core'
 import type { Threshold } from '../../core'
 
 interface GaugeCanvasProps {
-  value:      number
-  min:        number
-  max:        number
-  unit?:      string
-  label?:     string
-  thresholds: Threshold[]
-  arcWidth:   number   // fraction of outerR, e.g. 0.18
-  height:     number
+  value:       number
+  min:         number
+  max:         number
+  unit?:       string
+  label?:      string
+  thresholds:  Threshold[]
+  arcWidth:    number   // fraction of outerR, e.g. 0.18
+  height:      number | 'fill'
 }
 
 // ── Gauge geometry constants ──────────────────────────────────────────────────
@@ -40,11 +40,10 @@ function draw(
   label:      string | undefined,
   thresholds: Threshold[],
   arcWidth:   number,
-  height:     number,
 ) {
   const dpr = window.devicePixelRatio || 1
   const w   = canvas.offsetWidth
-  const h   = height
+  const h   = canvas.offsetHeight
 
   canvas.width  = w * dpr
   canvas.height = h * dpr
@@ -177,9 +176,9 @@ export function GaugeCanvas({
 
   const redraw = useCallback(() => {
     if (canvasRef.current) {
-      draw(canvasRef.current, value, min, max, unit, label, thresholds, arcWidth, height)
+      draw(canvasRef.current, value, min, max, unit, label, thresholds, arcWidth)
     }
-  }, [value, min, max, unit, label, thresholds, arcWidth, height])
+  }, [value, min, max, unit, label, thresholds, arcWidth])
 
   useEffect(() => { redraw() }, [redraw])
 
@@ -192,10 +191,10 @@ export function GaugeCanvas({
   }, [redraw])
 
   return (
-    <div ref={wrapRef} style={{ width: '100%' }}>
+    <div ref={wrapRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }}>
       <canvas
         ref={canvasRef}
-        style={{ display: 'block', width: '100%', height }}
+        style={{ display: 'block', width: '100%', height: height === 'fill' ? '100%' : height }}
       />
     </div>
   )

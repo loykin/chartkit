@@ -10,7 +10,7 @@ interface TooltipState {
 
 interface PieCanvasProps {
   slices:         PieSliceConfig[]
-  height:         number
+  height:         number | 'fill'
   innerRadius:    number
   labelType:      PieLabelType
   labelPosition:  'inside' | 'outside'
@@ -351,10 +351,10 @@ export function PieCanvas({
   const total = slices.reduce((s, d) => s + d.value, 0)
 
   return (
-    <div ref={wrapRef} style={{ position: 'relative', width: '100%' }}>
+    <div ref={wrapRef} style={{ position: 'relative', width: '100%', height: height === 'fill' ? '100%' : undefined }}>
       <canvas
         ref={canvasRef}
-        style={{ display: 'block', width: '100%', height }}
+        style={{ display: 'block', width: '100%', height: height === 'fill' ? '100%' : height }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       />

@@ -20,8 +20,8 @@ export interface StatChartProps {
   sparkline?: number[]
   /** Sparkline stroke/fill color. Defaults to the resolved value color */
   sparklineColor?: string
-  /** Component height in px. Default 120 */
-  height?: number
+  /** Component height in px, or `'fill'` to expand to the parent container's height. Default 120. */
+  height?: number | 'fill'
   isLoading?: boolean
   error?: Error | null
 }

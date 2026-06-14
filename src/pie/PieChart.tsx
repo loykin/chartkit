@@ -15,7 +15,7 @@ export function PieChart({
   isLoading,
   error,
 }: PieChartProps) {
-  if (error) return <ChartError message={error.message} height={height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   if (!slices.length && !isLoading) {
     return (
@@ -84,10 +84,11 @@ export function PieChart({
       gap:           legendPosition === 'right' ? 16 : 0,
       width:         '100%',
       minWidth:      0,
+      height:        height === 'fill' ? '100%' : undefined,
     }}>
       {isLoading && <ChartLoader />}
 
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
         <PieCanvas
           slices={slices}
           height={height}

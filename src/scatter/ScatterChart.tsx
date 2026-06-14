@@ -5,7 +5,7 @@ import type { ScatterChartProps } from './types'
 
 export function ScatterChart({
   series,
-  height    = 300,
+  height     = 300,
   xUnit,
   yUnit,
   gridStyle,
@@ -15,13 +15,13 @@ export function ScatterChart({
 }: ScatterChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
-  if (error) return <ChartError message={error.message} height={height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   const isEmpty = series.every(s => s.xs.length === 0)
   if (isEmpty && !isLoading) {
     return (
       <div style={{
-        height,
+        height: height === 'fill' ? '100%' : height,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '0.875rem', color: 'var(--chartkit-muted-foreground, #737373)',
       }}>
@@ -31,9 +31,9 @@ export function ScatterChart({
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
+    <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
       {isLoading && <ChartLoader />}
-      <div ref={containerRef} style={{ width: '100%' }} />
+      <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
       <ScatterCanvas
         containerRef={containerRef}
         series={series}

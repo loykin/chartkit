@@ -1,12 +1,12 @@
 interface ChartErrorProps {
   message: string
-  height:  number
+  height?: number
 }
 
 export function ChartError({ message, height }: ChartErrorProps) {
   return (
     <div style={{
-      height,
+      height: height ?? '100%',
       display:        'flex',
       alignItems:     'center',
       justifyContent: 'center',

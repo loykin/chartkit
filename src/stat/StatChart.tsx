@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { ChartError, ChartLoader, formatNum, resolveThresholdColor } from '../core'
 import type { StatChartProps } from './types'
 
@@ -82,18 +83,31 @@ export function StatChart({
   isLoading,
   error,
 }: StatChartProps) {
-  if (error) return <ChartError message={error.message} height={height} />
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const isFill  = height === 'fill'
+  const [renderedHeight, setRenderedHeight] = useState(isFill ? 120 : (height as number))
+
+  useEffect(() => {
+    if (!isFill) return
+    const el = wrapRef.current
+    if (!el) return
+    const ro = new ResizeObserver(([entry]) => setRenderedHeight(entry.contentRect.height))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [isFill])
+
+  if (error) return <ChartError message={error.message} height={isFill ? undefined : (height as number)} />
 
   const displayColor = color ?? resolveThresholdColor(value ?? 0, thresholds, '#3b82f6')
   const hasSparkline = sparkline && sparkline.length > 1
   const hasTrend     = previousValue != null && value != null
 
-  // Scale font-size to height
-  const valueFontSize = Math.max(20, Math.min(52, height * 0.34))
+  const scalingHeight = isFill ? renderedHeight : (height as number)
+  const valueFontSize = Math.max(20, Math.min(52, scalingHeight * 0.34))
 
   return (
-    <div style={{
-      height,
+    <div ref={wrapRef} style={{
+      height: isFill ? '100%' : height,
       position:       'relative',
       display:        'flex',
       flexDirection:  'column',
@@ -136,7 +150,7 @@ export function StatChart({
           <SparklineSVG
             values={sparkline!}
             color={sparklineColor ?? displayColor}
-            height={Math.max(24, height * 0.22)}
+            height={Math.max(24, scalingHeight * 0.22)}
           />
         </div>
       )}
