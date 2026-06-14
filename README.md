@@ -356,7 +356,7 @@ All types accept the same optional base fields as the individual components (`he
 
 | Prop        | Type                    | Default | Description                          |
 |-------------|-------------------------|---------|--------------------------------------|
-| `height`    | `number`                | `300`   | Canvas height in px                  |
+| `height`    | `number \| 'fill'`     | `300`   | Canvas height in px, or `'fill'` to expand to the parent container's height (parent must have explicit height) |
 | `yMin`      | `number`                | auto    | Primary y-axis minimum               |
 | `yMax`      | `number`                | auto    | Primary y-axis maximum               |
 | `gridStyle` | `LineStyle \| false`    | —       | Grid line style; `false` = hide      |
@@ -512,7 +512,7 @@ All types accept the same optional base fields as the individual components (`he
 | `color`         | `string`     | —          | Override color (takes priority over thresholds)  |
 | `sparkline`     | `number[]`   | —          | Raw values for the sparkline                     |
 | `sparklineColor`| `string`     | —          | Sparkline color (defaults to value color)        |
-| `height`        | `number`     | `120`      | Component height in px                           |
+| `height`        | `number \| 'fill'` | `120` | Component height in px, or `'fill'` to expand to parent |
 
 ### `GaugeChart`
 
@@ -525,7 +525,7 @@ All types accept the same optional base fields as the individual components (`he
 | `label`      | `string`     | —        | Label shown below the value                        |
 | `thresholds` | `Threshold[]`| —        | Color zones painted as arc segments                |
 | `arcWidth`   | `number`     | `0.18`   | Arc thickness as a fraction of the radius (0–1)    |
-| `height`     | `number`     | `200`    | Component height in px                             |
+| `height`     | `number \| 'fill'` | `200` | Component height in px, or `'fill'` to expand to parent |
 
 ### `BarChart`
 
