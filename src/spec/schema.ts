@@ -1,4 +1,4 @@
-// "주는 정보" — AI가 ChartSpec을 생성할 수 있도록 전달하는 스키마 정의
+// Schema definitions passed to AI so it can generate a ChartSpec
 
 export const CHART_SPEC_SCHEMA = {
   $schema: 'http://json-schema.org/draft-07/schema#',

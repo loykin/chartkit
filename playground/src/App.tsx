@@ -1244,7 +1244,7 @@ function SpecDemo() {
           padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#111827', flex: 1 }}>
-            LLM에서 ChartSpec 요청하기
+            Request ChartSpec from LLM
           </span>
           <div style={{ display: 'flex', gap: 4 }}>
             <Btn active={llmTab === 'tool'}   onClick={() => setLlmTab('tool')}>Tool use</Btn>
