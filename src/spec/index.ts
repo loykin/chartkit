@@ -7,6 +7,7 @@ export type {
   PieChartSpec,
   ScatterChartSpec,
   TimeSeriesSpec,
+  CandlestickSpec,
   HistogramSpec,
   BoxPlotSpec,
   GaugeSpec,

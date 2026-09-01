@@ -30,6 +30,7 @@ pnpm test           # vitest run
 src/
   bar/           — BarChart (categorical, grouped/stacked, vertical/horizontal)
   boxplot/       — BoxPlotChart (box-and-whisker, outliers)
+  candlestick/   — CandlestickChart (OHLC candles, volume overlay, zoom/selection)
   gauge/         — GaugeChart (270° speedometer, threshold zones)
   heatmap/       — HeatmapChart (density heatmap from flat scatter data)
   histogram/     — HistogramChart (auto-binning, normalization)
@@ -60,6 +61,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 - `LineStyle` — `{ width?: number; stroke?: string; dash?: number[] }`
 - `AlignedData` — uPlot's format: `[timestamps, series1, series2, ...]` (all same length)
 - `SeriesConfig` — per-series config for TimeSeriesChart: `{ label, color, type?, unit?, yAxis?, ... }`
+- `CandlestickDataPoint` — `{ time, open, high, low, close, volume? }` with Unix-second timestamps; `CandlestickChart` supports a hideable x-axis for composing synchronized price/volume panes
 - `ChartSpec` — discriminated union of all chart specs (omits `isLoading`, `error`, React callbacks)
 
 ## Styling

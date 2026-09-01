@@ -1,6 +1,7 @@
 {
   "name": "@loykin/chartkit",
   "version": "0.0.1-beta.1",
+  "packageManager": "pnpm@11.12.0",
   "description": "A React chart component library built on uPlot — TimeSeriesChart, HistogramChart, and more.",
   "type": "module",
   "main": "./dist/index.cjs",

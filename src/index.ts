@@ -7,6 +7,7 @@ export type {
   PieChartSpec,
   ScatterChartSpec,
   TimeSeriesSpec,
+  CandlestickSpec,
   HistogramSpec,
   BoxPlotSpec,
   GaugeSpec,
@@ -16,6 +17,7 @@ export type {
 
 // Charts
 export { TimeSeriesChart } from './time-series'
+export { CandlestickChart } from './candlestick'
 export { HistogramChart  } from './histogram'
 export { HeatmapChart    } from './heatmap'
 export { ScatterChart    } from './scatter'
@@ -36,6 +38,13 @@ export type {
   TooltipPayload,
   Threshold,
 } from './time-series'
+
+// Candlestick types
+export type {
+  CandlestickChartProps,
+  CandlestickDataPoint,
+  CandlestickTooltipPayload,
+} from './candlestick'
 
 // Histogram types
 export type {

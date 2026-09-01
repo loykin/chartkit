@@ -5,7 +5,7 @@ import { json as jsonLang } from '@codemirror/lang-json'
 import { javascript } from '@codemirror/lang-javascript'
 import { oneDark } from '@codemirror/theme-one-dark'
 import {
-  TimeSeriesChart, HistogramChart, HeatmapChart, ScatterChart,
+  TimeSeriesChart, CandlestickChart, HistogramChart, HeatmapChart, ScatterChart,
   BoxPlotChart, PieChart, StatChart, GaugeChart, BarChart, GRAD_METAL,
   ChartRenderer,
 } from '@loykin/chartkit'
@@ -15,7 +15,7 @@ import type {
   ScatterSeriesConfig, BoxSeriesConfig, BoxStats,
   PieSliceConfig, PieLabelType,
   BarSeriesConfig, Threshold,
-  ChartSpec,
+  ChartSpec, CandlestickDataPoint,
 } from '@loykin/chartkit'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -54,6 +54,40 @@ const DUAL_DATA = generateDualData()
 const DUAL_SERIES: SeriesConfig[] = [
   { label: 'Temperature', color: '#ef4444', unit: '°C', type: 'area', fillOpacity: 0.1, yAxis: 'left'  },
   { label: 'Humidity',    color: '#3b82f6', unit: '%',  type: 'line',                   yAxis: 'right' },
+]
+
+function generateStockData(): CandlestickDataPoint[] {
+  const points: CandlestickDataPoint[] = []
+  const start = Math.floor(Date.now() / 1000) - 89 * 24 * 60 * 60
+  let close = 187.4
+
+  for (let i = 0; i < 90; i++) {
+    const wave = Math.sin(i / 5) * 1.7 + Math.cos(i / 11) * 0.9
+    const open = close + Math.sin(i * 1.7) * 1.1
+    close = open + wave + Math.sin(i * 2.3) * 0.8
+    const high = Math.max(open, close) + 0.8 + Math.abs(Math.sin(i * 0.9)) * 2.1
+    const low = Math.min(open, close) - 0.8 - Math.abs(Math.cos(i * 1.1)) * 1.8
+    points.push({
+      time: start + i * 24 * 60 * 60,
+      open: Number(open.toFixed(2)),
+      high: Number(high.toFixed(2)),
+      low: Number(low.toFixed(2)),
+      close: Number(close.toFixed(2)),
+      volume: Math.round(18_000_000 + (1 + Math.sin(i / 4)) * 8_000_000 + Math.abs(close - open) * 5_000_000),
+    })
+  }
+  return points
+}
+
+const STOCK_DATA = generateStockData()
+const STOCK_VOLUME_DATA: AlignedData = [
+  STOCK_DATA.map(candle => candle.time),
+  STOCK_DATA.map(candle => candle.close >= candle.open ? (candle.volume ?? 0) / 1_000_000 : null),
+  STOCK_DATA.map(candle => candle.close < candle.open ? (candle.volume ?? 0) / 1_000_000 : null),
+]
+const STOCK_VOLUME_SERIES: SeriesConfig[] = [
+  { label: 'Up volume', color: '#22c55e', type: 'bars', barWidth: 0.65 },
+  { label: 'Down volume', color: '#ef4444', type: 'bars', barWidth: 0.65 },
 ]
 
 const BASE_SERIES = [
@@ -594,6 +628,61 @@ function LinkedZoomDemo() {
   )
 }
 
+// ── Candlestick ──────────────────────────────────────────────────────────────
+
+function CandlestickDemo() {
+  const [timeRange, setTimeRange] = useState<[number, number] | undefined>()
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <ControlPanel>
+        <CtrlRow label="Range">
+          <Btn active={!timeRange} onClick={() => setTimeRange(undefined)}>all</Btn>
+          <Btn
+            active={!!timeRange}
+            onClick={() => setTimeRange([STOCK_DATA[60].time, STOCK_DATA[STOCK_DATA.length - 1].time])}
+          >last 30d</Btn>
+        </CtrlRow>
+        <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+          Drag horizontally on the chart to select a time range. Hover a candle to inspect OHLCV.
+        </span>
+      </ControlPanel>
+
+      <Card>
+        <SectionHeader>ACME · Daily OHLCV</SectionHeader>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <CandlestickChart
+            data={STOCK_DATA}
+            height={340}
+            yUnit="USD"
+            locale="en-US"
+            showVolume={false}
+            showXAxis={false}
+            selectionMode="x"
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+          />
+          <div style={{ borderTop: '1px solid var(--chartkit-border, #e5e7eb)', paddingTop: 2 }}>
+            <TimeSeriesChart
+              data={STOCK_VOLUME_DATA}
+              series={STOCK_VOLUME_SERIES}
+              height={140}
+              yUnit="M"
+              yUnitDisplay="tick"
+              locale="en-US"
+              legendPosition="none"
+              selectionMode="x"
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+              gridStyle={false}
+            />
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
+}
+
 // ── Heatmap ───────────────────────────────────────────────────────────────────
 
 function generateHeatmapData() {
@@ -1054,6 +1143,11 @@ const SPEC_PRESETS: Record<string, ChartSpec> = {
     series: [{ label: 'CPU', color: '#3b82f6', type: 'area', fillGradient: true, unit: '%' }],
     height: 260, yUnit: '%', legendPosition: 'bottom',
   },
+  candlestick: {
+    type: 'candlestick',
+    data: STOCK_DATA.slice(-20),
+    height: 260, yUnit: 'USD', showVolume: true, selectionMode: 'none',
+  },
   gauge: {
     type: 'gauge',
     value: 67, min: 0, max: 100, unit: '%', label: 'CPU Usage',
@@ -1096,7 +1190,7 @@ const SPEC_PRESETS: Record<string, ChartSpec> = {
 }
 
 const VALID_SPEC_TYPES = new Set([
-  'bar','pie','scatter','timeseries','histogram','boxplot','gauge','stat','heatmap',
+  'bar','pie','scatter','timeseries','candlestick','histogram','boxplot','gauge','stat','heatmap',
 ])
 
 const LLM_CODE: Record<string, string> = {
@@ -1630,7 +1724,7 @@ function FillParentDemo() {
 }
 
 type DemoId =
-  | 'configurator' | 'zoom'
+  | 'configurator' | 'zoom' | 'candlestick'
   | 'heatmap' | 'scatter' | 'boxplot' | 'histogram' | 'pie' | 'new'
   | 'theme' | 'states' | 'spec' | 'fill-parent'
 
@@ -1640,6 +1734,7 @@ const NAV: { group: string; items: { id: DemoId; label: string }[] }[] = [
     items: [
       { id: 'configurator', label: 'Configurator' },
       { id: 'zoom',         label: 'Linked Zoom'  },
+      { id: 'candlestick',  label: 'Candlestick'  },
     ],
   },
   {
@@ -1738,7 +1833,7 @@ function AppSidebar({ activeId }: { activeId: DemoId }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const ALL_IDS = new Set<string>([
-  'configurator','zoom','heatmap','scatter','boxplot','histogram','pie','new','theme','states','spec','fill-parent',
+  'configurator','zoom','candlestick','heatmap','scatter','boxplot','histogram','pie','new','theme','states','spec','fill-parent',
 ])
 
 function DemoPage() {
@@ -1752,6 +1847,7 @@ function DemoPage() {
         <div style={{ padding: '24px' }}>
           {id === 'configurator' && <ConfiguratorDemo />}
           {id === 'zoom'         && <LinkedZoomDemo />}
+          {id === 'candlestick'  && <CandlestickDemo />}
           {id === 'heatmap'      && <HeatmapDemo />}
           {id === 'scatter'      && <ScatterDemo />}
           {id === 'boxplot'      && <BoxPlotDemo />}

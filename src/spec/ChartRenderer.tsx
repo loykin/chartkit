@@ -7,6 +7,7 @@ import { BoxPlotChart    } from '../boxplot'
 import { GaugeChart      } from '../gauge'
 import { StatChart       } from '../stat'
 import { HeatmapChart    } from '../heatmap'
+import { CandlestickChart } from '../candlestick'
 import type { ChartSpec } from './types'
 
 export interface ChartRendererProps {
@@ -34,6 +35,10 @@ export function ChartRenderer({ spec, isLoading, error }: ChartRendererProps) {
     case 'timeseries': {
       const { type: _, ...props } = spec
       return <TimeSeriesChart {...props} {...runtime} />
+    }
+    case 'candlestick': {
+      const { type: _, ...props } = spec
+      return <CandlestickChart {...props} {...runtime} />
     }
     case 'histogram': {
       const { type: _, ...props } = spec

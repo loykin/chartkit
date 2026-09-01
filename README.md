@@ -22,6 +22,7 @@ Pass `CHART_SPEC_SCHEMA` as a tool input schema for structured output, or `CHART
 
 - **ChartRenderer** — declarative JSON spec interface for AI agents and MCP tools
 - **TimeSeriesChart** — line, area, bars, and points; dual y-axis; stacking; threshold lines; zoom/selection; custom tooltip & legend
+- **CandlestickChart** — OHLC candles; volume overlay; hover values; controlled range and drag selection
 - **HistogramChart** — auto-binning (Sturges rule), normalization to relative frequency
 - **HeatmapChart** — density heatmap from flat (x, y) scatter data; customizable color palette
 - **ScatterChart** — multi-series scatter plot; configurable point sizes
@@ -95,6 +96,21 @@ import { TimeSeriesChart } from '@loykin/chartkit'
     { value: 80, color: '#f59e0b', label: 'Warning',  dash: [4, 2] },
     { value: 90, color: '#ef4444', label: 'Critical', width: 1.5  },
   ]}
+/>
+```
+
+### CandlestickChart
+
+```tsx
+import { CandlestickChart } from '@loykin/chartkit'
+
+<CandlestickChart
+  data={[
+    { time: 1724889600, open: 188.4, high: 191.2, low: 187.8, close: 190.6, volume: 24_800_000 },
+    { time: 1724976000, open: 190.6, high: 192.1, low: 189.2, close: 189.8, volume: 21_300_000 },
+  ]}
+  yUnit="USD"
+  height={360}
 />
 ```
 
@@ -340,6 +356,7 @@ ${CHART_SPEC_DESCRIPTION}
 | `pie`        | `slices[].{label, value, color}`                       |
 | `scatter`    | `series[].{label, color, xs, ys}`                      |
 | `timeseries` | `data` (AlignedData), `series[].{label, color}`        |
+| `candlestick`| `data[].{time, open, high, low, close}`                |
 | `histogram`  | `values`                                               |
 | `boxplot`    | `categories`, `series[].{label, color, data[].{min,q1,median,q3,max}}` |
 | `gauge`      | `value`                                                |
@@ -420,6 +437,25 @@ All types accept the same optional base fields as the individual components (`he
 | `barWidth`    | `number`                         | `0.6`    | Bar width as fraction of x-spacing  |
 | `dash`        | `number[]`                       | —        | Dash pattern e.g. `[4, 2]`          |
 | `yAxis`       | `'left'\|'right'`                | `'left'` | Which y-axis to bind                |
+
+### `CandlestickChart`
+
+| Prop             | Type                       | Default     | Description                                  |
+|------------------|----------------------------|-------------|----------------------------------------------|
+| `data`           | `CandlestickDataPoint[]`   | **required**| Chronological Unix-second OHLCV candles      |
+| `upColor`        | `string`                   | `#22c55e`   | Rising candle color                          |
+| `downColor`      | `string`                   | `#ef4444`   | Falling candle color                         |
+| `candleWidth`    | `number`                   | `0.65`      | Body width as a fraction of time spacing     |
+| `showVolume`     | `boolean`                  | `true`      | Draw the volume overlay                      |
+| `volumeHeight`   | `number`                   | `0.2`       | Plot-height fraction used by volume (0–0.5)  |
+| `yUnit`          | `string`                   | —           | Price unit                                   |
+| `locale`         | `string`                   | browser     | Date and number locale                       |
+| `showXAxis`      | `boolean`                  | `true`      | Show the time axis below the plot            |
+| `showLegend`     | `boolean`                  | `true`      | Show current OHLCV values                    |
+| `selectionMode`  | `'x'\|'y'\|'xy'\|'none'` | `'x'`       | Drag selection mode                          |
+| `timeRange`      | `[number, number]`         | —           | Controlled Unix-second x-axis range          |
+| `onTimeRangeChange` | `(range) => void`       | —           | Fired after x-range selection                |
+| `renderTooltip`  | `(payload) => ReactNode`   | —           | Custom candle tooltip renderer               |
 
 ### `HistogramChart`
 

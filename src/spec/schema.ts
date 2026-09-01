@@ -9,6 +9,7 @@ export const CHART_SPEC_SCHEMA = {
     { $ref: '#/definitions/PieChartSpec'     },
     { $ref: '#/definitions/ScatterChartSpec' },
     { $ref: '#/definitions/TimeSeriesSpec'   },
+    { $ref: '#/definitions/CandlestickSpec'  },
     { $ref: '#/definitions/HistogramSpec'    },
     { $ref: '#/definitions/BoxPlotSpec'      },
     { $ref: '#/definitions/GaugeSpec'        },
@@ -179,6 +180,45 @@ export const CHART_SPEC_SCHEMA = {
         },
       ],
     },
+    CandlestickSpec: {
+      allOf: [
+        { $ref: '#/definitions/BaseChartFields' },
+        {
+          type: 'object',
+          required: ['type', 'data'],
+          properties: {
+            type: { const: 'candlestick' },
+            data: {
+              type: 'array',
+              description: 'Chronological OHLCV candles with Unix timestamps in seconds',
+              items: {
+                type: 'object',
+                required: ['time', 'open', 'high', 'low', 'close'],
+                properties: {
+                  time:   { type: 'number', description: 'Unix timestamp in seconds' },
+                  open:   { type: 'number' },
+                  high:   { type: 'number' },
+                  low:    { type: 'number' },
+                  close:  { type: 'number' },
+                  volume: { type: 'number' },
+                },
+              },
+            },
+            upColor:       { type: 'string', description: 'Rising candle color (default #22c55e)' },
+            downColor:     { type: 'string', description: 'Falling candle color (default #ef4444)' },
+            candleWidth:   { type: 'number', minimum: 0.1, maximum: 1 },
+            showVolume:    { type: 'boolean', description: 'Show volume overlay (default true)' },
+            volumeHeight:  { type: 'number', minimum: 0, maximum: 0.5 },
+            yUnit:         { type: 'string' },
+            locale:        { type: 'string' },
+            showXAxis:     { type: 'boolean' },
+            showLegend:    { type: 'boolean' },
+            timeRange:     { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            selectionMode: { type: 'string', enum: ['x', 'y', 'xy', 'none'] },
+          },
+        },
+      ],
+    },
     HistogramSpec: {
       allOf: [
         { $ref: '#/definitions/BaseChartFields' },
@@ -301,6 +341,7 @@ bar:        { categories: string[], series: [{label, color, values: (number|null
 pie:        { slices: [{label, value, color}], innerRadius?, labelType?, centerLabel?, legendPosition? }
 scatter:    { series: [{label, color, xs: number[], ys: number[]}], xUnit?, yUnit? }
 timeseries: { data: [[unix_timestamps], [series1_values], ...], series: [{label, color, type?}], yUnit?, thresholds? }
+candlestick:{ data: [{time, open, high, low, close, volume?}], upColor?, downColor?, showVolume?, yUnit? }
 histogram:  { values: number[], bins?, color?, normalize? }
 boxplot:    { categories: string[], series: [{label, color, data: [{min,q1,median,q3,max}]}] }
 gauge:      { value: number, min?, max?, unit?, label?, thresholds? }

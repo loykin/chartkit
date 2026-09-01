@@ -93,12 +93,14 @@ export function ChartCanvas({
           fill,
           dash:   s.dash,
           show:   true,
-          points: isBars ? undefined : {
-            show:  isPoints || (s.pointShow ?? false),
-            fill:  s.color,
-            size:  s.pointSize ?? (isPoints ? 6 : 4),
-            width: 0,
-          },
+          points: isBars
+            ? { show: false }
+            : {
+                show:  isPoints || (s.pointShow ?? false),
+                fill:  s.color,
+                size:  s.pointSize ?? (isPoints ? 6 : 4),
+                width: 0,
+              },
           paths: isBars
             ? (uPlot.paths.bars?.({ size: [s.barWidth ?? 0.6, 100] }))
             : undefined,
