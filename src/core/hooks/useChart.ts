@@ -33,6 +33,7 @@ export function useChart({ containerRef, getOptions, data, fillParent, onReady }
 
     let ro:    ResizeObserver | null = null
     let chart: uPlot | null = null
+    let resizeFrame: number | null = null
 
     function create(width: number, height?: number) {
       if (chart) {
@@ -53,17 +54,26 @@ export function useChart({ containerRef, getOptions, data, fillParent, onReady }
       const height = fillParent ? (rect?.height ?? container.clientHeight) : undefined
       if (!width) return
 
-      if (!chart) {
-        create(width, height)
-      } else {
-        chart.setSize({ width, height: height ?? chart.height })
-      }
+      if (resizeFrame !== null) cancelAnimationFrame(resizeFrame)
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = null
+        if (!chart) {
+          create(width, height)
+          return
+        }
+
+        const nextHeight = height ?? chart.height
+        if (chart.width !== width || chart.height !== nextHeight) {
+          chart.setSize({ width, height: nextHeight })
+        }
+      })
     })
 
     ro.observe(container)
 
     return () => {
       ro?.disconnect()
+      if (resizeFrame !== null) cancelAnimationFrame(resizeFrame)
       chart?.destroy()
       uRef.current = null
     }
