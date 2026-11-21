@@ -19,6 +19,28 @@ export interface PieTooltipPayload {
   y: number
 }
 
+export interface PieSliceEvent {
+  slice: PieSliceConfig
+  sliceIndex: number
+  percentage: number
+  clientX: number
+  clientY: number
+}
+
+export interface PieLegendItemEvent {
+  slice: PieSliceConfig
+  sliceIndex: number
+  /** The next hidden state requested by the legend interaction. */
+  hidden: boolean
+}
+
+export interface PieLegendItem {
+  slice: PieSliceConfig
+  sliceIndex: number
+  percentage: number
+  visible: boolean
+}
+
 export interface PieChartProps extends BaseChartProps {
   slices: PieSliceConfig[]
   /**
@@ -40,4 +62,17 @@ export interface PieChartProps extends BaseChartProps {
   renderTooltip?: (payload: PieTooltipPayload) => React.ReactNode
   /** Show the built-in or custom tooltip. Default true. */
   tooltip?: boolean
+  /** Controlled hidden slice identities. Slices without an id remain uncontrolled. */
+  hiddenSliceIds?: readonly string[]
+  /** Emits the next hidden ID set after a legend interaction. */
+  onHiddenSliceIdsChange?: (ids: string[]) => void
+  onSliceClick?: (event: PieSliceEvent) => void
+  /** Fires when the pointer enters another slice and with null when it leaves the pie. */
+  onSliceHover?: (event: PieSliceEvent | null) => void
+  onLegendItemClick?: (event: PieLegendItemEvent) => void
+  /** Runtime-only custom legend slot. */
+  renderLegend?: (
+    items: readonly PieLegendItem[],
+    toggleSlice: (sliceIndex: number) => void,
+  ) => React.ReactNode
 }

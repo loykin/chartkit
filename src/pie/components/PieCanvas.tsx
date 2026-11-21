@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { DefaultChartTooltip, formatNum } from '../../core'
+import { DefaultChartTooltip, formatNum, resolveCssVar } from '../../core'
 import type { ChartFormatters, ChartTooltipRenderer } from '../../core'
-import type { PieSliceConfig, PieLabelType, PieTooltipPayload } from '../types'
+import type { PieSliceConfig, PieLabelType, PieTooltipPayload, PieSliceEvent } from '../types'
+import { normalizePieValue, sumPieValues } from '../utils/values'
 
 interface TooltipState {
   x:   number
@@ -11,6 +12,7 @@ interface TooltipState {
 
 interface PieCanvasProps {
   slices:         PieSliceConfig[]
+  sliceIndices:   number[]
   height:         number | 'fill'
   innerRadius:    number
   labelType:      PieLabelType
@@ -21,19 +23,21 @@ interface PieCanvasProps {
   renderTooltip?: (payload: PieTooltipPayload) => React.ReactNode
   renderPluginTooltip?: ChartTooltipRenderer
   tooltipEnabled: boolean
+  onSliceClick?:  (event: PieSliceEvent) => void
+  onSliceHover?:  (event: PieSliceEvent | null) => void
 }
 
 // ── Geometry helpers ──────────────────────────────────────────────────────────
 
 function buildAngles(slices: PieSliceConfig[]): { start: number; end: number }[] {
-  const total = slices.reduce((s, d) => s + d.value, 0)
+  const total = sumPieValues(slices)
   if (total === 0) return slices.map(() => ({ start: 0, end: 0 }))
 
   const BASE = -Math.PI / 2  // 12 o'clock
   const out: { start: number; end: number }[] = []
   let cursor = BASE
   for (const s of slices) {
-    const span = (s.value / total) * Math.PI * 2
+    const span = (normalizePieValue(s.value) / total) * Math.PI * 2
     out.push({ start: cursor, end: cursor + span })
     cursor += span
   }
@@ -123,7 +127,7 @@ function buildOutsideLabels(
     if (span < MIN_SPAN_OUTSIDE) continue
 
     const mid  = (start + end) / 2
-    const pct  = total > 0 ? (slices[i].value / total) * 100 : 0
+    const pct  = total > 0 ? (normalizePieValue(slices[i].value) / total) * 100 : 0
     const text = sliceLabel(slices[i], pct, labelType, unit, formatters)
     if (!text) continue
 
@@ -187,8 +191,10 @@ function draw(
 
   if (!slices.length) return
 
-  const total  = slices.reduce((s, d) => s + d.value, 0)
+  const total  = sumPieValues(slices)
   const angles = buildAngles(slices)
+  const foreground = resolveCssVar('--chartkit-foreground', '#111111')
+  const mutedForeground = resolveCssVar('--chartkit-muted-foreground', '#737373')
 
   // Shrink outerR when labels are outside so they fit within canvas
   const radiusRatio = labelPosition === 'outside' ? 0.62 : 0.82
@@ -244,7 +250,7 @@ function draw(
       if (end - start < 0.25) continue
 
       const mid = (start + end) / 2
-      const pct = total > 0 ? (slices[i].value / total) * 100 : 0
+      const pct = total > 0 ? (normalizePieValue(slices[i].value) / total) * 100 : 0
       const text = sliceLabel(slices[i], pct, labelType, unit, formatters)
       if (!text) continue
 
@@ -282,7 +288,7 @@ function draw(
 
       // Label text
       ctx.textAlign = lbl.isRight ? 'left' : 'right'
-      ctx.fillStyle = 'var(--chartkit-foreground, #111111)'
+      ctx.fillStyle = foreground
       ctx.fillText(lbl.text, lbl.elbowX + (lbl.isRight ? 4 : -4), lbl.y)
     }
   }
@@ -299,7 +305,7 @@ function draw(
     lines.forEach((line, i) => {
       const isFirst = i === 0 && lines.length > 1
       ctx.font      = isFirst ? '600 13px system-ui, sans-serif' : '400 11px system-ui, sans-serif'
-      ctx.fillStyle = isFirst ? 'var(--chartkit-foreground, #111111)' : 'var(--chartkit-muted-foreground, #737373)'
+      ctx.fillStyle = isFirst ? foreground : mutedForeground
       ctx.fillText(line, cx, startY + i * lineH)
     })
   }
@@ -309,6 +315,7 @@ function draw(
 
 export function PieCanvas({
   slices,
+  sliceIndices,
   height,
   innerRadius,
   labelType,
@@ -319,11 +326,26 @@ export function PieCanvas({
   renderTooltip,
   renderPluginTooltip,
   tooltipEnabled,
+  onSliceClick,
+  onSliceHover,
 }: PieCanvasProps) {
   const wrapRef   = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [hovered, setHovered] = useState(-1)
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
+  const hoveredRef = useRef(-1)
+  const onSliceHoverRef = useRef(onSliceHover)
+  const onSliceClickRef = useRef(onSliceClick)
+  onSliceHoverRef.current = onSliceHover
+  onSliceClickRef.current = onSliceClick
+  const visibleSliceKey = sliceIndices.join(':')
+
+  useEffect(() => {
+    hoveredRef.current = -1
+    setHovered(-1)
+    setTooltip(null)
+    onSliceHoverRef.current?.(null)
+  }, [visibleSliceKey])
 
   const redraw = useCallback(() => {
     if (canvasRef.current) {
@@ -363,28 +385,65 @@ export function PieCanvas({
 
     setHovered(idx)
     setTooltip(idx >= 0 ? { x: mx, y: my, idx } : null)
-  }, [slices, innerRadius, getOuterR])
+    if (idx !== hoveredRef.current) {
+      hoveredRef.current = idx
+      if (idx < 0) {
+        onSliceHoverRef.current?.(null)
+      } else {
+        const slice = slices[idx]
+        const total = sumPieValues(slices)
+        onSliceHoverRef.current?.({
+          slice,
+          sliceIndex: sliceIndices[idx],
+          percentage: total > 0 ? (normalizePieValue(slice.value) / total) * 100 : 0,
+          clientX: e.clientX,
+          clientY: e.clientY,
+        })
+      }
+    }
+  }, [slices, sliceIndices, innerRadius, getOuterR])
 
   const handleMouseLeave = useCallback(() => {
+    hoveredRef.current = -1
     setHovered(-1)
     setTooltip(null)
+    onSliceHoverRef.current?.(null)
   }, [])
 
-  const total = slices.reduce((s, d) => s + d.value, 0)
+  const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const idx = hoveredRef.current
+    if (idx < 0) return
+    const slice = slices[idx]
+    const total = sumPieValues(slices)
+    onSliceClickRef.current?.({
+      slice,
+      sliceIndex: sliceIndices[idx],
+      percentage: total > 0 ? (normalizePieValue(slice.value) / total) * 100 : 0,
+      clientX: e.clientX,
+      clientY: e.clientY,
+    })
+  }, [slices, sliceIndices])
+
+  const total = sumPieValues(slices)
 
   return (
     <div ref={wrapRef} style={{ position: 'relative', width: '100%', height: height === 'fill' ? '100%' : undefined }}>
       <canvas
         ref={canvasRef}
-        style={{ display: 'block', width: '100%', height: height === 'fill' ? '100%' : height }}
+        style={{
+          display: 'block', width: '100%', height: height === 'fill' ? '100%' : height,
+          cursor: onSliceClick ? 'pointer' : undefined,
+        }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       />
 
       {tooltipEnabled && tooltip && tooltip.idx >= 0 && (() => {
         const slice = slices[tooltip.idx]
-        const percentage = total > 0 ? (slice.value / total) * 100 : 0
-        const localPayload = { slice, sliceIndex: tooltip.idx, percentage, x: tooltip.x, y: tooltip.y }
+        const percentage = total > 0 ? (normalizePieValue(slice.value) / total) * 100 : 0
+        const originalIndex = sliceIndices[tooltip.idx]
+        const localPayload = { slice, sliceIndex: originalIndex, percentage, x: tooltip.x, y: tooltip.y }
         if (renderTooltip) return renderTooltip(localPayload)
 
         const payload = {
@@ -393,7 +452,7 @@ export function PieCanvas({
           y: tooltip.y,
           items: [{
             id: slice.id,
-            itemIndex: tooltip.idx,
+            itemIndex: originalIndex,
             label: formatters.label?.(slice.label, {
               chartType: 'pie', purpose: 'tooltip', seriesLabel: slice.label,
             }) ?? slice.label,

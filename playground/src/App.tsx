@@ -920,12 +920,13 @@ function HistogramDemo() {
 // ── Pie / Donut ───────────────────────────────────────────────────────────────
 
 const PIE_SLICES: PieSliceConfig[] = [
-  { label: 'Nginx',      value: 42, color: '#3b82f6' },
-  { label: 'PostgreSQL', value: 27, color: '#10b981' },
-  { label: 'Redis',      value: 13, color: '#f59e0b' },
-  { label: 'Worker',     value: 11, color: '#8b5cf6' },
-  { label: 'Other',      value:  7, color: '#6b7280' },
+  { id: 'nginx',      label: 'Nginx',      value: 42, color: '#3b82f6' },
+  { id: 'postgresql', label: 'PostgreSQL', value: 27, color: '#10b981' },
+  { id: 'redis',      label: 'Redis',      value: 13, color: '#f59e0b' },
+  { id: 'worker',     label: 'Worker',     value: 11, color: '#8b5cf6' },
+  { id: 'other',      label: 'Other',      value:  7, color: '#6b7280' },
 ]
+const PIE_TOTAL = PIE_SLICES.reduce((sum, slice) => sum + slice.value, 0)
 
 function PieDemo() {
   const [innerRadius,    setInnerRadius   ] = useState(0.55)
@@ -933,10 +934,14 @@ function PieDemo() {
   const [labelPosition,  setLabelPosition ] = useState<'inside' | 'outside'>('inside')
   const [legendPosition, setLegendPosition] = useState<'right' | 'bottom' | 'none'>('right')
   const [showCenter,     setShowCenter    ] = useState(true)
+  const [hiddenSliceIds, setHiddenSliceIds] = useState<string[]>([])
+  const [pieInteraction, setPieInteraction] = useState('')
 
   const LABEL_TYPES: PieLabelType[] = ['percent', 'name', 'value', 'name+percent', 'none']
-  const total = PIE_SLICES.reduce((s, d) => s + d.value, 0)
-  const centerLabel = showCenter && innerRadius > 0 ? `${total}%\nCPU usage` : undefined
+  const visibleTotal = PIE_SLICES
+    .filter(slice => !slice.id || !hiddenSliceIds.includes(slice.id))
+    .reduce((s, d) => s + d.value, 0)
+  const centerLabel = showCenter && innerRadius > 0 ? `${visibleTotal}%\nVisible` : undefined
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -971,6 +976,15 @@ function PieDemo() {
             <Btn key={p} active={legendPosition === p} onClick={() => setLegendPosition(p)}>{p}</Btn>
           ))}
         </CtrlRow>
+        <CtrlRow label="Visibility">
+          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+            {hiddenSliceIds.length ? `hidden: ${hiddenSliceIds.join(', ')}` : 'all visible'}
+          </span>
+          {hiddenSliceIds.length > 0 && (
+            <button type="button" onClick={() => setHiddenSliceIds([])}>reset</button>
+          )}
+        </CtrlRow>
+        {pieInteraction && <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>{pieInteraction}</span>}
       </ControlPanel>
 
       <Card>
@@ -980,6 +994,11 @@ function PieDemo() {
           innerRadius={innerRadius} labelType={labelType}
           labelPosition={labelPosition} centerLabel={centerLabel}
           legendPosition={legendPosition} unit="%"
+          hiddenSliceIds={hiddenSliceIds}
+          onHiddenSliceIdsChange={setHiddenSliceIds}
+          onSliceClick={({ slice }) => setPieInteraction(`slice click: ${slice.label}`)}
+          onSliceHover={event => setPieInteraction(event ? `slice hover: ${event.slice.label}` : '')}
+          onLegendItemClick={({ slice, hidden }) => setPieInteraction(`legend: ${slice.label} ${hidden ? 'hidden' : 'visible'}`)}
         />
       </Card>
 
@@ -990,7 +1009,7 @@ function PieDemo() {
         </Card>
         <Card>
           <SectionHeader>Donut — bottom legend</SectionHeader>
-          <PieChart slices={PIE_SLICES} height={220} innerRadius={0.6} labelType="none" centerLabel={`${total}%\nTotal`} legendPosition="bottom" />
+          <PieChart slices={PIE_SLICES} height={220} innerRadius={0.6} labelType="none" centerLabel={`${PIE_TOTAL}%\nTotal`} legendPosition="bottom" />
         </Card>
       </div>
     </div>

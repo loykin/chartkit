@@ -13,7 +13,16 @@ type OmitRuntime<T> = Omit<T, 'isLoading' | 'error' | 'formatters' | 'height'> &
   height?: number
 }
 
-type OmitPieRuntime = Omit<OmitRuntime<PieChartProps>, 'renderTooltip'>
+type OmitPieRuntime = Omit<
+  OmitRuntime<PieChartProps>,
+  | 'renderTooltip'
+  | 'hiddenSliceIds'
+  | 'onHiddenSliceIdsChange'
+  | 'onSliceClick'
+  | 'onSliceHover'
+  | 'onLegendItemClick'
+  | 'renderLegend'
+>
 
 type OmitTimeSeriesRuntime = Omit<
   OmitRuntime<TimeSeriesChartProps>,

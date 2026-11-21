@@ -608,10 +608,21 @@ visibility and callbacks are runtime-only and excluded from `ChartSpec`.
 | `formatters`     | `ChartFormatters`                 | provider/default | Runtime-only value, label, and percentage overrides |
 | `tooltip`        | `boolean`                         | `true`     | Show the built-in, provider, or chart tooltip |
 | `renderTooltip`  | `(payload) => ReactNode`          | —          | Per-chart tooltip renderer                   |
+| `hiddenSliceIds` | `readonly string[]`                | uncontrolled | Controlled hidden slice IDs; requires stable IDs |
+| `onHiddenSliceIdsChange` | `(ids: string[]) => void` | —          | Emits the next hidden slice IDs              |
+| `onSliceClick`   | `(event: PieSliceEvent) => void`   | —          | Slice pointer activation                     |
+| `onSliceHover`   | `(event: PieSliceEvent \| null) => void` | —    | Slice enter/change and leave                 |
+| `onLegendItemClick` | `(event: PieLegendItemEvent) => void` | —   | Keyboard or pointer legend activation        |
+| `renderLegend`   | `(items, toggleSlice) => ReactNode`| —          | Runtime-only custom legend slot              |
 
 **`PieLabelType`**: `'name'` · `'value'` · `'percent'` · `'name+percent'` · `'none'`
 
-`PieSliceConfig.id` is optional and supplies stable slice identity to runtime tooltip payloads.
+`PieSliceConfig.id` is optional and supplies stable slice identity to runtime payloads and
+controlled visibility. Hidden slices are removed from geometry and the visible total; percentages
+are recalculated from the remaining positive finite values. Zero, negative, `NaN`, and infinite
+values contribute zero geometry while their raw value remains available to formatters and events.
+ID-less slices retain backward-compatible uncontrolled, index-based legend behavior. Runtime state,
+events, and render slots are excluded from `ChartSpec`.
 
 ### `StatChart`
 

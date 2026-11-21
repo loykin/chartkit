@@ -79,7 +79,15 @@ export type { ScatterChartProps, ScatterSeriesConfig } from './scatter'
 export type { BoxPlotChartProps, BoxSeriesConfig, BoxStats } from './boxplot'
 
 // Pie types
-export type { PieChartProps, PieSliceConfig, PieLabelType, PieTooltipPayload } from './pie'
+export type {
+  PieChartProps,
+  PieSliceConfig,
+  PieLabelType,
+  PieTooltipPayload,
+  PieSliceEvent,
+  PieLegendItemEvent,
+  PieLegendItem,
+} from './pie'
 
 // Stat types
 export type { StatChartProps } from './stat'
