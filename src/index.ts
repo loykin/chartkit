@@ -4,6 +4,7 @@ export type {
   ChartSpec,
   ChartRendererProps,
   BarChartSpec,
+  BarGaugeSpec,
   PieChartSpec,
   ScatterChartSpec,
   TimeSeriesSpec,
@@ -26,6 +27,7 @@ export { PieChart        } from './pie'
 export { StatChart       } from './stat'
 export { GaugeChart      } from './gauge'
 export { BarChart        } from './bar'
+export { BarGaugeChart   } from './bar-gauge'
 
 // Runtime customization (functions stay outside the serializable ChartSpec)
 export { ChartKitProvider, useChartKit } from './core'
@@ -101,6 +103,7 @@ export type { GaugeChartProps } from './gauge'
 
 // Bar types
 export type { BarChartProps, BarSeriesConfig } from './bar'
+export type { BarGaugeChartProps, BarGaugeItem } from './bar-gauge'
 
 // Shared primitives (re-exported for consumers who compose custom charts)
 export type {

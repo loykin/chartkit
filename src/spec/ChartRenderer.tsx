@@ -8,6 +8,7 @@ import { GaugeChart      } from '../gauge'
 import { StatChart       } from '../stat'
 import { HeatmapChart    } from '../heatmap'
 import { CandlestickChart } from '../candlestick'
+import { BarGaugeChart } from '../bar-gauge'
 import type { ChartSpec } from './types'
 
 export interface ChartRendererProps {
@@ -23,6 +24,10 @@ export function ChartRenderer({ spec, isLoading, error }: ChartRendererProps) {
     case 'bar': {
       const { type: _, ...props } = spec
       return <BarChart {...props} {...runtime} />
+    }
+    case 'barGauge': {
+      const { type: _, ...props } = spec
+      return <BarGaugeChart {...props} {...runtime} />
     }
     case 'pie': {
       const { type: _, ...props } = spec

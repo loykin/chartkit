@@ -2,7 +2,8 @@ import { describe, expect, expectTypeOf, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ChartKitProvider, resolveChartKitRuntime, useChartKit } from '../core/runtime/ChartKitProvider'
 import type { ChartKitRuntime, ChartTooltipRenderer } from '../core/runtime'
-import type { TimeSeriesSpec } from '../spec'
+import { ChartRenderer } from '../spec'
+import type { BarGaugeSpec, TimeSeriesSpec } from '../spec'
 
 function FormatterProbe() {
   const { formatters } = useChartKit()
@@ -51,5 +52,18 @@ describe('resolveChartKitRuntime', () => {
 
   it('keeps ChartSpec height portable', () => {
     expectTypeOf<TimeSeriesSpec['height']>().toEqualTypeOf<number | undefined>()
+    expectTypeOf<BarGaugeSpec['height']>().toEqualTypeOf<number | undefined>()
+  })
+
+  it('renders a bar gauge from a serializable spec', () => {
+    const spec: BarGaugeSpec = {
+      type: 'barGauge',
+      items: [{ id: 'cpu', label: 'CPU', value: 42 }],
+    }
+
+    const html = renderToStaticMarkup(<ChartRenderer spec={spec} />)
+
+    expect(html).toContain('CPU')
+    expect(html).toContain('42')
   })
 })

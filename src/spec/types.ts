@@ -8,6 +8,7 @@ import type { GaugeChartProps } from '../gauge'
 import type { StatChartProps } from '../stat'
 import type { HeatmapChartProps } from '../heatmap'
 import type { CandlestickChartProps } from '../candlestick'
+import type { BarGaugeChartProps } from '../bar-gauge'
 
 type OmitRuntime<T> = Omit<T, 'isLoading' | 'error' | 'formatters' | 'height'> & {
   height?: number
@@ -44,6 +45,7 @@ type OmitCandlestickRuntime = Omit<
 >
 
 export type BarChartSpec     = { type: 'bar'        } & OmitRuntime<BarChartProps>
+export type BarGaugeSpec     = { type: 'barGauge'   } & Omit<OmitRuntime<BarGaugeChartProps>, 'onItemClick' | 'renderValue'>
 export type PieChartSpec     = { type: 'pie'        } & OmitPieRuntime
 export type ScatterChartSpec = { type: 'scatter'    } & OmitRuntime<ScatterChartProps>
 export type TimeSeriesSpec   = { type: 'timeseries' } & OmitTimeSeriesRuntime
@@ -56,6 +58,7 @@ export type HeatmapSpec      = { type: 'heatmap'    } & OmitRuntime<HeatmapChart
 
 export type ChartSpec =
   | BarChartSpec
+  | BarGaugeSpec
   | PieChartSpec
   | ScatterChartSpec
   | TimeSeriesSpec

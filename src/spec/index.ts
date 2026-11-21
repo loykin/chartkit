@@ -4,6 +4,7 @@ export type { ChartRendererProps } from './ChartRenderer'
 export type {
   ChartSpec,
   BarChartSpec,
+  BarGaugeSpec,
   PieChartSpec,
   ScatterChartSpec,
   TimeSeriesSpec,

@@ -6,6 +6,7 @@ export const CHART_SPEC_SCHEMA = {
   description: 'Declarative specification for rendering a chart with @loykin/chartkit',
   oneOf: [
     { $ref: '#/definitions/BarChartSpec'     },
+    { $ref: '#/definitions/BarGaugeSpec'     },
     { $ref: '#/definitions/PieChartSpec'     },
     { $ref: '#/definitions/ScatterChartSpec' },
     { $ref: '#/definitions/TimeSeriesSpec'   },
@@ -85,6 +86,31 @@ export const CHART_SPEC_SCHEMA = {
             orientation: { type: 'string', enum: ['vertical', 'horizontal'], description: 'Default vertical' },
             xUnit:       { type: 'string', description: 'Unit label on the category axis' },
             yUnit:       { type: 'string', description: 'Unit label on the value axis' },
+          },
+        },
+      ],
+    },
+    BarGaugeSpec: {
+      allOf: [
+        { $ref: '#/definitions/BaseChartFields' },
+        {
+          type: 'object', required: ['type', 'items'],
+          properties: {
+            type: { const: 'barGauge' },
+            items: {
+              type: 'array', items: {
+                type: 'object', required: ['id', 'label', 'value'],
+                properties: {
+                  id: { type: 'string' }, label: { type: 'string' }, value: { type: ['number', 'null'] },
+                  min: { type: 'number' }, max: { type: 'number' }, color: { type: 'string' },
+                  thresholds: { type: 'array', items: { $ref: '#/definitions/Threshold' } },
+                  description: { type: 'string' },
+                },
+              },
+            },
+            orientation: { type: 'string', enum: ['horizontal', 'vertical'] },
+            valueDisplay: { type: 'string', enum: ['value', 'percent', 'both', 'none'] },
+            min: { type: 'number' }, max: { type: 'number' }, unit: { type: 'string' },
           },
         },
       ],
@@ -373,6 +399,7 @@ export const CHART_SPEC_DESCRIPTION = `
 Use ChartSpec to render a chart. Set "type" to one of the following and provide the matching fields.
 
 bar:        { categories: string[], series: [{label, color, values: (number|null)[]}], stacked?, orientation? }
+barGauge:   { items: [{id, label, value, min?, max?, color?}], orientation?, valueDisplay?, min?, max?, unit? }
 pie:        { slices: [{label, value, color}], innerRadius?, labelType?, centerLabel?, legendPosition?, tooltip? }
 scatter:    { series: [{label, color, xs: number[], ys: number[]}], xUnit?, yUnit? }
 timeseries: { data: [[unix_timestamps], [series1_values], ...], series: [{label, color, type?}], yUnit?, thresholds?, tooltip? }

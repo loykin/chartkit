@@ -30,6 +30,7 @@ Pass `CHART_SPEC_SCHEMA` as a tool input schema for structured output, or `CHART
 - **PieChart** — pie and donut; inside/outside labels with leader lines; center text
 - **StatChart** — single big-number panel; trend indicator; sparkline; threshold coloring
 - **GaugeChart** — 270° speedometer gauge; threshold color zones; min/max labels
+- **BarGaugeChart** — horizontal/vertical value gauges; mixed-sign ranges and zero baselines
 - **BarChart** — categorical bar chart; grouped or stacked; vertical and horizontal orientation
 - CSS variable theming — drop in any design system
 - Loading and error states built-in
@@ -388,6 +389,7 @@ ${CHART_SPEC_DESCRIPTION}
 | `type`       | Required fields                                        |
 |--------------|--------------------------------------------------------|
 | `bar`        | `categories`, `series[].{label, color, values}`        |
+| `barGauge`   | `items[].{id, label, value}`                           |
 | `pie`        | `slices[].{label, value, color}`                       |
 | `scatter`    | `series[].{label, color, xs, ys}`                      |
 | `timeseries` | `data` (AlignedData), `series[].{label, color}`        |
@@ -664,6 +666,22 @@ events, and render slots are excluded from `ChartSpec`.
 | `thresholds` | `Threshold[]`| —        | Color zones painted as arc segments                |
 | `arcWidth`   | `number`     | `0.18`   | Arc thickness as a fraction of the radius (0–1)    |
 | `height`     | `number \| 'fill'` | `200` | Component height in px, or `'fill'` to expand to parent |
+
+### `BarGaugeChart`
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `readonly BarGaugeItem[]` | **required** | Final pre-aggregated values with stable IDs |
+| `orientation` | `'horizontal'\|'vertical'` | `'horizontal'` | Gauge direction |
+| `valueDisplay` | `'value'\|'percent'\|'both'\|'none'` | `'value'` | Text shown per item |
+| `min` / `max` | `number` | `0` / `100` | Shared fallback range; item ranges override it |
+| `unit` | `string` | — | Display unit |
+| `onItemClick` | `(item) => void` | — | Runtime-only keyboard/pointer activation |
+| `renderValue` | `(item, value, percent) => ReactNode` | — | Runtime-only value slot |
+
+Values are clamped only for geometry; formatted text keeps the original value. Mixed-sign ranges
+draw from a zero baseline. `0` is valid, while null and non-finite values render as missing. Large
+item collections scroll inside the configured chart height; vertical bars keep a 96 px minimum width.
 
 ### `BarChart`
 

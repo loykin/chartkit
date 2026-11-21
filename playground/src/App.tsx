@@ -6,7 +6,7 @@ import { javascript } from '@codemirror/lang-javascript'
 import { oneDark } from '@codemirror/theme-one-dark'
 import {
   TimeSeriesChart, CandlestickChart, HistogramChart, HeatmapChart, ScatterChart,
-  BoxPlotChart, PieChart, StatChart, GaugeChart, BarChart, GRAD_METAL,
+  BoxPlotChart, PieChart, StatChart, GaugeChart, BarChart, BarGaugeChart, GRAD_METAL,
   ChartKitProvider, ChartRenderer,
 } from '@loykin/chartkit'
 import type {
@@ -1053,11 +1053,21 @@ const TS_THRESHOLDS: Threshold[] = [
   { value: 90, color: '#ef4444', label: 'Critical', width: 1.5  },
 ]
 
+const BAR_GAUGE_ITEMS = [
+  { id: 'positive', label: 'Positive', value: 72, min: 0, max: 100, thresholds: GAUGE_THRESHOLDS },
+  { id: 'negative', label: 'Mixed sign', value: -35, min: -100, max: 100, color: '#8b5cf6' },
+  { id: 'zero', label: 'Zero', value: 0, min: -100, max: 100, color: '#10b981' },
+  { id: 'overflow', label: 'Overflow', value: 135, min: 0, max: 100, color: '#ef4444' },
+  { id: 'missing', label: 'Missing', value: null, min: 0, max: 100 },
+]
+
 function NewChartsDemo() {
   const [barStacked,     setBarStacked    ] = useState(false)
   const [barOrientation, setBarOrientation] = useState<'vertical' | 'horizontal'>('vertical')
   const [gaugeValue,     setGaugeValue    ] = useState(67)
   const [showThresholds, setShowThresholds] = useState(true)
+  const [barGaugeOrientation, setBarGaugeOrientation] = useState<'horizontal' | 'vertical'>('horizontal')
+  const [barGaugeEvent, setBarGaugeEvent] = useState('none')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -1099,6 +1109,25 @@ function NewChartsDemo() {
           <GaugeChart value={gaugeValue * 2} min={0} max={200} unit="ms" height={180} />
         </Card>
       </div>
+
+      <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, margin: '8px 0 2px' }}>Bar Gauge</h2>
+      <ControlPanel>
+        <CtrlRow label="Orientation">
+          <Btn active={barGaugeOrientation === 'horizontal'} onClick={() => setBarGaugeOrientation('horizontal')}>horizontal</Btn>
+          <Btn active={barGaugeOrientation === 'vertical'} onClick={() => setBarGaugeOrientation('vertical')}>vertical</Btn>
+        </CtrlRow>
+        <CtrlRow label="Last item">{barGaugeEvent}</CtrlRow>
+      </ControlPanel>
+      <Card>
+        <BarGaugeChart
+          items={BAR_GAUGE_ITEMS}
+          orientation={barGaugeOrientation}
+          height={260}
+          valueDisplay="both"
+          unit="%"
+          onItemClick={item => setBarGaugeEvent(item.id)}
+        />
+      </Card>
 
       <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, margin: '8px 0 2px' }}>Bar Chart</h2>
       <ControlPanel>

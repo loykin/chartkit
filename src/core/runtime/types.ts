@@ -2,6 +2,7 @@ import type React from 'react'
 
 export type ChartType =
   | 'bar'
+  | 'bar-gauge'
   | 'boxplot'
   | 'candlestick'
   | 'gauge'

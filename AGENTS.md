@@ -29,6 +29,7 @@ pnpm test           # vitest run
 ```
 src/
   bar/           — BarChart (categorical, grouped/stacked, vertical/horizontal)
+  bar-gauge/     — BarGaugeChart (final values, mixed-sign ranges, horizontal/vertical)
   boxplot/       — BoxPlotChart (box-and-whisker, outliers)
   candlestick/   — CandlestickChart (OHLC candles, volume overlay, zoom/selection)
   gauge/         — GaugeChart (270° speedometer, threshold zones)
@@ -58,6 +59,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 
 - `BaseChartProps` — shared props: `height` (`number` for fixed px, `'fill'` to expand to parent container height), `yMin`, `yMax`, `gridStyle`, `axisStyle`, `isLoading`, `error`
 - `Threshold` — `{ value: number; color: string; label?; width?; dash? }`
+- `BarGaugeItem` — final pre-aggregated value with stable `id`, label, range, color, and optional thresholds
 - `LineStyle` — `{ width?: number; stroke?: string; dash?: number[] }`
 - `AlignedData` — uPlot's format: `[timestamps, series1, series2, ...]` (all same length)
 - `SeriesConfig` — per-series config for TimeSeriesChart: `{ id?, label, color, type?, unit?, yAxis?, ... }`; `id` is the stable runtime identity when supplied
