@@ -450,6 +450,8 @@ All types accept the same optional base fields as the individual components (`he
 | `xShowDate`        | `boolean`                 | `true`      | Show date on second line when it changes           |
 | `locale`           | `string`                  | browser     | Date formatting locale                             |
 | `sync`             | `false \| TimeSeriesSyncConfig` | `false` | Explicit cursor synchronization group              |
+| `hiddenSeriesIds`  | `readonly string[]`       | uncontrolled | Controlled hidden series IDs; requires stable `SeriesConfig.id` values |
+| `onHiddenSeriesIdsChange` | `(ids: string[]) => void` | — | Emits legend and synchronized visibility changes |
 | `formatters`       | `ChartFormatters`         | provider/default | Runtime-only number, time, label, and percentage overrides |
 | `tooltip`          | `boolean`                 | `true`      | Show the built-in, provider, or chart tooltip      |
 | `barStack`         | `boolean`                 | —           | Stack bar series                                   |
@@ -472,6 +474,22 @@ const sync = { id: 'detail-charts', series: false } as const
 
 `series: false` synchronizes only the cursor. Synchronization is runtime composition state and is
 intentionally excluded from `ChartSpec`.
+
+Visibility may also be controlled by stable series identity:
+
+```tsx
+const [hiddenSeriesIds, setHiddenSeriesIds] = useState<string[]>([])
+
+<TimeSeriesChart
+  data={data}
+  series={series}
+  hiddenSeriesIds={hiddenSeriesIds}
+  onHiddenSeriesIdsChange={setHiddenSeriesIds}
+/>
+```
+
+Series without an `id` retain backward-compatible uncontrolled legend behavior. Controlled
+visibility and callbacks are runtime-only and excluded from `ChartSpec`.
 
 ### `SeriesConfig`
 

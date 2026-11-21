@@ -89,6 +89,12 @@ export interface TimeSeriesChartProps extends BaseChartProps {
   /** Join an explicit uPlot synchronization group. Default false. */
   sync?: false | TimeSeriesSyncConfig
 
+  // ── Series visibility ────────────────────────────────────────────────────
+  /** Controlled hidden series identities. Series without an id remain uncontrolled. */
+  hiddenSeriesIds?: readonly string[]
+  /** Emits the next hidden ID set after legend or synchronized visibility changes. */
+  onHiddenSeriesIdsChange?: (ids: string[]) => void
+
   // ── Bar stacking ─────────────────────────────────────────────────────────
   barStack?: boolean
 

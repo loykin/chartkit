@@ -105,9 +105,9 @@ const STOCK_VOLUME_SERIES: SeriesConfig[] = [
 ]
 
 const BASE_SERIES = [
-  { label: 'CPU',    color: '#3b82f6', unit: '%'     },
-  { label: 'Memory', color: '#10b981', unit: '%'     },
-  { label: 'RPS',    color: '#f59e0b', unit: 'req/s' },
+  { id: 'cpu',    label: 'CPU',    color: '#3b82f6', unit: '%'     },
+  { id: 'memory', label: 'Memory', color: '#10b981', unit: '%'     },
+  { id: 'rps',    label: 'RPS',    color: '#f59e0b', unit: 'req/s' },
 ]
 
 type ChartType    = NonNullable<SeriesConfig['type']>
@@ -353,6 +353,7 @@ function ConfiguratorDemo() {
   const [height,          setHeight         ] = useState(300)
   const [yUnitDisplay,    setYUnitDisplay   ] = useState<'label' | 'tick'>('label')
   const [lastSelection,   setLastSelection  ] = useState('')
+  const [hiddenSeriesIds, setHiddenSeriesIds] = useState<string[]>([])
 
   const isArea = chartType === 'area'
   const isBars = chartType === 'bars'
@@ -387,6 +388,8 @@ function ConfiguratorDemo() {
           <TimeSeriesChart
             data={DEMO_DATA}
             series={activeSeries}
+            hiddenSeriesIds={hiddenSeriesIds}
+            onHiddenSeriesIdsChange={setHiddenSeriesIds}
             barStack={barStack}
             height={height}
             legendPosition={legendPosition}
@@ -460,6 +463,14 @@ function ConfiguratorDemo() {
           </CtrlRow>
 
           <SectionDivider title="Series" />
+          <CtrlRow label="Visibility">
+            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+              {hiddenSeriesIds.length ? `hidden: ${hiddenSeriesIds.join(', ')}` : 'all visible'}
+            </span>
+            {hiddenSeriesIds.length > 0 && (
+              <button type="button" onClick={() => setHiddenSeriesIds([])}>reset</button>
+            )}
+          </CtrlRow>
           <CtrlRow label="Type">
             {CHART_TYPES.map(t => (
               <Btn key={t} active={chartType === t} onClick={() => setChartType(t)}>{t}</Btn>

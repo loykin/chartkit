@@ -17,7 +17,13 @@ type OmitPieRuntime = Omit<OmitRuntime<PieChartProps>, 'renderTooltip'>
 
 type OmitTimeSeriesRuntime = Omit<
   OmitRuntime<TimeSeriesChartProps>,
-  'renderLegend' | 'renderTooltip' | 'onSelect' | 'onTimeRangeChange' | 'sync'
+  | 'renderLegend'
+  | 'renderTooltip'
+  | 'onSelect'
+  | 'onTimeRangeChange'
+  | 'sync'
+  | 'hiddenSeriesIds'
+  | 'onHiddenSeriesIdsChange'
 >
 
 type OmitCandlestickRuntime = Omit<

@@ -22,6 +22,8 @@ export function TimeSeriesChart({
   xShowDate,
   locale,
   sync = false,
+  hiddenSeriesIds,
+  onHiddenSeriesIdsChange,
   formatters: formatterOverrides,
   gridStyle,
   axisStyle,
@@ -40,7 +42,10 @@ export function TimeSeriesChart({
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
   const { renderTooltip: renderPluginTooltip } = useChartKit()
-  const { items, setChart, toggle, updateValues } = useLegendState(series, data)
+  const { items, setChart, setSeriesVisibility, toggle, updateValues } = useLegendState(series, data, {
+    hiddenSeriesIds,
+    onHiddenSeriesIdsChange,
+  })
 
   // Stable ref so renderTooltip changes never recreate the chart
   const renderTooltipRef = useRef(renderTooltip)
@@ -48,9 +53,15 @@ export function TimeSeriesChart({
 
   const [tooltipPayload, setTooltipPayload] = useState<(Omit<TooltipPayload, 'items'> & { datumIndex: number }) | null>(null)
 
+  const hasStackedBars = !!barStack && series.some(item => item.type === 'bars')
+  const toChartSeriesIndex = useCallback(
+    (index: number) => hasStackedBars ? series.length - index + 1 : index,
+    [hasStackedBars, series.length],
+  )
+
   const handleReady = useCallback((chart: uPlot) => {
-    setChart(chart)
-  }, [setChart])
+    setChart(chart, toChartSeriesIndex)
+  }, [setChart, toChartSeriesIndex])
 
   const handleCursorMove = useCallback((chart: uPlot, idx: number | null) => {
     updateValues(chart, idx)
@@ -182,6 +193,7 @@ export function TimeSeriesChart({
           onSelect={handleSelect}
           onReady={handleReady}
           onCursorMove={handleCursorMove}
+          onSeriesVisibilityChange={setSeriesVisibility}
         />
       </div>
 

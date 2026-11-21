@@ -62,6 +62,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 - `AlignedData` — uPlot's format: `[timestamps, series1, series2, ...]` (all same length)
 - `SeriesConfig` — per-series config for TimeSeriesChart: `{ id?, label, color, type?, unit?, yAxis?, ... }`; `id` is the stable runtime identity when supplied
 - `TimeSeriesSyncConfig` — explicit time-series cursor group: `{ id, series? }`; charts are independent by default and `sync` is runtime-only
+- Time-series visibility is controlled with `hiddenSeriesIds` / `onHiddenSeriesIdsChange`; stable IDs survive reorder, while ID-less series retain uncontrolled index-based behavior
 - `CandlestickDataPoint` — `{ time, open, high, low, close, volume? }` with Unix-second timestamps; `CandlestickChart` supports a hideable x-axis for composing synchronized price/volume panes
 - `ChartSpec` — discriminated union of all chart specs (numeric `height` only; omits `isLoading`, `error`, formatter functions, and React callbacks)
 - `ChartKitProvider` — runtime-only plugin boundary for shared formatter and tooltip overrides; per-chart overrides take precedence over provider plugins, which fall back to built-in rendering

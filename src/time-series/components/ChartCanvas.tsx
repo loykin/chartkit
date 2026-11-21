@@ -30,6 +30,7 @@ interface ChartCanvasProps {
   onSelect?:     (result: SelectionResult) => void
   onReady?:      (chart: uPlot) => void
   onCursorMove?: (chart: uPlot, idx: number | null) => void
+  onSeriesVisibilityChange?: (index: number, visible: boolean) => void
 }
 
 export function ChartCanvas({
@@ -57,9 +58,13 @@ export function ChartCanvas({
   onSelect,
   onReady,
   onCursorMove,
+  onSeriesVisibilityChange,
 }: ChartCanvasProps) {
   const formattersRef = useRef(formatters)
   formattersRef.current = formatters
+  const onSeriesVisibilityChangeRef = useRef(onSeriesVisibilityChange)
+  onSeriesVisibilityChangeRef.current = onSeriesVisibilityChange
+  const hasSeriesVisibilityHandler = onSeriesVisibilityChange !== undefined
   const syncId = sync === false ? undefined : sync.id
   const syncSeries = sync === false ? undefined : sync.series
 
@@ -249,9 +254,20 @@ export function ChartCanvas({
               },
             }]
           : []),
+        ...(hasSeriesVisibilityHandler
+          ? [{
+              hooks: {
+                setSeries: [(chart: uPlot, index: number | null) => {
+                  if (index == null || index === 0) return
+                  const inputIndex = isBarStack ? series.length - index + 1 : index
+                  onSeriesVisibilityChangeRef.current?.(inputIndex, chart.series[index]?.show !== false)
+                }],
+              },
+            }]
+          : []),
       ],
     }
-  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, syncId, syncSeries, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, onSelect, onCursorMove])
+  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, syncId, syncSeries, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, onSelect, onCursorMove, hasSeriesVisibilityHandler])
 
   // Bar stacking: transform data to cumulative sums, then reverse order
   const resolvedData = useMemo<uPlot.AlignedData>(() => {
