@@ -34,6 +34,8 @@ type OmitTimeSeriesRuntime = Omit<
   | 'hiddenSeriesIds'
   | 'onHiddenSeriesIdsChange'
   | 'selectTooltipItems'
+  | 'onMarkerClick'
+  | 'onRegionClick'
 >
 
 type OmitCandlestickRuntime = Omit<

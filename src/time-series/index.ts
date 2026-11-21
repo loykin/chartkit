@@ -14,5 +14,7 @@ export type {
   TimeSeriesSyncConfig,
   TooltipPolicy,
   TooltipCursor,
+  TimeSeriesMarker,
+  TimeSeriesRegion,
   Threshold,
 } from './types'

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
 import { useChart, selectionPlugin, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, thresholdPlugin } from '../../core'
-import type { SeriesConfig, SelectionMode, SelectionResult, TimeSeriesSyncConfig } from '../types'
+import type { SeriesConfig, SelectionMode, SelectionResult, TimeSeriesMarker, TimeSeriesRegion, TimeSeriesSyncConfig } from '../types'
 import type { AxisConfig, ChartFormatters, LineStyle, Threshold } from '../../core'
 import { resolveTimeSeriesSync } from '../utils/sync'
+import { timeOverlayPlugin } from '../plugins/timeOverlayPlugin'
 
 interface ChartCanvasProps {
   containerRef:  React.RefObject<HTMLDivElement | null>
@@ -26,11 +27,15 @@ interface ChartCanvasProps {
   y2Min?:        number
   y2Max?:        number
   thresholds?:   Threshold[]
+  markers?:      readonly TimeSeriesMarker[]
+  regions?:      readonly TimeSeriesRegion[]
   formatters:     ChartFormatters
   onSelect?:     (result: SelectionResult) => void
   onReady?:      (chart: uPlot) => void
   onCursorMove?: (chart: uPlot, idx: number | null) => void
   onSeriesVisibilityChange?: (index: number, visible: boolean) => void
+  onMarkerClick?: (marker: TimeSeriesMarker) => void
+  onRegionClick?: (region: TimeSeriesRegion) => void
 }
 
 export function ChartCanvas({
@@ -54,17 +59,25 @@ export function ChartCanvas({
   y2Min,
   y2Max,
   thresholds,
+  markers,
+  regions,
   formatters,
   onSelect,
   onReady,
   onCursorMove,
   onSeriesVisibilityChange,
+  onMarkerClick,
+  onRegionClick,
 }: ChartCanvasProps) {
   const formattersRef = useRef(formatters)
   formattersRef.current = formatters
   const onSeriesVisibilityChangeRef = useRef(onSeriesVisibilityChange)
   onSeriesVisibilityChangeRef.current = onSeriesVisibilityChange
   const hasSeriesVisibilityHandler = onSeriesVisibilityChange !== undefined
+  const onMarkerClickRef = useRef(onMarkerClick)
+  const onRegionClickRef = useRef(onRegionClick)
+  onMarkerClickRef.current = onMarkerClick
+  onRegionClickRef.current = onRegionClick
   const syncId = sync === false ? undefined : sync.id
   const syncSeries = sync === false ? undefined : sync.series
 
@@ -244,6 +257,12 @@ export function ChartCanvas({
       plugins: [
         makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
         ...(thresholds?.length ? [thresholdPlugin(thresholds)] : []),
+        ...((markers?.length || regions?.length) ? [timeOverlayPlugin({
+          markers,
+          regions,
+          onMarkerClick: marker => onMarkerClickRef.current?.(marker),
+          onRegionClick: region => onRegionClickRef.current?.(region),
+        })] : []),
         selectionPlugin({ mode: selectionMode, onSelect }),
         ...(onCursorMove
           ? [{
@@ -267,7 +286,7 @@ export function ChartCanvas({
           : []),
       ],
     }
-  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, syncId, syncSeries, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, onSelect, onCursorMove, hasSeriesVisibilityHandler])
+  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, syncId, syncSeries, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, markers, regions, onSelect, onCursorMove, hasSeriesVisibilityHandler])
 
   // Bar stacking: transform data to cumulative sums, then reverse order
   const resolvedData = useMemo<uPlot.AlignedData>(() => {

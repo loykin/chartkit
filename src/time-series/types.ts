@@ -38,6 +38,24 @@ export interface TooltipCursor {
   y: number
 }
 
+export interface TimeSeriesMarker {
+  id: string
+  x: number
+  label?: string
+  color?: string
+  width?: number
+  dash?: number[]
+}
+
+export interface TimeSeriesRegion {
+  id: string
+  xStart: number
+  xEnd: number
+  label?: string
+  color?: string
+  opacity?: number
+}
+
 export interface SeriesConfig {
   /** Stable identity used by runtime events and controlled state. */
   id?: string
@@ -114,6 +132,12 @@ export interface TimeSeriesChartProps extends BaseChartProps {
   // ── Thresholds ───────────────────────────────────────────────────────────
   /** Horizontal reference lines drawn on the primary y-axis */
   thresholds?: Threshold[]
+  /** Stateless vertical event overlays in Unix seconds. */
+  markers?: readonly TimeSeriesMarker[]
+  /** Stateless x-range overlays in Unix seconds. */
+  regions?: readonly TimeSeriesRegion[]
+  onMarkerClick?: (marker: TimeSeriesMarker) => void
+  onRegionClick?: (region: TimeSeriesRegion) => void
 
   // ── Selection ────────────────────────────────────────────────────────────
   selectionMode?: SelectionMode

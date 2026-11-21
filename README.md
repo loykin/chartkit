@@ -442,6 +442,10 @@ All types accept the same optional base fields as the individual components (`he
 | `data`             | `AlignedData`             | **required**| `[timestamps, ...seriesValues]`                    |
 | `series`           | `SeriesConfig[]`          | **required**| One entry per data series                          |
 | `thresholds`       | `Threshold[]`             | —           | Horizontal reference lines on the primary y-axis   |
+| `markers`          | `readonly TimeSeriesMarker[]` | —        | Stateless vertical event overlays                  |
+| `regions`          | `readonly TimeSeriesRegion[]` | —        | Stateless Unix-second range overlays               |
+| `onMarkerClick`    | `(marker) => void`         | —           | Runtime-only marker activation                     |
+| `onRegionClick`    | `(region) => void`         | —           | Runtime-only region activation                     |
 | `legendPosition`   | `'top'\|'bottom'\|'left'\|'right'\|'none'` | `'bottom'` | Legend placement      |
 | `legendFormat`     | `'list'\|'table'`         | `'list'`    | Legend display mode                                |
 | `yUnit`            | `string`                  | —           | Primary y-axis unit                                |

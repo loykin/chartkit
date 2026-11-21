@@ -30,6 +30,10 @@ export function TimeSeriesChart({
   axisStyle,
   barStack,
   thresholds,
+  markers,
+  regions,
+  onMarkerClick,
+  onRegionClick,
   renderLegend,
   renderTooltip,
   tooltip        = true,
@@ -228,12 +232,16 @@ export function TimeSeriesChart({
           axisStyle={axisStyle}
           barStack={barStack}
           thresholds={thresholds}
+          markers={markers}
+          regions={regions}
           formatters={formatters}
           timeRange={timeRange}
           onSelect={handleSelect}
           onReady={handleReady}
           onCursorMove={handleCursorMove}
           onSeriesVisibilityChange={setSeriesVisibility}
+          onMarkerClick={onMarkerClick}
+          onRegionClick={onRegionClick}
         />
       </div>
 

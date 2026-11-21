@@ -36,6 +36,21 @@ export const CHART_SPEC_SCHEMA = {
         dash:  { type: 'array', items: { type: 'number' } },
       },
     },
+    TimeSeriesMarker: {
+      type: 'object', required: ['id', 'x'], additionalProperties: false,
+      properties: {
+        id: { type: 'string' }, x: { type: 'number' }, label: { type: 'string' },
+        color: { type: 'string' }, width: { type: 'number' },
+        dash: { type: 'array', items: { type: 'number' } },
+      },
+    },
+    TimeSeriesRegion: {
+      type: 'object', required: ['id', 'xStart', 'xEnd'], additionalProperties: false,
+      properties: {
+        id: { type: 'string' }, xStart: { type: 'number' }, xEnd: { type: 'number' },
+        label: { type: 'string' }, color: { type: 'string' }, opacity: { type: 'number', minimum: 0, maximum: 1 },
+      },
+    },
     BaseChartFields: {
       type: 'object',
       properties: {
@@ -190,6 +205,8 @@ export const CHART_SPEC_SCHEMA = {
             y2Max:          { type: 'number' },
             barStack:       { type: 'boolean' },
             thresholds:     { type: 'array', items: { $ref: '#/definitions/Threshold' } },
+            markers:        { type: 'array', items: { $ref: '#/definitions/TimeSeriesMarker' } },
+            regions:        { type: 'array', items: { $ref: '#/definitions/TimeSeriesRegion' } },
             timeRange:      { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
             selectionMode:  { type: 'string', enum: ['x', 'y', 'xy', 'none'] },
             tooltip:        { type: 'boolean', description: 'Show the tooltip. Default true' },

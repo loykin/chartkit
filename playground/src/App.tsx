@@ -152,6 +152,8 @@ const trafficData: AlignedData    = [overviewTs, spiky(180, 120), spiky(4, 6, 0.
 const latencyData: AlignedData    = [overviewTs, noise(42, 14), noise(95, 30), spiky(140, 40, 0.04)]
 const overviewData: AlignedData   = [overviewTs, cpuData[1] as number[]]
 const overviewSeries: SeriesConfig[] = [{ label: 'CPU', color: '#3b82f6', type: 'area', fillOpacity: 0.2 }]
+const DEMO_MARKERS = [{ id: 'deploy', x: NOW - 150 * 60, label: 'Deploy', color: '#8b5cf6' }]
+const DEMO_REGIONS = [{ id: 'incident', xStart: NOW - 90 * 60, xEnd: NOW - 55 * 60, label: 'Incident', color: '#ef4444' }]
 const cpuSeries: SeriesConfig[] = [
   { label: 'core-0', color: '#3b82f6', type: 'area', fillGradient: true },
   { label: 'core-1', color: '#f59e0b', type: 'area', fillOpacity: 0.12 },
@@ -589,6 +591,7 @@ function ConfiguratorDemo() {
 
 function LinkedZoomDemo() {
   const [timeRange, setTimeRange] = useState<[number, number] | null>(null)
+  const [overlayEvent, setOverlayEvent] = useState('')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -611,6 +614,7 @@ function LinkedZoomDemo() {
             }}>Reset</button>
           </div>
         )}
+        {overlayEvent && <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>{overlayEvent}</span>}
       </ControlPanel>
 
       <Card>
@@ -630,9 +634,16 @@ function LinkedZoomDemo() {
           <TimeSeriesChart
             data={cpuData} series={cpuSeries}
             sync={LINKED_ZOOM_SYNC}
+            markers={DEMO_MARKERS}
+            regions={DEMO_REGIONS}
+            onMarkerClick={marker => setOverlayEvent(`marker: ${marker.id}`)}
+            onRegionClick={region => setOverlayEvent(`region: ${region.id}`)}
             height={180} yUnit="%" yMin={0} yMax={100}
-            legendPosition="bottom" selectionMode="none"
+            legendPosition="bottom" selectionMode="x"
             timeRange={timeRange ?? undefined}
+            onSelect={({ timeRange: selectedRange }) => {
+              if (selectedRange) setOverlayEvent('selection')
+            }}
           />
         </Card>
         <Card>

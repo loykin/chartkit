@@ -62,6 +62,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 - `AlignedData` — uPlot's format: `[timestamps, series1, series2, ...]` (all same length)
 - `SeriesConfig` — per-series config for TimeSeriesChart: `{ id?, label, color, type?, unit?, yAxis?, ... }`; `id` is the stable runtime identity when supplied
 - `TimeSeriesSyncConfig` — explicit time-series cursor group: `{ id, series? }`; charts are independent by default and `sync` is runtime-only
+- `TimeSeriesMarker` / `TimeSeriesRegion` — stateless Unix-second overlays; persistence and annotation CRUD remain consumer responsibilities
 - Time-series visibility is controlled with `hiddenSeriesIds` / `onHiddenSeriesIdsChange`; stable IDs survive reorder, while ID-less series retain uncontrolled index-based behavior
 - `TooltipPolicy` selects `all` or the cursor-nearest visible time-series item and applies `maxItems`; custom selection remains runtime-only
 - Pie visibility uses `hiddenSliceIds` / `onHiddenSliceIdsChange`; visible percentages are recalculated from positive finite values, and slice/legend events preserve original input indices
