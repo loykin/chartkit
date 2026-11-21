@@ -25,6 +25,19 @@ export interface TimeSeriesSyncConfig {
   series?: boolean
 }
 
+export interface TooltipPolicy {
+  mode?: 'all' | 'nearest'
+  /** Maximum items after built-in or custom selection. */
+  maxItems?: number
+}
+
+export interface TooltipCursor {
+  datumIndex: number
+  timestamp: number | null
+  x: number
+  y: number
+}
+
 export interface SeriesConfig {
   /** Stable identity used by runtime events and controlled state. */
   id?: string
@@ -115,8 +128,13 @@ export interface TimeSeriesChartProps extends BaseChartProps {
 
   // ── Custom tooltip ───────────────────────────────────────────────────────
   renderTooltip?: (payload: TooltipPayload) => React.ReactNode
-  /** Show the built-in or provider tooltip when renderTooltip is not supplied. Default true. */
-  tooltip?: boolean
+  /** Show and select tooltip items. `true` is equivalent to `{ mode: 'all' }`. Default true. */
+  tooltip?: boolean | TooltipPolicy
+  /** Runtime-only item selection hook. Overrides the built-in mode; maxItems still applies. */
+  selectTooltipItems?: (
+    items: readonly import('./hooks/useLegendState').LegendItem[],
+    cursor: TooltipCursor,
+  ) => readonly import('./hooks/useLegendState').LegendItem[]
 }
 
 /**
@@ -126,7 +144,7 @@ export interface TimeSeriesChartProps extends BaseChartProps {
  */
 export interface TooltipPayload {
   /** Series values and stats at the current cursor position */
-  items: import('./hooks/useLegendState').LegendItem[]
+  items: readonly import('./hooks/useLegendState').LegendItem[]
   /** Unix timestamp (seconds) at cursor — null when cursor is off-chart */
   timestamp: number | null
   /**

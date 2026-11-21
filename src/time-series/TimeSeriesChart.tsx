@@ -5,6 +5,7 @@ import { ChartCanvas } from './components/ChartCanvas'
 import { ChartLegend } from './components/ChartLegend'
 import { useLegendState } from './hooks/useLegendState'
 import type { SelectionResult, TimeSeriesChartProps, TooltipPayload } from './types'
+import { applyTooltipPolicy } from './utils/tooltipSelection'
 
 export function TimeSeriesChart({
   data,
@@ -32,6 +33,7 @@ export function TimeSeriesChart({
   renderLegend,
   renderTooltip,
   tooltip        = true,
+  selectTooltipItems,
   selectionMode  = 'x',
   onSelect,
   timeRange,
@@ -51,7 +53,9 @@ export function TimeSeriesChart({
   const renderTooltipRef = useRef(renderTooltip)
   renderTooltipRef.current = renderTooltip
 
-  const [tooltipPayload, setTooltipPayload] = useState<(Omit<TooltipPayload, 'items'> & { datumIndex: number }) | null>(null)
+  const [tooltipPayload, setTooltipPayload] = useState<(
+    Omit<TooltipPayload, 'items'> & { datumIndex: number; nearestItemIndex?: number }
+  ) | null>(null)
 
   const hasStackedBars = !!barStack && series.some(item => item.type === 'bars')
   const toChartSeriesIndex = useCallback(
@@ -78,8 +82,22 @@ export function TimeSeriesChart({
     const x         = left + (chart.over.offsetLeft ?? 0)
     const y         = top  + (chart.over.offsetTop  ?? 0)
     const timestamp = (chart.data[0]?.[idx] as number) ?? null
-    setTooltipPayload({ x, y, timestamp, datumIndex: idx })
-  }, [updateValues])
+    let nearestItemIndex: number | undefined
+    let nearestDistance = Number.POSITIVE_INFINITY
+    series.forEach((_, inputIndex) => {
+      const chartIndex = toChartSeriesIndex(inputIndex + 1)
+      if (chart.series[chartIndex]?.show === false) return
+      const value = chart.data[chartIndex]?.[idx]
+      const scale = chart.series[chartIndex]?.scale
+      if (typeof value !== 'number' || !Number.isFinite(value) || !scale) return
+      const distance = Math.abs(chart.valToPos(value, scale) - top)
+      if (distance < nearestDistance) {
+        nearestDistance = distance
+        nearestItemIndex = inputIndex
+      }
+    })
+    setTooltipPayload({ x, y, timestamp, datumIndex: idx, nearestItemIndex })
+  }, [series, toChartSeriesIndex, updateValues])
 
   // Bridge generic SelectionResult → time-series API
   const handleSelect = useCallback((result: SelectionResult) => {
@@ -103,6 +121,23 @@ export function TimeSeriesChart({
       formatters={formatters}
     />
   ) : null
+
+  const tooltipPolicy = typeof tooltip === 'object' ? tooltip : {}
+  const visibleTooltipItems = items.filter(item => item.visible)
+  const tooltipCursor = tooltipPayload && {
+    datumIndex: tooltipPayload.datumIndex,
+    timestamp: tooltipPayload.timestamp,
+    x: tooltipPayload.x,
+    y: tooltipPayload.y,
+  }
+  const selectedTooltipItems = tooltipPayload && tooltipCursor
+    ? selectTooltipItems
+      ? applyTooltipPolicy(
+          selectTooltipItems(Object.freeze([...visibleTooltipItems]), tooltipCursor),
+          { maxItems: tooltipPolicy.maxItems },
+        )
+      : applyTooltipPolicy(visibleTooltipItems, tooltipPolicy, tooltipPayload.nearestItemIndex)
+    : []
 
   return (
     <div
@@ -128,10 +163,15 @@ export function TimeSeriesChart({
         {isLoading && <ChartLoader />}
         <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
         {/* Custom tooltip overlay — rendered inside position:relative wrapper */}
-        {tooltip && tooltipPayload && (
+        {tooltip !== false && tooltipPayload && (
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 30, overflow: 'visible' }}>
             {renderTooltipRef.current
-              ? renderTooltipRef.current({ items, ...tooltipPayload })
+              ? renderTooltipRef.current({
+                  items: selectedTooltipItems,
+                  timestamp: tooltipPayload.timestamp,
+                  x: tooltipPayload.x,
+                  y: tooltipPayload.y,
+                })
               : (() => {
                   const timestamp = tooltipPayload.timestamp
                   const payload = {
@@ -145,7 +185,7 @@ export function TimeSeriesChart({
                           chartType: 'timeseries', purpose: 'tooltip', axis: 'x', locale,
                         }) ?? new Date(timestamp * 1000).toLocaleString(locale),
                     datumIndex: tooltipPayload.datumIndex,
-                    items: items.filter(item => item.visible).map(item => ({
+                    items: selectedTooltipItems.map(item => ({
                       id: item.id,
                       itemIndex: item.index - 1,
                       label: formatters.label?.(item.label, {

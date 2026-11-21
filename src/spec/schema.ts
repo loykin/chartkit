@@ -101,7 +101,20 @@ export const CHART_SPEC_SCHEMA = {
             centerLabel:    { type: 'string', description: 'Text in the center hole (donut only)' },
             legendPosition: { type: 'string', enum: ['right', 'bottom', 'none'] },
             unit:           { type: 'string', description: 'Value unit shown in tooltip e.g. ms, req' },
-            tooltip:        { type: 'boolean', description: 'Show the tooltip. Default true' },
+            tooltip: {
+              oneOf: [
+                { type: 'boolean' },
+                {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    mode: { type: 'string', enum: ['all', 'nearest'] },
+                    maxItems: { type: 'number', minimum: 0 },
+                  },
+                },
+              ],
+              description: 'Show the tooltip and optionally select all or nearest series',
+            },
           },
         },
       ],

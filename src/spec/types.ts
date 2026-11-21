@@ -33,6 +33,7 @@ type OmitTimeSeriesRuntime = Omit<
   | 'sync'
   | 'hiddenSeriesIds'
   | 'onHiddenSeriesIdsChange'
+  | 'selectTooltipItems'
 >
 
 type OmitCandlestickRuntime = Omit<

@@ -332,7 +332,7 @@ function ConfiguratorDemo() {
   const [legendPosition,  setLegendPosition ] = useState<LegendPosition>('bottom')
   const [legendFormat,    setLegendFormat   ] = useState<LegendFormat>('list')
   const [useCustomLegend, setUseCustomLegend] = useState(false)
-  const [useTooltip,      setUseTooltip     ] = useState(false)
+  const [tooltipMode,     setTooltipMode    ] = useState<'off' | 'custom' | 'nearest'>('off')
   const [showGrid,        setShowGrid       ] = useState(true)
   const [gridDash,        setGridDash       ] = useState<DashPreset>('solid')
   const [gridWidth,       setGridWidth      ] = useState(0.5)
@@ -395,8 +395,8 @@ function ConfiguratorDemo() {
             legendPosition={legendPosition}
             legendFormat={legendFormat}
             renderLegend={useCustomLegend ? items => <CustomLegend items={items} /> : undefined}
-            renderTooltip={useTooltip ? payload => <CustomTooltip {...payload} /> : undefined}
-            tooltip={useTooltip}
+            renderTooltip={tooltipMode === 'custom' ? payload => <CustomTooltip {...payload} /> : undefined}
+            tooltip={tooltipMode === 'off' ? false : tooltipMode === 'nearest' ? { mode: 'nearest' } : true}
             selectionMode={selectionMode}
             xShowDate={xShowDate}
             locale={locale}
@@ -458,8 +458,9 @@ function ConfiguratorDemo() {
             <Btn active={useCustomLegend} onClick={() => setUseCustomLegend(v => !v)}>custom</Btn>
           </CtrlRow>
           <CtrlRow label="Tooltip">
-            <Btn active={!useTooltip} onClick={() => setUseTooltip(false)}>off</Btn>
-            <Btn active={useTooltip}  onClick={() => setUseTooltip(true)}>custom</Btn>
+            <Btn active={tooltipMode === 'off'} onClick={() => setTooltipMode('off')}>off</Btn>
+            <Btn active={tooltipMode === 'nearest'} onClick={() => setTooltipMode('nearest')}>nearest</Btn>
+            <Btn active={tooltipMode === 'custom'} onClick={() => setTooltipMode('custom')}>custom</Btn>
           </CtrlRow>
 
           <SectionDivider title="Series" />

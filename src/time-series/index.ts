@@ -12,5 +12,7 @@ export type {
   AlignedData,
   TooltipPayload,
   TimeSeriesSyncConfig,
+  TooltipPolicy,
+  TooltipCursor,
   Threshold,
 } from './types'

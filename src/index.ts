@@ -52,6 +52,8 @@ export type {
   AlignedData,
   TooltipPayload,
   TimeSeriesSyncConfig,
+  TooltipPolicy,
+  TooltipCursor,
   Threshold,
 } from './time-series'
 

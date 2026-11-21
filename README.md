@@ -453,7 +453,8 @@ All types accept the same optional base fields as the individual components (`he
 | `hiddenSeriesIds`  | `readonly string[]`       | uncontrolled | Controlled hidden series IDs; requires stable `SeriesConfig.id` values |
 | `onHiddenSeriesIdsChange` | `(ids: string[]) => void` | — | Emits legend and synchronized visibility changes |
 | `formatters`       | `ChartFormatters`         | provider/default | Runtime-only number, time, label, and percentage overrides |
-| `tooltip`          | `boolean`                 | `true`      | Show the built-in, provider, or chart tooltip      |
+| `tooltip`          | `boolean \| TooltipPolicy` | `true`     | Show tooltip; select `all`, `nearest`, and `maxItems` |
+| `selectTooltipItems` | `(items, cursor) => items` | —         | Runtime-only custom item selection before rendering |
 | `barStack`         | `boolean`                 | —           | Stack bar series                                   |
 | `selectionMode`    | `'x'\|'y'\|'xy'\|'none'`  | —           | Drag selection mode                                |
 | `onSelect`         | `(s) => void`             | —           | Fired on drag-select with time/y range             |
@@ -474,6 +475,15 @@ const sync = { id: 'detail-charts', series: false } as const
 
 `series: false` synchronizes only the cursor. Synchronization is runtime composition state and is
 intentionally excluded from `ChartSpec`.
+
+Tooltip item selection is applied before both custom and built-in renderers:
+
+```tsx
+<TimeSeriesChart tooltip={{ mode: 'nearest', maxItems: 1 }} />
+```
+
+`selectTooltipItems` overrides the built-in mode when application-specific filtering is needed;
+`maxItems` still applies to its result.
 
 Visibility may also be controlled by stable series identity:
 
