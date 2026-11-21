@@ -1,22 +1,9 @@
 import type React from 'react'
 
-export type ChartType =
-  | 'bar'
-  | 'bar-gauge'
-  | 'boxplot'
-  | 'candlestick'
-  | 'gauge'
-  | 'heatmap'
-  | 'histogram'
-  | 'pie'
-  | 'scatter'
-  | 'stat'
-  | 'timeseries'
-
 export type ChartFormatPurpose = 'axis' | 'legend' | 'tooltip' | 'label'
 
 export interface ChartFormatterContext {
-  chartType: ChartType
+  chartType: string
   purpose: ChartFormatPurpose
   seriesId?: string
   seriesLabel?: string
@@ -46,7 +33,7 @@ export interface ChartTooltipItem {
 }
 
 export interface ChartTooltipPayload {
-  chartType: ChartType
+  chartType: string
   items: readonly ChartTooltipItem[]
   x: number
   y: number
@@ -56,16 +43,3 @@ export interface ChartTooltipPayload {
 }
 
 export type ChartTooltipRenderer = (payload: ChartTooltipPayload) => React.ReactNode
-
-export interface ChartKitPlugin {
-  name?: string
-  formatters?: ChartFormatters
-  tooltip?: {
-    render?: ChartTooltipRenderer
-  }
-}
-
-export interface ChartKitRuntime {
-  formatters: ChartFormatters
-  renderTooltip?: ChartTooltipRenderer
-}

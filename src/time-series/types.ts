@@ -175,6 +175,8 @@ export interface TooltipPayload {
   items: readonly import('./hooks/useLegendState').LegendItem[]
   /** Unix timestamp (seconds) at cursor — null when cursor is off-chart */
   timestamp: number | null
+  /** Original aligned-data index at the current cursor position */
+  datumIndex: number
   /**
    * Cursor x in px relative to the chart wrapper div (y-axis space included).
    * Use as `style={{ left: x + offset }}` on an absolutely-positioned element.

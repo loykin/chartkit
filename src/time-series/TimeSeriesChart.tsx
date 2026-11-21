@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import type uPlot from 'uplot'
-import { ChartEmpty, ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKit } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKitDefaults } from '../core'
 import { ChartCanvas } from './components/ChartCanvas'
 import { ChartLegend } from './components/ChartLegend'
 import { useLegendState } from './hooks/useLegendState'
@@ -52,7 +52,7 @@ export function TimeSeriesChart({
 }: TimeSeriesChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
-  const { renderTooltip: renderPluginTooltip } = useChartKit()
+  const { renderTooltip: renderDefaultTooltip } = useChartKitDefaults()
   const { items, setChart, setSeriesVisibility, toggle, updateValues } = useLegendState(series, data, {
     hiddenSeriesIds,
     onHiddenSeriesIdsChange,
@@ -63,7 +63,7 @@ export function TimeSeriesChart({
   renderTooltipRef.current = renderTooltip
 
   const [tooltipPayload, setTooltipPayload] = useState<(
-    Omit<TooltipPayload, 'items'> & { datumIndex: number; nearestItemIndex?: number }
+    Omit<TooltipPayload, 'items'> & { nearestItemIndex?: number }
   ) | null>(null)
 
   const hasStackedBars = !!barStack && series.some(item => item.type === 'bars')
@@ -179,6 +179,7 @@ export function TimeSeriesChart({
               ? renderTooltipRef.current({
                   items: selectedTooltipItems,
                   timestamp: tooltipPayload.timestamp,
+                  datumIndex: tooltipPayload.datumIndex,
                   x: tooltipPayload.x,
                   y: tooltipPayload.y,
                 })
@@ -211,8 +212,8 @@ export function TimeSeriesChart({
                           }) ?? `${item.value.toLocaleString()}${item.unit ? `\u202f${item.unit}` : ''}`,
                     })),
                   }
-                  return renderPluginTooltip
-                    ? renderPluginTooltip(payload)
+                  return renderDefaultTooltip
+                    ? renderDefaultTooltip(payload)
                     : <DefaultChartTooltip {...payload} />
                 })()}
           </div>

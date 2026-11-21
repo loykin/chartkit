@@ -1,13 +1,9 @@
 import { useState, useRef, useEffect, useMemo, useLayoutEffect } from 'react'
 import { useNavigate, useParams, Routes, Route, Navigate } from 'react-router-dom'
-import CodeMirror from '@uiw/react-codemirror'
-import { json as jsonLang } from '@codemirror/lang-json'
-import { javascript } from '@codemirror/lang-javascript'
-import { oneDark } from '@codemirror/theme-one-dark'
 import {
   TimeSeriesChart, CandlestickChart, HistogramChart, HeatmapChart, ScatterChart,
   BoxPlotChart, PieChart, StatChart, GaugeChart, BarChart, BarGaugeChart, GRAD_METAL,
-  ChartKitProvider, ChartRenderer,
+  ChartKitProvider,
 } from '@loykin/chartkit'
 import type {
   AlignedData, SeriesConfig, AxisConfig, LineStyle,
@@ -15,7 +11,7 @@ import type {
   ScatterSeriesConfig, BoxSeriesConfig, BoxStats,
   PieSliceConfig, PieLabelType,
   BarSeriesConfig, Threshold,
-  ChartKitPlugin, ChartSpec, CandlestickDataPoint, TimeSeriesSyncConfig,
+  ChartFormatters, CandlestickDataPoint, TimeSeriesSyncConfig,
 } from '@loykin/chartkit'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -23,15 +19,12 @@ import type {
 const STEP = 60
 const N    = 120
 
-const PLAYGROUND_FORMATTER_PLUGIN: ChartKitPlugin = {
-  name: 'playground-precision',
-  formatters: {
-    value: (value, context) => {
-      const formatted = value.toFixed(1)
-      return context.purpose === 'tooltip' && context.unit
-        ? `${formatted}\u202f${context.unit}`
-        : formatted
-    },
+const PLAYGROUND_FORMATTERS: ChartFormatters = {
+  value: (value, context) => {
+    const formatted = value.toFixed(1)
+    return context.purpose === 'tooltip' && context.unit
+      ? `${formatted}\u202f${context.unit}`
+      : formatted
   },
 }
 
@@ -429,7 +422,7 @@ function ConfiguratorDemo() {
             Temperature (°C, left) · Humidity (%, right)
           </p>
           <Card>
-            <ChartKitProvider plugins={[PLAYGROUND_FORMATTER_PLUGIN]}>
+            <ChartKitProvider formatters={PLAYGROUND_FORMATTERS}>
               <TimeSeriesChart
                 data={DUAL_DATA}
                 series={DUAL_SERIES}
@@ -1226,300 +1219,6 @@ function StatesDemo() {
   )
 }
 
-// ── ChartRenderer (Spec) ──────────────────────────────────────────────────────
-
-const SPEC_TS_BASE  = Math.floor(Date.now() / 1000) - 14 * 60
-const SPEC_TS_TIMES = Array.from({ length: 15 }, (_, i) => SPEC_TS_BASE + i * 60)
-const SPEC_TS_VALS  = [35, 42, 38, 51, 63, 58, 72, 68, 75, 71, 65, 58, 49, 53, 47]
-
-const SPEC_PRESETS: Record<string, ChartSpec> = {
-  bar: {
-    type: 'bar',
-    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-    series: [
-      { label: 'Service A', color: '#3b82f6', values: [42, 55, 38, 61, 49] },
-      { label: 'Service B', color: '#10b981', values: [28, 34, 45, 32, 58] },
-    ],
-    height: 260, yUnit: 'ms',
-  },
-  pie: {
-    type: 'pie',
-    slices: [
-      { label: 'Nginx',    value: 42, color: '#3b82f6' },
-      { label: 'Postgres', value: 27, color: '#10b981' },
-      { label: 'Redis',    value: 13, color: '#f59e0b' },
-      { label: 'Other',    value: 18, color: '#6b7280' },
-    ],
-    innerRadius: 0.55, centerLabel: '100%\nCPU', legendPosition: 'right', height: 280,
-  },
-  timeseries: {
-    type: 'timeseries',
-    data: [SPEC_TS_TIMES, SPEC_TS_VALS],
-    series: [{ label: 'CPU', color: '#3b82f6', type: 'area', fillGradient: true, unit: '%' }],
-    height: 260, yUnit: '%', legendPosition: 'bottom',
-  },
-  candlestick: {
-    type: 'candlestick',
-    data: STOCK_DATA.slice(-20),
-    height: 260, yUnit: 'USD', showVolume: true, selectionMode: 'none',
-  },
-  gauge: {
-    type: 'gauge',
-    value: 67, min: 0, max: 100, unit: '%', label: 'CPU Usage',
-    thresholds: [{ value: 0, color: '#10b981' }, { value: 60, color: '#f59e0b' }, { value: 80, color: '#ef4444' }],
-    height: 220,
-  },
-  stat: {
-    type: 'stat',
-    value: 94.2, unit: '%', label: 'CPU Usage', previousValue: 78.5,
-    sparkline: [40, 45, 38, 52, 60, 55, 68, 63, 71, 67, 58, 54, 49, 52, 48],
-    thresholds: [{ value: 0, color: '#10b981' }, { value: 60, color: '#f59e0b' }, { value: 80, color: '#ef4444' }],
-    height: 130,
-  },
-  histogram: {
-    type: 'histogram',
-    values: [42,38,51,63,44,37,55,48,61,39,52,47,58,41,36,53,49,66,45,40,57,43,50,62,35,54,46,59,33,65,48,72,38,44,380,420,350,410,55,61,37,49,42,58,63,47,51,39,68,44,56,40,53],
-    bins: 15, color: '#8b5cf6', height: 260, xUnit: 'ms',
-  },
-  scatter: {
-    type: 'scatter',
-    series: [
-      { label: 'Group A', color: '#3b82f6', xs: [22,25,28,31,26,23,29,27,24,30,28,25], ys: [38,42,35,48,41,39,45,43,37,46,40,44] },
-      { label: 'Group B', color: '#ef4444', xs: [62,65,68,71,66,63,69,67,64,70,68,65], ys: [58,62,55,68,61,59,65,63,57,66,60,64] },
-    ],
-    height: 260, xUnit: 'ms', yUnit: 'mb',
-  },
-  boxplot: {
-    type: 'boxplot',
-    categories: ['Jan', 'Feb', 'Mar'],
-    series: [{
-      label: 'Service A', color: '#3b82f6',
-      data: [
-        { min: 20, q1: 35, median: 48, q3: 62, max: 80 },
-        { min: 18, q1: 32, median: 45, q3: 58, max: 85 },
-        { min: 25, q1: 40, median: 55, q3: 70, max: 90 },
-      ],
-    }],
-    height: 260, yUnit: 'ms',
-  },
-}
-
-const VALID_SPEC_TYPES = new Set([
-  'bar','pie','scatter','timeseries','candlestick','histogram','boxplot','gauge','stat','heatmap',
-])
-
-const LLM_CODE: Record<string, string> = {
-  tool: `\
-import Anthropic from '@anthropic-ai/sdk'
-import { CHART_SPEC_SCHEMA } from '@loykin/chartkit'
-import type { ChartSpec } from '@loykin/chartkit'
-
-const client = new Anthropic()
-
-async function askForChart(userMessage: string): Promise<ChartSpec> {
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
-    tools: [{
-      name: 'render_chart',
-      description: 'Render a data visualization chart',
-      input_schema: CHART_SPEC_SCHEMA,
-    }],
-    tool_choice: { type: 'any' },   // force the model to call the tool
-    messages: [{ role: 'user', content: userMessage }],
-  })
-
-  return response.content.find(b => b.type === 'tool_use')!.input as ChartSpec
-}
-
-// Usage
-const spec = await askForChart('Show last month response times by service as a bar chart')
-return <ChartRenderer spec={spec} />`,
-
-  prompt: `\
-import Anthropic from '@anthropic-ai/sdk'
-import { CHART_SPEC_DESCRIPTION } from '@loykin/chartkit'
-import type { ChartSpec } from '@loykin/chartkit'
-
-const client = new Anthropic()
-
-async function askForChart(userMessage: string): Promise<ChartSpec> {
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
-    system: [
-      'When asked to visualize data, respond with a ChartSpec JSON object only.',
-      'No explanation, no markdown fences — raw JSON only.',
-      '',
-      CHART_SPEC_DESCRIPTION,
-    ].join('\\n'),
-    messages: [{ role: 'user', content: userMessage }],
-  })
-
-  return JSON.parse(response.content[0].text) as ChartSpec
-}
-
-// Usage
-const spec = await askForChart('Show last month response times by service as a bar chart')
-return <ChartRenderer spec={spec} />`,
-
-  mcp: `\
-// MCP server (Node.js) — one tool, zero React knowledge required on the agent side
-import { CHART_SPEC_SCHEMA } from '@loykin/chartkit'
-
-export const tools = [
-  {
-    name: 'render_chart',
-    description: 'Render a data visualization chart in the UI',
-    inputSchema: CHART_SPEC_SCHEMA,   // full JSON Schema — model validates against it
-  },
-]
-
-// When the agent calls render_chart(spec), pass spec to <ChartRenderer spec={spec} />
-// The agent never needs to know what React component renders it.`,
-}
-
-function SpecDemo() {
-  const presetKeys = Object.keys(SPEC_PRESETS)
-  const [activePreset, setActivePreset] = useState('bar')
-  const [jsonText,     setJsonText    ] = useState(() => JSON.stringify(SPEC_PRESETS.bar, null, 2))
-  const [parseError,   setParseError  ] = useState<string | null>(null)
-  const [liveSpec,     setLiveSpec    ] = useState<ChartSpec>(SPEC_PRESETS.bar)
-  const [llmTab,       setLlmTab      ] = useState<'tool' | 'prompt' | 'mcp'>('tool')
-
-  function loadPreset(key: string) {
-    const spec = SPEC_PRESETS[key]
-    setActivePreset(key)
-    setJsonText(JSON.stringify(spec, null, 2))
-    setLiveSpec(spec)
-    setParseError(null)
-  }
-
-  function handleEdit(value: string) {
-    setJsonText(value)
-    try {
-      setLiveSpec(JSON.parse(value) as ChartSpec)
-      setParseError(null)
-    } catch {
-      setParseError('Invalid JSON')
-    }
-  }
-
-  const typeOk = !parseError && VALID_SPEC_TYPES.has((liveSpec as { type?: string })?.type ?? '')
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-      {/* Why this exists */}
-      <div style={{
-        background: '#f8faff', border: '1px solid #dbeafe',
-        borderRadius: 8, padding: '14px 16px',
-        display: 'flex', flexDirection: 'column', gap: 6,
-      }}>
-        <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#1e40af' }}>
-          AI & Agent Interface
-        </div>
-        <div style={{ fontSize: '0.8125rem', color: '#374151', lineHeight: 1.6 }}>
-          AI agents can reliably generate <strong>JSON</strong>, but writing React component code is error-prone —
-          import paths change, prop names drift, and there's no easy validation.
-          <br />
-          <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>ChartSpec</code> is
-          a typed JSON schema that describes <em>what</em> to render.{' '}
-          <code style={{ background: '#e0e7ff', borderRadius: 3, padding: '1px 5px', fontSize: '0.75rem' }}>{'<ChartRenderer spec={...} />'}</code> turns it into the right component.
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 4 }}>
-          {[
-            { label: 'MCP tool',        desc: 'Pass CHART_SPEC_SCHEMA as the input schema for a render_chart tool' },
-            { label: 'LLM function call', desc: 'Use CHART_SPEC_DESCRIPTION in the system prompt — the model outputs valid specs' },
-            { label: 'Backend-driven',  desc: 'Any service that outputs JSON can drive charts without a React dependency' },
-          ].map(({ label, desc }) => (
-            <div key={label} style={{ display: 'flex', gap: 6, alignItems: 'flex-start', minWidth: 200, flex: 1 }}>
-              <span style={{
-                marginTop: 2, width: 6, height: 6, borderRadius: '50%',
-                background: '#3b82f6', flexShrink: 0,
-              }} />
-              <div style={{ fontSize: '0.75rem', color: '#4b5563', lineHeight: 1.5 }}>
-                <strong style={{ color: '#111827' }}>{label}</strong> — {desc}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* LLM request examples */}
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
-        <div style={{
-          background: '#f9fafb', borderBottom: '1px solid #e5e7eb',
-          padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8,
-        }}>
-          <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#111827', flex: 1 }}>
-            Request ChartSpec from LLM
-          </span>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <Btn active={llmTab === 'tool'}   onClick={() => setLlmTab('tool')}>Tool use</Btn>
-            <Btn active={llmTab === 'prompt'} onClick={() => setLlmTab('prompt')}>System prompt</Btn>
-            <Btn active={llmTab === 'mcp'}    onClick={() => setLlmTab('mcp')}>MCP server</Btn>
-          </div>
-        </div>
-        <CodeMirror
-          value={LLM_CODE[llmTab]}
-          extensions={[javascript({ typescript: true })]}
-          theme={oneDark}
-          editable={false}
-          basicSetup={{ lineNumbers: true, foldGutter: false, highlightActiveLine: false }}
-        />
-      </div>
-
-      <ControlPanel>
-        <CtrlRow label="Preset">
-          {presetKeys.map(key => (
-            <Btn key={key} active={activePreset === key} onClick={() => loadPreset(key)}>{key}</Btn>
-          ))}
-        </CtrlRow>
-        <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-          Edit the JSON on the left — the chart on the right updates live.
-        </div>
-      </ControlPanel>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, alignItems: 'start' }}>
-        <div>
-          <SectionHeader>ChartSpec JSON</SectionHeader>
-          <div style={{
-            border: parseError ? '1px solid #ef4444' : '1px solid #e5e7eb',
-            borderRadius: 6,
-            overflow: 'hidden',
-            fontSize: '0.72rem',
-          }}>
-            <CodeMirror
-              value={jsonText}
-              onChange={handleEdit}
-              extensions={[jsonLang()]}
-              theme={oneDark}
-              height="360px"
-            />
-          </div>
-          {parseError && (
-            <p style={{ fontSize: '0.75rem', color: '#ef4444', margin: '4px 0 0' }}>{parseError}</p>
-          )}
-        </div>
-
-        <div>
-          <SectionHeader>Live preview — &lt;ChartRenderer spec={'{...}'} /&gt;</SectionHeader>
-          <Card>
-            {typeOk ? (
-              <ChartRenderer spec={liveSpec} />
-            ) : (
-              <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '0.8125rem' }}>
-                {parseError ? 'Fix JSON to see preview' : `Unknown type: "${(liveSpec as { type?: string })?.type}"`}
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ── Sidebar navigation ────────────────────────────────────────────────────────
 
 // ── Theme ─────────────────────────────────────────────────────────────────────
@@ -1841,7 +1540,7 @@ function FillParentDemo() {
 type DemoId =
   | 'configurator' | 'zoom' | 'candlestick'
   | 'heatmap' | 'scatter' | 'boxplot' | 'histogram' | 'pie' | 'new'
-  | 'theme' | 'states' | 'spec' | 'fill-parent'
+  | 'theme' | 'states' | 'fill-parent'
 
 const NAV: { group: string; items: { id: DemoId; label: string }[] }[] = [
   {
@@ -1868,7 +1567,6 @@ const NAV: { group: string; items: { id: DemoId; label: string }[] }[] = [
     items: [
       { id: 'theme',       label: 'Theming'       },
       { id: 'states',      label: 'States'        },
-      { id: 'spec',        label: 'ChartRenderer' },
       { id: 'fill-parent', label: 'height="fill"'  },
     ],
   },
@@ -1948,7 +1646,7 @@ function AppSidebar({ activeId }: { activeId: DemoId }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const ALL_IDS = new Set<string>([
-  'configurator','zoom','candlestick','heatmap','scatter','boxplot','histogram','pie','new','theme','states','spec','fill-parent',
+  'configurator','zoom','candlestick','heatmap','scatter','boxplot','histogram','pie','new','theme','states','fill-parent',
 ])
 
 function DemoPage() {
@@ -1971,7 +1669,6 @@ function DemoPage() {
           {id === 'new'          && <NewChartsDemo />}
           {id === 'theme'        && <ThemeDemo />}
           {id === 'states'       && <StatesDemo />}
-          {id === 'spec'         && <SpecDemo />}
           {id === 'fill-parent'  && <FillParentDemo />}
         </div>
       </main>

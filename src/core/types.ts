@@ -79,6 +79,6 @@ export interface BaseChartProps extends ChartStateRenderers {
   yMax?:      number
   isLoading?: boolean
   error?:     Error | null
-  /** Runtime-only formatter overrides. Per-chart formatters override provider plugins. */
+  /** Per-chart formatter overrides. Local values override provider defaults. */
   formatters?: import('./runtime').ChartFormatters
 }

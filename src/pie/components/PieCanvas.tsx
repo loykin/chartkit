@@ -21,7 +21,7 @@ interface PieCanvasProps {
   unit?:          string
   formatters:     ChartFormatters
   renderTooltip?: (payload: PieTooltipPayload) => React.ReactNode
-  renderPluginTooltip?: ChartTooltipRenderer
+  renderDefaultTooltip?: ChartTooltipRenderer
   tooltipEnabled: boolean
   onSliceClick?:  (event: PieSliceEvent) => void
   onSliceHover?:  (event: PieSliceEvent | null) => void
@@ -324,7 +324,7 @@ export function PieCanvas({
   unit,
   formatters,
   renderTooltip,
-  renderPluginTooltip,
+  renderDefaultTooltip,
   tooltipEnabled,
   onSliceClick,
   onSliceHover,
@@ -469,8 +469,8 @@ export function PieCanvas({
             percentage,
           }],
         }
-        return renderPluginTooltip
-          ? renderPluginTooltip(payload)
+        return renderDefaultTooltip
+          ? renderDefaultTooltip(payload)
           : <DefaultChartTooltip {...payload} />
       })()}
     </div>

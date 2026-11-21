@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ChartEmpty, ChartError, ChartLoader, useChartFormatters, useChartKit } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, useChartFormatters, useChartKitDefaults } from '../core'
 import { PieCanvas } from './components/PieCanvas'
 import type { PieChartProps, PieSliceConfig } from './types'
 import { formatNum } from '../core'
@@ -31,7 +31,7 @@ export function PieChart({
   renderError,
 }: PieChartProps) {
   const formatters = useChartFormatters(formatterOverrides)
-  const { renderTooltip: renderPluginTooltip } = useChartKit()
+  const { renderTooltip: renderDefaultTooltip } = useChartKitDefaults()
   const [internalHiddenIds, setInternalHiddenIds] = useState<string[]>([])
   const [hiddenIndexes, setHiddenIndexes] = useState<Set<number>>(() => new Set())
 
@@ -177,7 +177,7 @@ export function PieChart({
           unit={unit}
           formatters={formatters}
           renderTooltip={renderTooltip}
-          renderPluginTooltip={renderPluginTooltip}
+          renderDefaultTooltip={renderDefaultTooltip}
           tooltipEnabled={tooltip}
           onSliceClick={onSliceClick}
           onSliceHover={onSliceHover}

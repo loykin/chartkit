@@ -1,48 +1,41 @@
 import { createContext, useContext, useMemo } from 'react'
 import type React from 'react'
-import type { ChartFormatters, ChartKitPlugin, ChartKitRuntime } from './types'
+import type { ChartFormatters, ChartTooltipRenderer } from './types'
 
-const EMPTY_RUNTIME: ChartKitRuntime = { formatters: {} }
-const EMPTY_PLUGINS: readonly ChartKitPlugin[] = []
-const ChartKitContext = createContext<ChartKitRuntime>(EMPTY_RUNTIME)
+interface ChartKitDefaults {
+  formatters: ChartFormatters
+  renderTooltip?: ChartTooltipRenderer
+}
+
+const EMPTY_DEFAULTS: ChartKitDefaults = { formatters: {} }
+const ChartKitContext = createContext<ChartKitDefaults>(EMPTY_DEFAULTS)
 
 export interface ChartKitProviderProps {
-  plugins?: readonly ChartKitPlugin[]
+  formatters?: ChartFormatters
+  renderTooltip?: ChartTooltipRenderer
   children: React.ReactNode
 }
 
-export function resolveChartKitRuntime(
-  parent: ChartKitRuntime,
-  plugins: readonly ChartKitPlugin[],
-): ChartKitRuntime {
-  let formatters = parent.formatters
-  let renderTooltip = parent.renderTooltip
-
-  for (const plugin of plugins) {
-    if (plugin.formatters) formatters = { ...formatters, ...plugin.formatters }
-    if (plugin.tooltip?.render) renderTooltip = plugin.tooltip.render
-  }
-
-  return { formatters, renderTooltip }
-}
-
-export function ChartKitProvider({ plugins = EMPTY_PLUGINS, children }: ChartKitProviderProps) {
+export function ChartKitProvider({ formatters, renderTooltip, children }: ChartKitProviderProps) {
   const parent = useContext(ChartKitContext)
 
-  const runtime = useMemo(
-    () => resolveChartKitRuntime(parent, plugins),
-    [parent, plugins],
+  const defaults = useMemo<ChartKitDefaults>(
+    () => ({
+      formatters: formatters ? { ...parent.formatters, ...formatters } : parent.formatters,
+      renderTooltip: renderTooltip ?? parent.renderTooltip,
+    }),
+    [parent, formatters, renderTooltip],
   )
 
-  return <ChartKitContext.Provider value={runtime}>{children}</ChartKitContext.Provider>
+  return <ChartKitContext.Provider value={defaults}>{children}</ChartKitContext.Provider>
 }
 
-export function useChartKit(): ChartKitRuntime {
+export function useChartKitDefaults(): ChartKitDefaults {
   return useContext(ChartKitContext)
 }
 
 export function useChartFormatters(overrides?: ChartFormatters): ChartFormatters {
-  const { formatters } = useChartKit()
+  const { formatters } = useChartKitDefaults()
   return useMemo(
     () => overrides ? { ...formatters, ...overrides } : formatters,
     [formatters, overrides],

@@ -58,7 +58,7 @@ export interface PieChartProps extends BaseChartProps {
   legendPosition?: 'right' | 'bottom' | 'none'
   /** Value unit shown in tooltip and legend, e.g. 'ms', 'req' */
   unit?: string
-  /** Per-chart tooltip renderer. Overrides the provider tooltip plugin. */
+  /** Per-chart tooltip renderer. Overrides the provider default. */
   renderTooltip?: (payload: PieTooltipPayload) => React.ReactNode
   /** Show the built-in or custom tooltip. Default true. */
   tooltip?: boolean

@@ -22,7 +22,7 @@ pnpm test           # vitest run
 ## Architecture
 
 ### Entry Points
-- `src/index.ts` — public API exports (charts, types, spec layer)
+- `src/index.ts` — public API exports (charts and types)
 - `src/styles/index.css` — published as `@loykin/chartkit/styles`
 
 ### Source Layout
@@ -39,21 +39,9 @@ src/
   scatter/       — ScatterChart (multi-series)
   stat/          — StatChart (big-number panel, sparkline, trend indicator)
   time-series/   — TimeSeriesChart (line/area/bars/points, dual y-axis, zoom/selection)
-  core/          — BaseChartProps, shared types (Threshold, LineStyle, AxisConfig), plugins
-  spec/          — ChartRenderer, ChartSpec, CHART_SPEC_SCHEMA, CHART_SPEC_DESCRIPTION
+  core/          — BaseChartProps, shared types (Threshold, LineStyle, AxisConfig), optional defaults
   styles/        — index.css (CSS custom properties)
 ```
-
-### Spec Layer (`src/spec/`)
-
-The spec layer is the AI-friendly interface on top of the React components:
-
-- **`ChartSpec`** — discriminated union: `{ type: 'bar', ... } | { type: 'pie', ... } | ...`
-- **`ChartRenderer`** — takes a `ChartSpec` and renders the matching chart component
-- **`CHART_SPEC_SCHEMA`** — JSON Schema for tool definitions (MCP, function calling)
-- **`CHART_SPEC_DESCRIPTION`** — compact plain-text description for system prompts
-
-Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 
 ## Key Types & Patterns
 
@@ -69,9 +57,8 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 - `TooltipPolicy` selects `all` or the cursor-nearest visible time-series item and applies `maxItems`; custom selection remains runtime-only
 - Pie visibility uses `hiddenSliceIds` / `onHiddenSliceIdsChange`; visible percentages are recalculated from positive finite values, and slice/legend events preserve original input indices
 - `CandlestickDataPoint` — `{ time, open, high, low, close, volume? }` with Unix-second timestamps; `CandlestickChart` supports a hideable x-axis for composing synchronized price/volume panes
-- `ChartSpec` — discriminated union of all chart specs (numeric `height` only; omits `isLoading`, `error`, formatter functions, and React callbacks)
-- `ChartKitProvider` — runtime-only plugin boundary for shared formatter and tooltip overrides; per-chart overrides take precedence over provider plugins, which fall back to built-in rendering
-- `ChartFormatters` — optional `value`, `time`, `label`, and `percentage` callbacks used by every chart with chart and display-purpose context; formatter functions never enter `ChartSpec`
+- `ChartKitProvider` — optional formatter and tooltip defaults for a chart tree; per-chart props take precedence
+- `ChartFormatters` — optional `value`, `time`, `label`, and `percentage` callbacks used by every chart with chart and display-purpose context
 - `ChartStateRenderers` — runtime-only `renderEmpty`, `renderLoading`, and `renderError` slots; charts expose only states that apply to them
 - `ChartDatumEvent` — runtime-only stable series identity, original datum index/value, and client coordinates for pointer interaction
 - `BarSeriesConfig` / `ScatterSeriesConfig` — optional stable `id` used by datum events; index fallback preserves backward compatibility
@@ -92,17 +79,13 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 
 - Consumers import from `@loykin/chartkit` or `@loykin/chartkit/styles` only.
 - Export every intended public component and its prop types from `src/index.ts`.
-- `ChartSpec` omits `isLoading`, `error`, and React callbacks (render props, event handlers) — these are runtime state, not spec.
-- Breaking changes to the spec format or chart props require a major-version bump.
+- Breaking changes to public exports or chart props require a major-version bump.
 
 ## Adding a New Chart Type
 
 1. Create `src/<name>/` with `types.ts`, `<Name>Chart.tsx`, `index.ts`
-2. Extend `ChartSpec` in `src/spec/types.ts` with a new discriminated variant
-3. Add a `case` in `src/spec/ChartRenderer.tsx`
-4. Add the JSON Schema definition in `src/spec/schema.ts` (both `CHART_SPEC_SCHEMA` and `CHART_SPEC_DESCRIPTION`)
-5. Export from `src/index.ts`
-6. Add a demo in `playground/src/App.tsx` and a sidebar entry in `NAV`
+2. Export from `src/index.ts`
+3. Add a demo in `playground/src/App.tsx` and a sidebar entry in `NAV`
 
 ## Conventions
 
@@ -132,8 +115,7 @@ Keep docs in sync whenever code changes:
 | What changed | What to update |
 |---|---|
 | New prop on `BaseChartProps` or any chart | `AGENTS.md` Key Types section + `README.md` props table |
-| New chart type | `AGENTS.md` Source Layout + `README.md` + `docs/` if design is non-trivial |
+| New chart type | `AGENTS.md` Source Layout + `README.md` |
 | New shared type or pattern | `AGENTS.md` Key Types section |
 | Public API added or removed | `README.md` |
-| `ChartSpec` / schema changed | `AGENTS.md` Spec Layer section + `src/spec/schema.ts` description strings |
-| Non-trivial implementation design | `docs/<topic>.md` |
+| Non-trivial implementation design | Keep the public contract concise in `README.md`; add standalone design documents only when explicitly requested |

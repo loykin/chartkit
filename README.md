@@ -4,23 +4,8 @@ A lightweight React chart library built on [uPlot](https://github.com/leeoniya/u
 
 ---
 
-## AI & Agent ready
-
-`ChartRenderer` accepts a plain JSON spec — no React component knowledge required. Any system that outputs JSON can drive charts: LLM tool calls, MCP servers, backend APIs.
-
-```ts
-// AI generates this ↓                   you render this ↓
-const spec: ChartSpec = { type: 'bar', categories: [...], series: [...] }
-<ChartRenderer spec={spec} />
-```
-
-Pass `CHART_SPEC_SCHEMA` as a tool input schema for structured output, or `CHART_SPEC_DESCRIPTION` as a system prompt. [See full docs →](#chartrenderer--ai--agent-api)
-
----
-
 ## Features
 
-- **ChartRenderer** — declarative JSON spec interface for AI agents and MCP tools
 - **TimeSeriesChart** — line, area, bars, and points; dual y-axis; stacking; threshold lines; zoom/selection; custom tooltip & legend
 - **CandlestickChart** — OHLC candles; volume overlay; hover values; controlled range and drag selection
 - **HistogramChart** — auto-binning (Sturges rule), normalization to relative frequency
@@ -68,40 +53,30 @@ The library uses CSS variables. Override them to match your design system:
 }
 ```
 
-### Runtime formatter and tooltip plugins
+### Runtime formatter and tooltip defaults
 
 ChartKit keeps default number, time, label, percentage, and tooltip rendering. Applications can
-override those runtime behaviors above a chart tree without adding functions to `ChartSpec`:
+provide defaults above a chart tree:
 
 ```tsx
 import { ChartKitProvider } from '@loykin/chartkit'
-import type { ChartKitPlugin } from '@loykin/chartkit'
 
-const applicationFormattingPlugin: ChartKitPlugin = {
-  name: 'application-formatting',
-  formatters: {
+<ChartKitProvider
+  formatters={{
     value: (value, context) =>
       context.unit === 'bytes' ? formatBytes(value) : value.toLocaleString(),
     time: (unixSeconds) => new Date(unixSeconds * 1000).toLocaleString(),
     percentage: (percentage) => `${percentage.toFixed(2)}%`,
-  },
-  tooltip: {
-    render: (payload) => <ApplicationTooltip payload={payload} />,
-  },
-}
-
-const chartKitPlugins = [applicationFormattingPlugin]
-
-<ChartKitProvider plugins={chartKitPlugins}>
+  }}
+  renderTooltip={(payload) => <ApplicationTooltip payload={payload} />}
+>
   <DashboardCharts />
 </ChartKitProvider>
 ```
 
 Every chart accepts a `formatters` prop for a local override. `TimeSeriesChart`, `PieChart`, and
 `CandlestickChart` also accept `renderTooltip` for chart-specific rendering. Resolution order is
-chart override, then the nearest provider plugin, then ChartKit's built-in behavior. Formatter and
-renderer functions are runtime-only and are intentionally excluded from `ChartSpec` and
-`CHART_SPEC_SCHEMA`.
+chart override, then the nearest provider value, then ChartKit's built-in behavior.
 
 ---
 
@@ -323,87 +298,6 @@ import { BarChart } from '@loykin/chartkit'
 
 ---
 
-## ChartRenderer — AI & Agent API
-
-AI agents reliably produce **JSON** but struggle with React component syntax — import paths break, prop names drift, and there's no runtime validation. `ChartRenderer` solves this by introducing a declarative `ChartSpec` format that any JSON-producing system can target.
-
-```
-AI / agent / backend  →  ChartSpec (JSON)  →  <ChartRenderer />  →  chart
-```
-
-### React usage
-
-```tsx
-import { ChartRenderer } from '@loykin/chartkit'
-import type { ChartSpec } from '@loykin/chartkit'
-
-const spec: ChartSpec = {
-  type: 'bar',
-  categories: ['Jan', 'Feb', 'Mar'],
-  series: [
-    { label: 'Revenue', color: '#3b82f6', values: [42, 55, 38] },
-  ],
-  yUnit: 'k$',
-  height: 300,
-}
-
-<ChartRenderer spec={spec} />
-```
-
-`isLoading` and `error` are passed separately (runtime state, not part of the spec):
-
-```tsx
-<ChartRenderer spec={spec} isLoading={loading} error={err} />
-```
-
-### MCP tool definition
-
-Expose `CHART_SPEC_SCHEMA` as the input schema for an MCP tool — the model then calls the tool with a valid spec directly:
-
-```ts
-import { CHART_SPEC_SCHEMA } from '@loykin/chartkit'
-
-const tools = [{
-  name: 'render_chart',
-  description: 'Render a chart from a declarative spec',
-  inputSchema: CHART_SPEC_SCHEMA,
-}]
-```
-
-### System prompt / function calling
-
-`CHART_SPEC_DESCRIPTION` is a compact plain-text summary of all chart types and their fields — paste it into a system prompt so the model knows what to generate:
-
-```ts
-import { CHART_SPEC_DESCRIPTION } from '@loykin/chartkit'
-
-const systemPrompt = `
-You are a data assistant. When the user asks for a chart, output a ChartSpec JSON object.
-
-${CHART_SPEC_DESCRIPTION}
-`
-```
-
-### Supported `type` values
-
-| `type`       | Required fields                                        |
-|--------------|--------------------------------------------------------|
-| `bar`        | `categories`, `series[].{label, color, values}`        |
-| `barGauge`   | `items[].{id, label, value}`                           |
-| `pie`        | `slices[].{label, value, color}`                       |
-| `scatter`    | `series[].{label, color, xs, ys}`                      |
-| `timeseries` | `data` (AlignedData), `series[].{label, color}`        |
-| `candlestick`| `data[].{time, open, high, low, close}`                |
-| `histogram`  | `values`                                               |
-| `boxplot`    | `categories`, `series[].{label, color, data[].{min,q1,median,q3,max}}` |
-| `gauge`      | `value`                                                |
-| `stat`       | `value`                                                |
-| `heatmap`    | `xs`, `ys`, `xBinSize`, `yBinSize`                     |
-
-All types accept the same optional base fields as the individual components (`height`, `yMin`, `yMax`, `gridStyle`, `axisStyle`).
-
----
-
 ## Props
 
 ### Shared — `BaseChartProps`
@@ -422,8 +316,8 @@ All types accept the same optional base fields as the individual components (`he
 | `renderLoading` | `() => ReactNode`     | —       | Runtime-only replacement inside the loading overlay |
 | `renderError` | `(error) => ReactNode`  | —       | Runtime-only replacement for the error state |
 
-State renderers are excluded from `ChartSpec`. `GaugeChart` and `StatChart` have no empty-data
-state, so they expose only `renderLoading` and `renderError`.
+`GaugeChart` and `StatChart` have no empty-data state, so they expose only `renderLoading` and
+`renderError`.
 
 ### `LineStyle`
 
@@ -475,7 +369,7 @@ state, so they expose only `renderLoading` and `renderError`.
 | `timeRange`        | `[number, number]`        | —           | Controlled x-axis range (Unix seconds)             |
 | `onTimeRangeChange`| `(r) => void`             | —           | Fired when x range changes                         |
 | `renderLegend`     | `(items) => ReactNode`    | —           | Custom legend renderer                             |
-| `renderTooltip`    | `(payload) => ReactNode`  | —           | Custom tooltip renderer                            |
+| `renderTooltip`    | `(payload) => ReactNode`  | —           | Custom tooltip renderer; payload includes the original `datumIndex` |
 
 Related time-series charts can opt into uPlot cursor synchronization. Unrelated charts remain
 independent by default:
@@ -487,8 +381,7 @@ const sync = { id: 'detail-charts', series: false } as const
 <TimeSeriesChart data={memoryData} series={memorySeries} sync={sync} />
 ```
 
-`series: false` synchronizes only the cursor. Synchronization is runtime composition state and is
-intentionally excluded from `ChartSpec`.
+`series: false` synchronizes only the cursor. Synchronization remains an explicit TimeSeries prop.
 
 Tooltip item selection is applied before both custom and built-in renderers:
 
@@ -513,7 +406,7 @@ const [hiddenSeriesIds, setHiddenSeriesIds] = useState<string[]>([])
 ```
 
 Series without an `id` retain backward-compatible uncontrolled legend behavior. Controlled
-visibility and callbacks are runtime-only and excluded from `ChartSpec`.
+Visibility and callbacks remain local to the chart component.
 
 Datum events contain the original `datumIndex`, x/y values, and viewport `clientX/clientY`.
 Provide `SeriesConfig.id` for stable `seriesId`; series without one fall back to their input index.
@@ -654,7 +547,7 @@ controlled visibility. Hidden slices are removed from geometry and the visible t
 are recalculated from the remaining positive finite values. Zero, negative, `NaN`, and infinite
 values contribute zero geometry while their raw value remains available to formatters and events.
 ID-less slices retain backward-compatible uncontrolled, index-based legend behavior. Runtime state,
-events, and render slots are excluded from `ChartSpec`.
+Events and render slots remain local to the chart component.
 
 ### `StatChart`
 

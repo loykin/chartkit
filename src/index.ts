@@ -1,21 +1,3 @@
-// Spec layer (AI-friendly declarative interface)
-export { ChartRenderer, CHART_SPEC_SCHEMA, CHART_SPEC_DESCRIPTION } from './spec'
-export type {
-  ChartSpec,
-  ChartRendererProps,
-  BarChartSpec,
-  BarGaugeSpec,
-  PieChartSpec,
-  ScatterChartSpec,
-  TimeSeriesSpec,
-  CandlestickSpec,
-  HistogramSpec,
-  BoxPlotSpec,
-  GaugeSpec,
-  StatSpec,
-  HeatmapSpec,
-} from './spec'
-
 // Charts
 export { TimeSeriesChart } from './time-series'
 export { CandlestickChart } from './candlestick'
@@ -29,19 +11,16 @@ export { GaugeChart      } from './gauge'
 export { BarChart        } from './bar'
 export { BarGaugeChart   } from './bar-gauge'
 
-// Runtime customization (functions stay outside the serializable ChartSpec)
-export { ChartKitProvider, useChartKit } from './core'
+// Optional defaults shared by a chart tree
+export { ChartKitProvider } from './core'
 export type {
   ChartKitProviderProps,
-  ChartType,
   ChartFormatPurpose,
   ChartFormatterContext,
   ChartFormatters,
   ChartTooltipItem,
   ChartTooltipPayload,
   ChartTooltipRenderer,
-  ChartKitPlugin,
-  ChartKitRuntime,
 } from './core'
 
 // Time-series types

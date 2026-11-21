@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { BarGaugeChart } from '../bar-gauge'
-import { CHART_SPEC_SCHEMA } from '../spec'
 
 describe('chart state render slots', () => {
   it('renders custom empty content', () => {
@@ -28,15 +27,5 @@ describe('chart state render slots', () => {
     )
 
     expect(html).toContain('Handled: broken')
-  })
-
-  it('keeps runtime state renderers out of the serializable schema', () => {
-    const schema = JSON.stringify(CHART_SPEC_SCHEMA)
-
-    expect(schema).not.toContain('renderEmpty')
-    expect(schema).not.toContain('renderLoading')
-    expect(schema).not.toContain('renderError')
-    expect(schema).not.toContain('onDatumClick')
-    expect(schema).not.toContain('onDatumHover')
   })
 })

@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import type uPlot from 'uplot'
-import { ChartEmpty, ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKit } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKitDefaults } from '../core'
 import type { SelectionResult } from '../core'
 import { CandlestickCanvas } from './components/CandlestickCanvas'
 import type { CandlestickChartProps, CandlestickDataPoint, CandlestickTooltipPayload } from './types'
@@ -40,7 +40,7 @@ export function CandlestickChart({
 }: CandlestickChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
-  const { renderTooltip: renderPluginTooltip } = useChartKit()
+  const { renderTooltip: renderDefaultTooltip } = useChartKitDefaults()
   const [activeCandle, setActiveCandle] = useState<CandlestickDataPoint | null>(null)
   const [tooltipPayload, setTooltipPayload] = useState<CandlestickTooltipPayload | null>(null)
   const renderTooltipRef = useRef(renderTooltip)
@@ -132,8 +132,8 @@ export function CandlestickChart({
                       }) ?? `${defaultFormatValue(value, locale)}${key === 'volume' ? '' : unit}`,
                     })),
                   }
-                  return renderPluginTooltip
-                    ? renderPluginTooltip(payload)
+                  return renderDefaultTooltip
+                    ? renderDefaultTooltip(payload)
                     : <DefaultChartTooltip {...payload} />
                 })()}
           </div>
