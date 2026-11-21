@@ -1,4 +1,4 @@
-import { ChartError, ChartLoader, formatNum, resolveThresholdColor, useChartFormatters } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, formatNum, resolveThresholdColor, useChartFormatters } from '../core'
 import { getBarGaugeGeometry } from './utils'
 import type { BarGaugeChartProps, BarGaugeItem } from './types'
 
@@ -15,15 +15,16 @@ export function BarGaugeChart({
   items, orientation = 'horizontal', valueDisplay = 'value', min = 0, max = 100,
   unit, height = 300, formatters: formatterOverrides, onItemClick, renderValue,
   isLoading, error,
+  renderEmpty, renderLoading, renderError,
 }: BarGaugeChartProps) {
   const formatters = useChartFormatters(formatterOverrides)
-  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
-  if (!items.length && !isLoading) return <div style={{ height: height === 'fill' ? '100%' : height, display: 'grid', placeItems: 'center', color: 'var(--chartkit-muted-foreground, #737373)' }}>No data</div>
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height}>{renderError?.(error)}</ChartError>
+  if (!items.length && !isLoading) return <ChartEmpty height={height}>{renderEmpty?.()}</ChartEmpty>
 
   const vertical = orientation === 'vertical'
   return (
     <div style={{ position: 'relative', height: height === 'fill' ? '100%' : height, display: 'grid', gridTemplateColumns: vertical ? `repeat(${items.length}, minmax(96px, 1fr))` : undefined, gap: 12, alignItems: 'stretch', overflow: 'auto' }}>
-      {isLoading && <ChartLoader />}
+      {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
       {items.map(item => {
         const geometry = getBarGaugeGeometry(item, min, max)
         const color = item.color ?? (geometry.value == null

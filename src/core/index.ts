@@ -8,6 +8,7 @@ export { formatNum, makeAxisValues } from './utils/formatNum'
 export { resolveThresholdColor } from './utils/resolveThresholdColor'
 export { ChartError } from './components/ChartError'
 export { ChartLoader } from './components/ChartLoader'
+export { ChartEmpty } from './components/ChartEmpty'
 export { DefaultChartTooltip } from './components/DefaultChartTooltip'
 export { ChartKitProvider, useChartKit, useChartFormatters } from './runtime'
 export type {
@@ -22,4 +23,4 @@ export type {
   ChartKitRuntime,
   ChartKitProviderProps,
 } from './runtime'
-export type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartProps, Threshold } from './types'
+export type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartProps, ChartStateRenderers, Threshold } from './types'

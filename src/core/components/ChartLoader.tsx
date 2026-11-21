@@ -1,6 +1,7 @@
 import { Loader2 } from 'lucide-react'
+import type React from 'react'
 
-export function ChartLoader() {
+export function ChartLoader({ children }: { children?: React.ReactNode }) {
   return (
     <div style={{
       position:        'absolute',
@@ -13,10 +14,12 @@ export function ChartLoader() {
       backgroundColor: 'color-mix(in srgb, var(--chartkit-background, #ffffff) 60%, transparent)',
       backdropFilter:  'blur(4px)',
     }}>
-      <Loader2
-        className="ck-spin"
-        style={{ width: 24, height: 24, color: 'var(--chartkit-muted-foreground, #737373)' }}
-      />
+      {children ?? (
+        <Loader2
+          className="ck-spin"
+          style={{ width: 24, height: 24, color: 'var(--chartkit-muted-foreground, #737373)' }}
+        />
+      )}
     </div>
   )
 }

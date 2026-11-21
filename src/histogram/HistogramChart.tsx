@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ChartError, ChartLoader, useChartFormatters } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, useChartFormatters } from '../core'
 import { HistogramCanvas } from './components/HistogramCanvas'
 import { useBins } from './hooks/useBins'
 import type { HistogramProps } from './types'
@@ -20,6 +20,9 @@ export function HistogramChart({
   formatters: formatterOverrides,
   isLoading,
   error,
+  renderEmpty,
+  renderLoading,
+  renderError,
 }: HistogramProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
@@ -32,26 +35,15 @@ export function HistogramChart({
     ? counts.map(c => (c / n) * 100)
     : counts
 
-  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height}>{renderError?.(error)}</ChartError>
 
   if (!values.length && !isLoading) {
-    return (
-      <div style={{
-        height: height === 'fill' ? '100%' : height,
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        fontSize:       '0.875rem',
-        color:          'var(--chartkit-muted-foreground, #737373)',
-      }}>
-        No data
-      </div>
-    )
+    return <ChartEmpty height={height}>{renderEmpty?.()}</ChartEmpty>
   }
 
   return (
     <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
-      {isLoading && <ChartLoader />}
+      {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
       <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
       {edges.length > 0 && (
         <HistogramCanvas

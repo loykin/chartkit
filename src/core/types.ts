@@ -1,3 +1,5 @@
+import type React from 'react'
+
 /** Line appearance: width, color, dash pattern */
 export interface LineStyle {
   /** Line width in CSS px. 0.5 = hairline on Retina (default 0.5) */
@@ -42,7 +44,16 @@ export interface Threshold {
 }
 
 /** Shared props common to all chart components */
-export interface BaseChartProps {
+export interface ChartStateRenderers {
+  /** Runtime-only replacement for the empty-data state. */
+  renderEmpty?: () => React.ReactNode
+  /** Runtime-only replacement for the loading overlay. */
+  renderLoading?: () => React.ReactNode
+  /** Runtime-only replacement for the error state. */
+  renderError?: (error: Error) => React.ReactNode
+}
+
+export interface BaseChartProps extends ChartStateRenderers {
   /**
    * Canvas height. Pass a number for a fixed px height, or `'fill'` to expand
    * to the parent container's height (parent must have an explicit height).

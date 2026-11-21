@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import type uPlot from 'uplot'
-import { ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKit } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKit } from '../core'
 import type { SelectionResult } from '../core'
 import { CandlestickCanvas } from './components/CandlestickCanvas'
 import type { CandlestickChartProps, CandlestickDataPoint, CandlestickTooltipPayload } from './types'
@@ -34,6 +34,9 @@ export function CandlestickChart({
   axisStyle,
   isLoading,
   error,
+  renderEmpty,
+  renderLoading,
+  renderError,
 }: CandlestickChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
@@ -66,18 +69,10 @@ export function CandlestickChart({
     onSelect?.({ timeRange: result.xRange, yRange: result.yRange })
   }, [onSelect, onTimeRangeChange])
 
-  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height}>{renderError?.(error)}</ChartError>
 
   if (!data.length && !isLoading) {
-    return (
-      <div style={{
-        height: height === 'fill' ? '100%' : height,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '0.875rem', color: 'var(--chartkit-muted-foreground, #737373)',
-      }}>
-        No data
-      </div>
-    )
+    return <ChartEmpty height={height}>{renderEmpty?.()}</ChartEmpty>
   }
 
   const current = activeCandle ?? data[data.length - 1]
@@ -101,7 +96,7 @@ export function CandlestickChart({
         </div>
       )}
       <div style={{ position: 'relative', minWidth: 0, minHeight: 0, flex: 1 }}>
-        {isLoading && <ChartLoader />}
+        {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
         <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
         {tooltip && tooltipPayload && (
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 30, overflow: 'visible' }}>

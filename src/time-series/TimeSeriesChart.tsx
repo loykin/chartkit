@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import type uPlot from 'uplot'
-import { ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKit } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKit } from '../core'
 import { ChartCanvas } from './components/ChartCanvas'
 import { ChartLegend } from './components/ChartLegend'
 import { useLegendState } from './hooks/useLegendState'
@@ -44,6 +44,9 @@ export function TimeSeriesChart({
   onTimeRangeChange,
   isLoading,
   error,
+  renderEmpty,
+  renderLoading,
+  renderError,
 }: TimeSeriesChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
@@ -109,7 +112,8 @@ export function TimeSeriesChart({
     onSelect?.({ timeRange: result.xRange, yRange: result.yRange })
   }, [onSelect, onTimeRangeChange])
 
-  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height}>{renderError?.(error)}</ChartError>
+  if (!(data[0]?.length) && !isLoading) return <ChartEmpty height={height}>{renderEmpty?.()}</ChartEmpty>
 
   // Custom renderer takes priority over built-in legend
   const customLegend = renderLegend ? renderLegend(items) : null
@@ -164,7 +168,7 @@ export function TimeSeriesChart({
 
       {/* Chart canvas */}
       <div style={{ position: 'relative', minWidth: 0, minHeight: 0, flex: 1 }}>
-        {isLoading && <ChartLoader />}
+        {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
         <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
         {/* Custom tooltip overlay — rendered inside position:relative wrapper */}
         {tooltip !== false && tooltipPayload && (

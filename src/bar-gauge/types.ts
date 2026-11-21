@@ -12,7 +12,7 @@ export interface BarGaugeItem {
   description?: string
 }
 
-export interface BarGaugeChartProps extends Pick<BaseChartProps, 'height' | 'isLoading' | 'error' | 'formatters'> {
+export interface BarGaugeChartProps extends Pick<BaseChartProps, 'height' | 'isLoading' | 'error' | 'formatters' | 'renderEmpty' | 'renderLoading' | 'renderError'> {
   items: readonly BarGaugeItem[]
   orientation?: 'horizontal' | 'vertical'
   valueDisplay?: 'value' | 'percent' | 'both' | 'none'

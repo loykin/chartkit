@@ -10,7 +10,7 @@ import type { HeatmapChartProps } from '../heatmap'
 import type { CandlestickChartProps } from '../candlestick'
 import type { BarGaugeChartProps } from '../bar-gauge'
 
-type OmitRuntime<T> = Omit<T, 'isLoading' | 'error' | 'formatters' | 'height'> & {
+type OmitRuntime<T> = Omit<T, 'isLoading' | 'error' | 'formatters' | 'height' | 'renderEmpty' | 'renderLoading' | 'renderError'> & {
   height?: number
 }
 

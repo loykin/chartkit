@@ -85,6 +85,8 @@ export function StatChart({
   formatters: formatterOverrides,
   isLoading,
   error,
+  renderLoading,
+  renderError,
 }: StatChartProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
@@ -100,7 +102,7 @@ export function StatChart({
     return () => ro.disconnect()
   }, [isFill])
 
-  if (error) return <ChartError message={error.message} height={isFill ? undefined : (height as number)} />
+  if (error) return <ChartError message={error.message} height={isFill ? undefined : (height as number)}>{renderError?.(error)}</ChartError>
 
   const displayColor = color ?? resolveThresholdColor(value ?? 0, thresholds, '#3b82f6')
   const hasSparkline = sparkline && sparkline.length > 1
@@ -121,7 +123,7 @@ export function StatChart({
       overflow:       'hidden',
       boxSizing:      'border-box',
     }}>
-      {isLoading && <ChartLoader />}
+      {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
 
       {label && (
         <div style={{

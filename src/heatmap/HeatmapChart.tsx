@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react'
-import { ChartError, ChartLoader, useChartFormatters } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, useChartFormatters } from '../core'
 import { HeatmapCanvas } from './components/HeatmapCanvas'
 import { binHeatmap } from './utils/binData'
 import type { HeatmapChartProps } from './types'
@@ -19,6 +19,9 @@ export function HeatmapChart({
   formatters: formatterOverrides,
   isLoading,
   error,
+  renderEmpty,
+  renderLoading,
+  renderError,
 }: HeatmapChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
@@ -28,23 +31,15 @@ export function HeatmapChart({
     [xs, ys, xBinSize, yBinSize],
   )
 
-  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height}>{renderError?.(error)}</ChartError>
 
   if (!xs.length && !isLoading) {
-    return (
-      <div style={{
-        height: height === 'fill' ? '100%' : height,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '0.875rem', color: 'var(--chartkit-muted-foreground, #737373)',
-      }}>
-        No data
-      </div>
-    )
+    return <ChartEmpty height={height}>{renderEmpty?.()}</ChartEmpty>
   }
 
   return (
     <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
-      {isLoading && <ChartLoader />}
+      {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
       <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
       <HeatmapCanvas
         containerRef={containerRef}

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ChartError, ChartLoader, useChartFormatters, useChartKit } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, useChartFormatters, useChartKit } from '../core'
 import { PieCanvas } from './components/PieCanvas'
 import type { PieChartProps, PieSliceConfig } from './types'
 import { formatNum } from '../core'
@@ -26,6 +26,9 @@ export function PieChart({
   renderLegend,
   isLoading,
   error,
+  renderEmpty,
+  renderLoading,
+  renderError,
 }: PieChartProps) {
   const formatters = useChartFormatters(formatterOverrides)
   const { renderTooltip: renderPluginTooltip } = useChartKit()
@@ -76,21 +79,10 @@ export function PieChart({
     })
   }
 
-  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height}>{renderError?.(error)}</ChartError>
 
   if (!slices.length && !isLoading) {
-    return (
-      <div style={{
-        height: height === 'fill' ? '100%' : height,
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        fontSize:       '0.875rem',
-        color:          'var(--chartkit-muted-foreground, #737373)',
-      }}>
-        No data
-      </div>
-    )
+    return <ChartEmpty height={height}>{renderEmpty?.()}</ChartEmpty>
   }
 
   const customLegend = renderLegend
@@ -171,7 +163,7 @@ export function PieChart({
       minWidth:      0,
       height:        height === 'fill' ? '100%' : undefined,
     }}>
-      {isLoading && <ChartLoader />}
+      {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
 
       <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
         <PieCanvas

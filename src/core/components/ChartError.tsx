@@ -1,9 +1,12 @@
+import type React from 'react'
+
 interface ChartErrorProps {
-  message: string
+  message?: string
   height?: number
+  children?: React.ReactNode
 }
 
-export function ChartError({ message, height }: ChartErrorProps) {
+export function ChartError({ message, height, children }: ChartErrorProps) {
   return (
     <div style={{
       height: height ?? '100%',
@@ -13,7 +16,7 @@ export function ChartError({ message, height }: ChartErrorProps) {
       fontSize:       '0.875rem',
       color:          'var(--chartkit-destructive, #ef4444)',
     }}>
-      {message}
+      {children ?? message}
     </div>
   )
 }

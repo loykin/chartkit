@@ -1,6 +1,6 @@
-import type { ChartFormatters, Threshold } from '../core'
+import type { ChartFormatters, ChartStateRenderers, Threshold } from '../core'
 
-export interface StatChartProps {
+export interface StatChartProps extends Pick<ChartStateRenderers, 'renderLoading' | 'renderError'> {
   /** Current value */
   value: number | null
   /** Label shown above the value */

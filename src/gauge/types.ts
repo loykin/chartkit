@@ -1,6 +1,6 @@
-import type { ChartFormatters, Threshold } from '../core'
+import type { ChartFormatters, ChartStateRenderers, Threshold } from '../core'
 
-export interface GaugeChartProps {
+export interface GaugeChartProps extends Pick<ChartStateRenderers, 'renderLoading' | 'renderError'> {
   /** Current value */
   value: number
   /** Minimum of the gauge range. Default 0 */

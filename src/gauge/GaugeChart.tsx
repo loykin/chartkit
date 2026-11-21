@@ -14,14 +14,16 @@ export function GaugeChart({
   formatters: formatterOverrides,
   isLoading,
   error,
+  renderLoading,
+  renderError,
 }: GaugeChartProps) {
   const formatters = useChartFormatters(formatterOverrides)
 
-  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height}>{renderError?.(error)}</ChartError>
 
   return (
     <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
-      {isLoading && <ChartLoader />}
+      {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
       <GaugeCanvas
         value={value}
         min={min}

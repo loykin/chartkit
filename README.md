@@ -418,6 +418,12 @@ All types accept the same optional base fields as the individual components (`he
 | `isLoading` | `boolean`               | —       | Show loading spinner overlay         |
 | `error`     | `Error \| null`         | —       | Show error message instead of chart  |
 | `formatters`| `ChartFormatters`         | provider/default | Runtime-only number, time, label, and percentage overrides |
+| `renderEmpty` | `() => ReactNode`       | —       | Runtime-only replacement for the empty-data state |
+| `renderLoading` | `() => ReactNode`     | —       | Runtime-only replacement inside the loading overlay |
+| `renderError` | `(error) => ReactNode`  | —       | Runtime-only replacement for the error state |
+
+State renderers are excluded from `ChartSpec`. `GaugeChart` and `StatChart` have no empty-data
+state, so they expose only `renderLoading` and `renderError`.
 
 ### `LineStyle`
 

@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ChartError, ChartLoader, useChartFormatters } from '../core'
+import { ChartEmpty, ChartError, ChartLoader, useChartFormatters } from '../core'
 import { ScatterCanvas } from './components/ScatterCanvas'
 import type { ScatterChartProps } from './types'
 
@@ -13,28 +13,23 @@ export function ScatterChart({
   formatters: formatterOverrides,
   isLoading,
   error,
+  renderEmpty,
+  renderLoading,
+  renderError,
 }: ScatterChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
 
-  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
+  if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height}>{renderError?.(error)}</ChartError>
 
   const isEmpty = series.every(s => s.xs.length === 0)
   if (isEmpty && !isLoading) {
-    return (
-      <div style={{
-        height: height === 'fill' ? '100%' : height,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '0.875rem', color: 'var(--chartkit-muted-foreground, #737373)',
-      }}>
-        No data
-      </div>
-    )
+    return <ChartEmpty height={height}>{renderEmpty?.()}</ChartEmpty>
   }
 
   return (
     <div style={{ position: 'relative', width: '100%', minWidth: 0, height: height === 'fill' ? '100%' : undefined }}>
-      {isLoading && <ChartLoader />}
+      {isLoading && <ChartLoader>{renderLoading?.()}</ChartLoader>}
       <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
       <ScatterCanvas
         containerRef={containerRef}

@@ -57,7 +57,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 
 ## Key Types & Patterns
 
-- `BaseChartProps` — shared props: `height` (`number` for fixed px, `'fill'` to expand to parent container height), `yMin`, `yMax`, `gridStyle`, `axisStyle`, `isLoading`, `error`
+- `BaseChartProps` — shared props: `height` (`number` for fixed px, `'fill'` to expand to parent container height), `yMin`, `yMax`, `gridStyle`, `axisStyle`, `isLoading`, `error`, and runtime-only empty/loading/error render slots
 - `Threshold` — `{ value: number; color: string; label?; width?; dash? }`
 - `BarGaugeItem` — final pre-aggregated value with stable `id`, label, range, color, and optional thresholds
 - `LineStyle` — `{ width?: number; stroke?: string; dash?: number[] }`
@@ -72,6 +72,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 - `ChartSpec` — discriminated union of all chart specs (numeric `height` only; omits `isLoading`, `error`, formatter functions, and React callbacks)
 - `ChartKitProvider` — runtime-only plugin boundary for shared formatter and tooltip overrides; per-chart overrides take precedence over provider plugins, which fall back to built-in rendering
 - `ChartFormatters` — optional `value`, `time`, `label`, and `percentage` callbacks used by every chart with chart and display-purpose context; formatter functions never enter `ChartSpec`
+- `ChartStateRenderers` — runtime-only `renderEmpty`, `renderLoading`, and `renderError` slots; charts expose only states that apply to them
 
 ## Styling
 

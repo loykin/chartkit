@@ -1187,17 +1187,31 @@ function StatesDemo() {
             {isLoading ? 'Hide' : 'Show'} loading
           </button>
         </div>
-        <TimeSeriesChart data={cpuData} series={cpuSeries} height={180} yUnit="%" isLoading={isLoading} legendPosition="none" />
+        <TimeSeriesChart
+          data={cpuData}
+          series={cpuSeries}
+          height={180}
+          yUnit="%"
+          isLoading={isLoading}
+          legendPosition="none"
+          renderLoading={() => <strong>Loading metrics…</strong>}
+        />
       </Card>
 
       <Card>
         <SectionHeader>Error state</SectionHeader>
-        <TimeSeriesChart data={cpuData} series={cpuSeries} height={100} error={new Error('Failed to fetch metrics: connection timeout')} />
+        <TimeSeriesChart
+          data={cpuData}
+          series={cpuSeries}
+          height={100}
+          error={new Error('Failed to fetch metrics: connection timeout')}
+          renderError={error => <span role="alert">Custom error: {error.message}</span>}
+        />
       </Card>
 
       <Card>
         <SectionHeader>Empty histogram</SectionHeader>
-        <HistogramChart values={[]} height={100} />
+        <HistogramChart values={[]} height={100} renderEmpty={() => <span>Custom empty state</span>} />
       </Card>
     </div>
   )
