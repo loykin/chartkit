@@ -1,4 +1,4 @@
-import type { Threshold } from '../core'
+import type { ChartFormatters, Threshold } from '../core'
 
 export interface GaugeChartProps {
   /** Current value */
@@ -23,4 +23,6 @@ export interface GaugeChartProps {
   height?: number | 'fill'
   isLoading?: boolean
   error?: Error | null
+  /** Runtime-only formatter overrides. */
+  formatters?: ChartFormatters
 }

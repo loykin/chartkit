@@ -1,24 +1,31 @@
 import type { LegendItem } from '../hooks/useLegendState'
 import type { LegendFormat, LegendPosition } from '../types'
+import type { ChartFormatters } from '../../core'
 
 interface ChartLegendProps {
   items:    LegendItem[]
   position: LegendPosition
   format:   LegendFormat
   onToggle: (index: number) => void
+  formatters: ChartFormatters
 }
 
-function fmt(value: number | null, unit?: string, decimals = 2): string {
+function fmt(value: number | null, item: LegendItem, formatters: ChartFormatters, decimals = 2): string {
   if (value == null) return '—'
+  if (formatters.value) {
+    return formatters.value(value, {
+      chartType: 'timeseries', purpose: 'legend', seriesLabel: item.label, unit: item.unit,
+    })
+  }
   const s = Math.abs(value) >= 1000
     ? value.toLocaleString(undefined, { maximumFractionDigits: 1 })
     : value.toLocaleString(undefined, { maximumFractionDigits: decimals })
-  return unit ? `${s} ${unit}` : s
+  return item.unit ? `${s} ${item.unit}` : s
 }
 
 // ─── List format ─────────────────────────────────────────────────────────────
 
-function ListLegend({ items, position, onToggle }: Omit<ChartLegendProps, 'format'>) {
+function ListLegend({ items, position, onToggle, formatters }: Omit<ChartLegendProps, 'format'>) {
   const isVertical = position === 'left' || position === 'right'
 
   return (
@@ -48,11 +55,13 @@ function ListLegend({ items, position, onToggle }: Omit<ChartLegendProps, 'forma
         >
           <Swatch color={item.color} />
           <span style={{ fontWeight: 500, color: 'var(--chartkit-foreground, #0a0a0a)' }}>
-            {item.label}
+            {formatters.label?.(item.label, {
+              chartType: 'timeseries', purpose: 'legend', seriesLabel: item.label,
+            }) ?? item.label}
           </span>
           {item.value != null && (
             <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--chartkit-muted-foreground, #737373)' }}>
-              {fmt(item.value, item.unit)}
+              {fmt(item.value, item, formatters)}
             </span>
           )}
         </button>
@@ -65,7 +74,7 @@ function ListLegend({ items, position, onToggle }: Omit<ChartLegendProps, 'forma
 
 const TABLE_COLS = ['Min', 'Max', 'Avg', 'Last'] as const
 
-function TableLegend({ items, onToggle }: Omit<ChartLegendProps, 'format' | 'position'>) {
+function TableLegend({ items, onToggle, formatters }: Omit<ChartLegendProps, 'format' | 'position'>) {
   return (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse', userSelect: 'none' }}>
@@ -94,18 +103,20 @@ function TableLegend({ items, onToggle }: Omit<ChartLegendProps, 'format' | 'pos
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Swatch color={item.color} />
                   <span style={{ fontWeight: 500, color: 'var(--chartkit-foreground, #0a0a0a)' }}>
-                    {item.label}
+                    {formatters.label?.(item.label, {
+                      chartType: 'timeseries', purpose: 'legend', seriesLabel: item.label,
+                    }) ?? item.label}
                   </span>
                 </span>
               </td>
               <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--chartkit-muted-foreground, #737373)' }}>
-                {fmt(item.stats.min, item.unit)}
+                {fmt(item.stats.min, item, formatters)}
               </td>
               <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--chartkit-muted-foreground, #737373)' }}>
-                {fmt(item.stats.max, item.unit)}
+                {fmt(item.stats.max, item, formatters)}
               </td>
               <td style={{ padding: '4px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--chartkit-muted-foreground, #737373)' }}>
-                {fmt(item.stats.avg, item.unit)}
+                {fmt(item.stats.avg, item, formatters)}
               </td>
               <td style={{
                 padding:           '4px 8px',
@@ -117,7 +128,7 @@ function TableLegend({ items, onToggle }: Omit<ChartLegendProps, 'format' | 'pos
                   : 'var(--chartkit-muted-foreground, #737373)',
               }}>
                 {/* Show cursor value while hovering, fall back to last data point */}
-                {fmt(item.value ?? item.stats.last, item.unit)}
+                {fmt(item.value ?? item.stats.last, item, formatters)}
               </td>
             </tr>
           ))}
@@ -146,9 +157,9 @@ function Swatch({ color }: { color: string }) {
 
 // ─── Export ───────────────────────────────────────────────────────────────────
 
-export function ChartLegend({ items, position, format, onToggle }: ChartLegendProps) {
+export function ChartLegend({ items, position, format, onToggle, formatters }: ChartLegendProps) {
   if (format === 'table') {
-    return <TableLegend items={items} onToggle={onToggle} />
+    return <TableLegend items={items} onToggle={onToggle} formatters={formatters} />
   }
-  return <ListLegend items={items} position={position} onToggle={onToggle} />
+  return <ListLegend items={items} position={position} onToggle={onToggle} formatters={formatters} />
 }

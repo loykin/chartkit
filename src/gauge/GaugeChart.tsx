@@ -1,4 +1,4 @@
-import { ChartError, ChartLoader } from '../core'
+import { ChartError, ChartLoader, useChartFormatters } from '../core'
 import { GaugeCanvas } from './components/GaugeCanvas'
 import type { GaugeChartProps } from './types'
 
@@ -11,9 +11,12 @@ export function GaugeChart({
   thresholds  = [],
   arcWidth    = 0.18,
   height      = 200,
+  formatters: formatterOverrides,
   isLoading,
   error,
 }: GaugeChartProps) {
+  const formatters = useChartFormatters(formatterOverrides)
+
   if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   return (
@@ -28,6 +31,7 @@ export function GaugeChart({
         thresholds={thresholds}
         arcWidth={arcWidth}
         height={height}
+        formatters={formatters}
       />
     </div>
   )

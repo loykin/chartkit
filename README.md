@@ -67,6 +67,41 @@ The library uses CSS variables. Override them to match your design system:
 }
 ```
 
+### Runtime formatter and tooltip plugins
+
+ChartKit keeps default number, time, label, percentage, and tooltip rendering. Applications can
+override those runtime behaviors above a chart tree without adding functions to `ChartSpec`:
+
+```tsx
+import { ChartKitProvider } from '@loykin/chartkit'
+import type { ChartKitPlugin } from '@loykin/chartkit'
+
+const applicationFormattingPlugin: ChartKitPlugin = {
+  name: 'application-formatting',
+  formatters: {
+    value: (value, context) =>
+      context.unit === 'bytes' ? formatBytes(value) : value.toLocaleString(),
+    time: (unixSeconds) => new Date(unixSeconds * 1000).toLocaleString(),
+    percentage: (percentage) => `${percentage.toFixed(2)}%`,
+  },
+  tooltip: {
+    render: (payload) => <ApplicationTooltip payload={payload} />,
+  },
+}
+
+const chartKitPlugins = [applicationFormattingPlugin]
+
+<ChartKitProvider plugins={chartKitPlugins}>
+  <DashboardCharts />
+</ChartKitProvider>
+```
+
+Every chart accepts a `formatters` prop for a local override. `TimeSeriesChart`, `PieChart`, and
+`CandlestickChart` also accept `renderTooltip` for chart-specific rendering. Resolution order is
+chart override, then the nearest provider plugin, then ChartKit's built-in behavior. Formatter and
+renderer functions are runtime-only and are intentionally excluded from `ChartSpec` and
+`CHART_SPEC_SCHEMA`.
+
 ---
 
 ## Usage
@@ -380,6 +415,7 @@ All types accept the same optional base fields as the individual components (`he
 | `axisStyle` | `AxisConfig \| false`   | —       | Axis border + ticks; `false` = hide  |
 | `isLoading` | `boolean`               | —       | Show loading spinner overlay         |
 | `error`     | `Error \| null`         | —       | Show error message instead of chart  |
+| `formatters`| `ChartFormatters`         | provider/default | Runtime-only number, time, label, and percentage overrides |
 
 ### `LineStyle`
 
@@ -413,6 +449,8 @@ All types accept the same optional base fields as the individual components (`he
 | `yUnit2`           | `string`                  | —           | Secondary y-axis unit                              |
 | `xShowDate`        | `boolean`                 | `true`      | Show date on second line when it changes           |
 | `locale`           | `string`                  | browser     | Date formatting locale                             |
+| `formatters`       | `ChartFormatters`         | provider/default | Runtime-only number, time, label, and percentage overrides |
+| `tooltip`          | `boolean`                 | `true`      | Show the built-in, provider, or chart tooltip      |
 | `barStack`         | `boolean`                 | —           | Stack bar series                                   |
 | `selectionMode`    | `'x'\|'y'\|'xy'\|'none'`  | —           | Drag selection mode                                |
 | `onSelect`         | `(s) => void`             | —           | Fired on drag-select with time/y range             |
@@ -425,6 +463,7 @@ All types accept the same optional base fields as the individual components (`he
 
 | Prop          | Type                             | Default  | Description                         |
 |---------------|----------------------------------|----------|-------------------------------------|
+| `id`          | `string`                         | —        | Stable series identity for runtime payloads |
 | `label`       | `string`                         | required | Display name                        |
 | `color`       | `string`                         | required | Line/fill color                     |
 | `unit`        | `string`                         | —        | Value unit in legend                |
@@ -456,6 +495,7 @@ All types accept the same optional base fields as the individual components (`he
 | `timeRange`      | `[number, number]`         | —           | Controlled Unix-second x-axis range          |
 | `onTimeRangeChange` | `(range) => void`       | —           | Fired after x-range selection                |
 | `renderTooltip`  | `(payload) => ReactNode`   | —           | Custom candle tooltip renderer               |
+| `tooltip`        | `boolean`                  | `true`      | Show the built-in, provider, or chart tooltip |
 
 ### `HistogramChart`
 
@@ -533,8 +573,13 @@ All types accept the same optional base fields as the individual components (`he
 | `centerLabel`    | `string`                          | —          | Text in the center hole (donut only). `\n` for line break |
 | `legendPosition` | `'right'\|'bottom'\|'none'`       | `'right'`  | Legend placement                             |
 | `unit`           | `string`                          | —          | Unit shown in tooltip and legend             |
+| `formatters`     | `ChartFormatters`                 | provider/default | Runtime-only value, label, and percentage overrides |
+| `tooltip`        | `boolean`                         | `true`     | Show the built-in, provider, or chart tooltip |
+| `renderTooltip`  | `(payload) => ReactNode`          | —          | Per-chart tooltip renderer                   |
 
 **`PieLabelType`**: `'name'` · `'value'` · `'percent'` · `'name+percent'` · `'none'`
+
+`PieSliceConfig.id` is optional and supplies stable slice identity to runtime tooltip payloads.
 
 ### `StatChart`
 

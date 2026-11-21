@@ -27,6 +27,21 @@ export { StatChart       } from './stat'
 export { GaugeChart      } from './gauge'
 export { BarChart        } from './bar'
 
+// Runtime customization (functions stay outside the serializable ChartSpec)
+export { ChartKitProvider, useChartKit } from './core'
+export type {
+  ChartKitProviderProps,
+  ChartType,
+  ChartFormatPurpose,
+  ChartFormatterContext,
+  ChartFormatters,
+  ChartTooltipItem,
+  ChartTooltipPayload,
+  ChartTooltipRenderer,
+  ChartKitPlugin,
+  ChartKitRuntime,
+} from './core'
+
 // Time-series types
 export type {
   TimeSeriesChartProps,
@@ -63,7 +78,7 @@ export type { ScatterChartProps, ScatterSeriesConfig } from './scatter'
 export type { BoxPlotChartProps, BoxSeriesConfig, BoxStats } from './boxplot'
 
 // Pie types
-export type { PieChartProps, PieSliceConfig, PieLabelType } from './pie'
+export type { PieChartProps, PieSliceConfig, PieLabelType, PieTooltipPayload } from './pie'
 
 // Stat types
 export type { StatChartProps } from './stat'

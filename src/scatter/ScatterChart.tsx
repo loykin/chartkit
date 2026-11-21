@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ChartError, ChartLoader } from '../core'
+import { ChartError, ChartLoader, useChartFormatters } from '../core'
 import { ScatterCanvas } from './components/ScatterCanvas'
 import type { ScatterChartProps } from './types'
 
@@ -10,10 +10,12 @@ export function ScatterChart({
   yUnit,
   gridStyle,
   axisStyle,
+  formatters: formatterOverrides,
   isLoading,
   error,
 }: ScatterChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const formatters = useChartFormatters(formatterOverrides)
 
   if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
@@ -42,6 +44,7 @@ export function ScatterChart({
         yUnit={yUnit}
         gridStyle={gridStyle}
         axisStyle={axisStyle}
+        formatters={formatters}
       />
     </div>
   )

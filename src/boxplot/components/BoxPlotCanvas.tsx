@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
-import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH, makeAxisValues } from '../../core'
-import type { AxisConfig, LineStyle } from '../../core'
+import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH, formatNum } from '../../core'
+import type { AxisConfig, ChartFormatters, LineStyle } from '../../core'
 import { boxPlotPlugin } from '../utils/boxPlotPlugin'
 import type { BoxSeriesConfig } from '../types'
 
@@ -13,6 +13,7 @@ interface BoxPlotCanvasProps {
   yUnit?:       string
   gridStyle?:   LineStyle | false
   axisStyle?:   AxisConfig | false
+  formatters:   ChartFormatters
 }
 
 export function BoxPlotCanvas({
@@ -23,7 +24,10 @@ export function BoxPlotCanvas({
   yUnit,
   gridStyle,
   axisStyle,
+  formatters,
 }: BoxPlotCanvasProps) {
+  const formattersRef = useRef(formatters)
+  formattersRef.current = formatters
   // Compute y range from all stats so uPlot scales correctly
   const [yMin, yMax] = useMemo(() => {
     let lo = Infinity, hi = -Infinity
@@ -72,14 +76,23 @@ export function BoxPlotCanvas({
           grid:   { show: false },
           // Show only integer ticks that correspond to category indices
           splits: () => categories.map((_, i) => i),
-          values: (_u, ticks) => ticks.map(t => categories[Math.round(t)] ?? ''),
+          values: (_u, ticks) => ticks.map(t => {
+            const label = categories[Math.round(t)] ?? ''
+            return formattersRef.current.label?.(label, {
+              chartType: 'boxplot', purpose: 'axis', axis: 'x',
+            }) ?? label
+          }),
         },
         {
           size:   54,
           stroke: mutedFgColor,
           ticks:  resolvedTicks,
           grid:   resolvedGrid,
-          values: makeAxisValues(yUnit),
+          values: (_u, values) => values.map(value => value == null ? '' : (
+            formattersRef.current.value?.(value, {
+              chartType: 'boxplot', purpose: 'axis', axis: 'y', unit: yUnit,
+            }) ?? formatNum(value, yUnit)
+          )),
         },
       ],
       series: [
@@ -100,7 +113,8 @@ export function BoxPlotCanvas({
     return [xs, xs.map(() => 0)]
   }, [categories])
 
-  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
+  const chartRef = useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
+  useEffect(() => { chartRef.current?.redraw() }, [chartRef, formatters])
 
   return null
 }

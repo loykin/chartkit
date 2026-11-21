@@ -59,4 +59,6 @@ export interface BaseChartProps {
   yMax?:      number
   isLoading?: boolean
   error?:     Error | null
+  /** Runtime-only formatter overrides. Per-chart formatters override provider plugins. */
+  formatters?: import('./runtime').ChartFormatters
 }

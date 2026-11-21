@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ChartError, ChartLoader } from '../core'
+import { ChartError, ChartLoader, useChartFormatters } from '../core'
 import { BarCanvas } from './components/BarCanvas'
 import type { BarChartProps } from './types'
 
@@ -15,10 +15,12 @@ export function BarChart({
   yMax,
   gridStyle,
   axisStyle,
+  formatters: formatterOverrides,
   isLoading,
   error,
 }: BarChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const formatters = useChartFormatters(formatterOverrides)
 
   if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
@@ -51,6 +53,7 @@ export function BarChart({
         yMax={yMax}
         gridStyle={gridStyle}
         axisStyle={axisStyle}
+        formatters={formatters}
       />
     </div>
   )

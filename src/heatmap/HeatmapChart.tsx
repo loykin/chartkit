@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react'
-import { ChartError, ChartLoader } from '../core'
+import { ChartError, ChartLoader, useChartFormatters } from '../core'
 import { HeatmapCanvas } from './components/HeatmapCanvas'
 import { binHeatmap } from './utils/binData'
 import type { HeatmapChartProps } from './types'
@@ -16,10 +16,12 @@ export function HeatmapChart({
   palette,
   gridStyle,
   axisStyle,
+  formatters: formatterOverrides,
   isLoading,
   error,
 }: HeatmapChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const formatters = useChartFormatters(formatterOverrides)
 
   const binned = useMemo(
     () => binHeatmap(xs, ys, xBinSize, yBinSize),
@@ -54,6 +56,7 @@ export function HeatmapChart({
         palette={palette}
         gridStyle={gridStyle}
         axisStyle={axisStyle}
+        formatters={formatters}
       />
     </div>
   )

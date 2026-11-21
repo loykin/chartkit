@@ -9,20 +9,24 @@ import type { StatChartProps } from '../stat'
 import type { HeatmapChartProps } from '../heatmap'
 import type { CandlestickChartProps } from '../candlestick'
 
-type OmitRuntime<T> = Omit<T, 'isLoading' | 'error'>
+type OmitRuntime<T> = Omit<T, 'isLoading' | 'error' | 'formatters' | 'height'> & {
+  height?: number
+}
+
+type OmitPieRuntime = Omit<OmitRuntime<PieChartProps>, 'renderTooltip'>
 
 type OmitTimeSeriesRuntime = Omit<
-  TimeSeriesChartProps,
-  'isLoading' | 'error' | 'renderLegend' | 'renderTooltip' | 'onSelect' | 'onTimeRangeChange'
+  OmitRuntime<TimeSeriesChartProps>,
+  'renderLegend' | 'renderTooltip' | 'onSelect' | 'onTimeRangeChange'
 >
 
 type OmitCandlestickRuntime = Omit<
-  CandlestickChartProps,
-  'isLoading' | 'error' | 'renderTooltip' | 'onSelect' | 'onTimeRangeChange'
+  OmitRuntime<CandlestickChartProps>,
+  'renderTooltip' | 'onSelect' | 'onTimeRangeChange'
 >
 
 export type BarChartSpec     = { type: 'bar'        } & OmitRuntime<BarChartProps>
-export type PieChartSpec     = { type: 'pie'        } & OmitRuntime<PieChartProps>
+export type PieChartSpec     = { type: 'pie'        } & OmitPieRuntime
 export type ScatterChartSpec = { type: 'scatter'    } & OmitRuntime<ScatterChartProps>
 export type TimeSeriesSpec   = { type: 'timeseries' } & OmitTimeSeriesRuntime
 export type CandlestickSpec  = { type: 'candlestick' } & OmitCandlestickRuntime

@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ChartError, ChartLoader } from '../core'
+import { ChartError, ChartLoader, useChartFormatters } from '../core'
 import { HistogramCanvas } from './components/HistogramCanvas'
 import { useBins } from './hooks/useBins'
 import type { HistogramProps } from './types'
@@ -17,10 +17,12 @@ export function HistogramChart({
   yMax,
   gridStyle,
   axisStyle,
+  formatters: formatterOverrides,
   isLoading,
   error,
 }: HistogramProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const formatters = useChartFormatters(formatterOverrides)
   const { edges, counts } = useBins(values, bins)
 
   // Convert raw counts → percentage (0–100) when normalize=true.
@@ -66,6 +68,7 @@ export function HistogramChart({
           yMax={yMax}
           gridStyle={gridStyle}
           axisStyle={axisStyle}
+          formatters={formatters}
         />
       )}
     </div>

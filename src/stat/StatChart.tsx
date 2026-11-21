@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChartError, ChartLoader, formatNum, resolveThresholdColor } from '../core'
+import { ChartError, ChartLoader, formatNum, resolveThresholdColor, useChartFormatters } from '../core'
 import type { StatChartProps } from './types'
 
 // ── Sparkline SVG ─────────────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ function SparklineSVG({ values, color, height }: { values: number[]; color: stri
 
 // ── Trend indicator ───────────────────────────────────────────────────────────
 
-function TrendBadge({ current, previous }: { current: number; previous: number }) {
+function TrendBadge({ current, previous, formatters }: { current: number; previous: number; formatters: import('../core').ChartFormatters }) {
   const delta = current - previous
   const pct   = previous !== 0 ? (delta / Math.abs(previous)) * 100 : null
   const up    = delta > 0
@@ -50,7 +50,9 @@ function TrendBadge({ current, previous }: { current: number; previous: number }
     : up ? '#10b981' : '#ef4444'
 
   const arrow = flat ? '→' : up ? '↑' : '↓'
-  const label = pct != null ? `${Math.abs(pct).toFixed(1)}%` : (delta > 0 ? '+' : '') + delta.toFixed(1)
+  const label = pct != null
+    ? formatters.percentage?.(Math.abs(pct), { chartType: 'stat', purpose: 'label', unit: '%' }) ?? `${Math.abs(pct).toFixed(1)}%`
+    : formatters.value?.(delta, { chartType: 'stat', purpose: 'label' }) ?? (delta > 0 ? '+' : '') + delta.toFixed(1)
 
   return (
     <div style={{
@@ -80,10 +82,12 @@ export function StatChart({
   sparkline,
   sparklineColor,
   height       = 120,
+  formatters: formatterOverrides,
   isLoading,
   error,
 }: StatChartProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
+  const formatters = useChartFormatters(formatterOverrides)
   const isFill  = height === 'fill'
   const [renderedHeight, setRenderedHeight] = useState(isFill ? 120 : (height as number))
 
@@ -126,7 +130,7 @@ export function StatChart({
           marginBottom: 2,
           textAlign:  'center',
         }}>
-          {label}
+          {formatters.label?.(label, { chartType: 'stat', purpose: 'label' }) ?? label}
         </div>
       )}
 
@@ -138,11 +142,13 @@ export function StatChart({
         textAlign:  'center',
         fontVariantNumeric: 'tabular-nums',
       }}>
-        {value != null ? formatNum(value, unit) : '—'}
+        {value != null
+          ? formatters.value?.(value, { chartType: 'stat', purpose: 'label', unit }) ?? formatNum(value, unit)
+          : '—'}
       </div>
 
       {hasTrend && (
-        <TrendBadge current={value!} previous={previousValue!} />
+        <TrendBadge current={value!} previous={previousValue!} formatters={formatters} />
       )}
 
       {hasSparkline && (

@@ -1,12 +1,23 @@
 import type { BaseChartProps } from '../core'
+import type React from 'react'
 
 export interface PieSliceConfig {
+  /** Stable identity used by runtime events and controlled state. */
+  id?: string
   label: string
   value: number
   color: string
 }
 
 export type PieLabelType = 'name' | 'value' | 'percent' | 'name+percent' | 'none'
+
+export interface PieTooltipPayload {
+  slice: PieSliceConfig
+  sliceIndex: number
+  percentage: number
+  x: number
+  y: number
+}
 
 export interface PieChartProps extends BaseChartProps {
   slices: PieSliceConfig[]
@@ -25,4 +36,8 @@ export interface PieChartProps extends BaseChartProps {
   legendPosition?: 'right' | 'bottom' | 'none'
   /** Value unit shown in tooltip and legend, e.g. 'ms', 'req' */
   unit?: string
+  /** Per-chart tooltip renderer. Overrides the provider tooltip plugin. */
+  renderTooltip?: (payload: PieTooltipPayload) => React.ReactNode
+  /** Show the built-in or custom tooltip. Default true. */
+  tooltip?: boolean
 }

@@ -88,6 +88,7 @@ export const CHART_SPEC_SCHEMA = {
                 type: 'object',
                 required: ['label', 'value', 'color'],
                 properties: {
+                  id:    { type: 'string', description: 'Stable slice identity' },
                   label: { type: 'string' },
                   value: { type: 'number' },
                   color: { type: 'string' },
@@ -100,6 +101,7 @@ export const CHART_SPEC_SCHEMA = {
             centerLabel:    { type: 'string', description: 'Text in the center hole (donut only)' },
             legendPosition: { type: 'string', enum: ['right', 'bottom', 'none'] },
             unit:           { type: 'string', description: 'Value unit shown in tooltip e.g. ms, req' },
+            tooltip:        { type: 'boolean', description: 'Show the tooltip. Default true' },
           },
         },
       ],
@@ -151,6 +153,7 @@ export const CHART_SPEC_SCHEMA = {
                 type: 'object',
                 required: ['label', 'color'],
                 properties: {
+                  id:          { type: 'string', description: 'Stable series identity' },
                   label:       { type: 'string' },
                   color:       { type: 'string' },
                   unit:        { type: 'string' },
@@ -176,6 +179,7 @@ export const CHART_SPEC_SCHEMA = {
             thresholds:     { type: 'array', items: { $ref: '#/definitions/Threshold' } },
             timeRange:      { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
             selectionMode:  { type: 'string', enum: ['x', 'y', 'xy', 'none'] },
+            tooltip:        { type: 'boolean', description: 'Show the tooltip. Default true' },
           },
         },
       ],
@@ -213,6 +217,7 @@ export const CHART_SPEC_SCHEMA = {
             locale:        { type: 'string' },
             showXAxis:     { type: 'boolean' },
             showLegend:    { type: 'boolean' },
+            tooltip:       { type: 'boolean', description: 'Show the tooltip. Default true' },
             timeRange:     { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
             selectionMode: { type: 'string', enum: ['x', 'y', 'xy', 'none'] },
           },
@@ -338,10 +343,10 @@ export const CHART_SPEC_DESCRIPTION = `
 Use ChartSpec to render a chart. Set "type" to one of the following and provide the matching fields.
 
 bar:        { categories: string[], series: [{label, color, values: (number|null)[]}], stacked?, orientation? }
-pie:        { slices: [{label, value, color}], innerRadius?, labelType?, centerLabel?, legendPosition? }
+pie:        { slices: [{label, value, color}], innerRadius?, labelType?, centerLabel?, legendPosition?, tooltip? }
 scatter:    { series: [{label, color, xs: number[], ys: number[]}], xUnit?, yUnit? }
-timeseries: { data: [[unix_timestamps], [series1_values], ...], series: [{label, color, type?}], yUnit?, thresholds? }
-candlestick:{ data: [{time, open, high, low, close, volume?}], upColor?, downColor?, showVolume?, yUnit? }
+timeseries: { data: [[unix_timestamps], [series1_values], ...], series: [{label, color, type?}], yUnit?, thresholds?, tooltip? }
+candlestick:{ data: [{time, open, high, low, close, volume?}], upColor?, downColor?, showVolume?, yUnit?, tooltip? }
 histogram:  { values: number[], bins?, color?, normalize? }
 boxplot:    { categories: string[], series: [{label, color, data: [{min,q1,median,q3,max}]}] }
 gauge:      { value: number, min?, max?, unit?, label?, thresholds? }

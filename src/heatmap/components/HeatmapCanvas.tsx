@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
-import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH, makeAxisValues } from '../../core'
-import type { AxisConfig, LineStyle } from '../../core'
+import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH, formatNum } from '../../core'
+import type { AxisConfig, ChartFormatters, LineStyle } from '../../core'
 import { heatmapPaths } from '../utils/heatmapPaths'
 import { GRAD_METAL } from '../utils/palette'
 import type { HeatmapBinnedData } from '../utils/binData'
@@ -16,6 +16,7 @@ interface HeatmapCanvasProps {
   palette?:     string[]
   gridStyle?:   LineStyle | false
   axisStyle?:   AxisConfig | false
+  formatters:   ChartFormatters
 }
 
 export function HeatmapCanvas({
@@ -28,12 +29,19 @@ export function HeatmapCanvas({
   palette = GRAD_METAL,
   gridStyle,
   axisStyle,
+  formatters,
 }: HeatmapCanvasProps) {
+  const formattersRef = useRef(formatters)
+  formattersRef.current = formatters
   const getOptions = useCallback((): uPlot.Options => {
     const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
 
-    const yAxisValues = makeAxisValues(yUnit)
+    const yAxisValues: uPlot.Axis['values'] = (_u, values) => values.map(value => value == null ? '' : (
+      formattersRef.current.value?.(value, {
+        chartType: 'heatmap', purpose: 'axis', axis: 'y', unit: yUnit,
+      }) ?? formatNum(value, yUnit)
+    ))
 
     return {
       width:  300,
@@ -52,14 +60,22 @@ export function HeatmapCanvas({
           stroke: mutedFgColor,
           ticks:  resolvedTicks,
           grid:   resolvedGrid,
-          ...(xTime && locale != null
+          ...(xTime
             ? {
                 values: (_u: uPlot, splits: number[]) =>
                   splits.map(s =>
-                    s == null ? '' : new Date(s * 1000).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+                    s == null ? '' : formattersRef.current.time?.(s, {
+                      chartType: 'heatmap', purpose: 'axis', axis: 'x', locale,
+                    }) ?? new Date(s * 1000).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
                   ),
               }
-            : {}),
+            : {
+                values: (_u: uPlot, splits: number[]) => splits.map(value => value == null ? '' : (
+                  formattersRef.current.value?.(value, {
+                    chartType: 'heatmap', purpose: 'axis', axis: 'x',
+                  }) ?? formatNum(value)
+                )),
+              }),
         },
         {
           size:   54,
@@ -92,7 +108,8 @@ export function HeatmapCanvas({
     [binned],
   )
 
-  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
+  const chartRef = useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
+  useEffect(() => { chartRef.current?.redraw() }, [chartRef, formatters])
 
   return null
 }

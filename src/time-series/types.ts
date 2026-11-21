@@ -19,6 +19,8 @@ export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none'
 export type LegendFormat = 'list' | 'table'
 
 export interface SeriesConfig {
+  /** Stable identity used by runtime events and controlled state. */
+  id?: string
   /** Display name shown in the legend */
   label: string
   /** Line / fill color (hex or CSS color string) */
@@ -96,6 +98,8 @@ export interface TimeSeriesChartProps extends BaseChartProps {
 
   // ── Custom tooltip ───────────────────────────────────────────────────────
   renderTooltip?: (payload: TooltipPayload) => React.ReactNode
+  /** Show the built-in or provider tooltip when renderTooltip is not supplied. Default true. */
+  tooltip?: boolean
 }
 
 /**

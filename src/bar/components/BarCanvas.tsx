@@ -1,10 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
 import {
   useChart, resolveAxisStyles, makeAxisBorderPlugin,
-  CHART_DEFAULT_LINE_WIDTH, makeAxisValues,
+  CHART_DEFAULT_LINE_WIDTH, formatNum,
 } from '../../core'
-import type { AxisConfig, LineStyle } from '../../core'
+import type { AxisConfig, ChartFormatters, LineStyle } from '../../core'
 import { barPlugin } from '../utils/barPlugin'
 import type { BarSeriesConfig } from '../types'
 
@@ -21,6 +21,7 @@ interface BarCanvasProps {
   yMax?:       number
   gridStyle?:  LineStyle | false
   axisStyle?:  AxisConfig | false
+  formatters:  ChartFormatters
 }
 
 export function BarCanvas({
@@ -36,8 +37,11 @@ export function BarCanvas({
   yMax,
   gridStyle,
   axisStyle,
+  formatters,
 }: BarCanvasProps) {
   const n = categories.length
+  const formattersRef = useRef(formatters)
+  formattersRef.current = formatters
 
   // Compute value range for auto-scaling
   const [computedMin, computedMax] = useMemo(() => {
@@ -85,7 +89,12 @@ export function BarCanvas({
       ticks:  { ...resolvedTicks, show: false },
       grid:   { show: false },
       splits: () => categories.map((_, i) => i),
-      values: (_u, ticks) => ticks.map(t => categories[Math.round(t)] ?? ''),
+      values: (_u, ticks) => ticks.map(t => {
+        const label = categories[Math.round(t)] ?? ''
+        return formattersRef.current.label?.(label, {
+          chartType: 'bar', purpose: 'axis', axis: isH ? 'y' : 'x',
+        }) ?? label
+      }),
     }
 
     const valAxis: uPlot.Axis = {
@@ -93,7 +102,13 @@ export function BarCanvas({
       stroke: mutedFgColor,
       ticks:  resolvedTicks,
       grid:   resolvedGrid,
-      values: makeAxisValues(isH ? xUnit : yUnit),
+      values: (_u, values) => values.map(value => {
+        if (value == null) return ''
+        const unit = isH ? xUnit : yUnit
+        return formattersRef.current.value?.(value, {
+          chartType: 'bar', purpose: 'axis', axis: isH ? 'x' : 'y', unit,
+        }) ?? formatNum(value, unit)
+      }),
     }
 
     return {
@@ -122,7 +137,8 @@ export function BarCanvas({
     return [xs, xs.map(() => 0)]
   }, [categories])
 
-  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
+  const chartRef = useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
+  useEffect(() => { chartRef.current?.redraw() }, [chartRef, formatters])
 
   return null
 }

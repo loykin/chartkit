@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { formatNum } from '../../core'
-import type { PieSliceConfig, PieLabelType } from '../types'
+import { DefaultChartTooltip, formatNum } from '../../core'
+import type { ChartFormatters, ChartTooltipRenderer } from '../../core'
+import type { PieSliceConfig, PieLabelType, PieTooltipPayload } from '../types'
 
 interface TooltipState {
   x:   number
@@ -16,6 +17,10 @@ interface PieCanvasProps {
   labelPosition:  'inside' | 'outside'
   centerLabel?:   string
   unit?:          string
+  formatters:     ChartFormatters
+  renderTooltip?: (payload: PieTooltipPayload) => React.ReactNode
+  renderPluginTooltip?: ChartTooltipRenderer
+  tooltipEnabled: boolean
 }
 
 // ── Geometry helpers ──────────────────────────────────────────────────────────
@@ -61,11 +66,22 @@ function sliceLabel(
   pct: number,
   labelType: PieLabelType,
   unit: string | undefined,
+  formatters: ChartFormatters,
 ): string {
-  if (labelType === 'name')         return slice.label
-  if (labelType === 'value')        return formatNum(slice.value, unit)
-  if (labelType === 'percent')      return `${pct.toFixed(1)}%`
-  if (labelType === 'name+percent') return `${slice.label} ${pct.toFixed(1)}%`
+  const label = formatters.label?.(slice.label, {
+    chartType: 'pie', purpose: 'label', seriesLabel: slice.label,
+  }) ?? slice.label
+  const value = formatters.value?.(slice.value, {
+    chartType: 'pie', purpose: 'label', seriesLabel: slice.label, unit,
+  }) ?? formatNum(slice.value, unit)
+  const percentage = formatters.percentage?.(pct, {
+    chartType: 'pie', purpose: 'label', seriesLabel: slice.label, unit: '%',
+  }) ?? `${pct.toFixed(1)}%`
+
+  if (labelType === 'name')         return label
+  if (labelType === 'value')        return value
+  if (labelType === 'percent')      return percentage
+  if (labelType === 'name+percent') return `${label} ${percentage}`
   return ''
 }
 
@@ -97,6 +113,7 @@ function buildOutsideLabels(
   outerR:    number,
   labelType: PieLabelType,
   unit:      string | undefined,
+  formatters: ChartFormatters,
 ): OutsideLabel[] {
   const labels: OutsideLabel[] = []
 
@@ -107,7 +124,7 @@ function buildOutsideLabels(
 
     const mid  = (start + end) / 2
     const pct  = total > 0 ? (slices[i].value / total) * 100 : 0
-    const text = sliceLabel(slices[i], pct, labelType, unit)
+    const text = sliceLabel(slices[i], pct, labelType, unit, formatters)
     if (!text) continue
 
     const ax1     = cx + Math.cos(mid) * outerR
@@ -154,6 +171,7 @@ function draw(
   centerLabel:   string | undefined,
   hoveredIdx:    number,
   unit:          string | undefined,
+  formatters:    ChartFormatters,
 ) {
   const dpr = window.devicePixelRatio || 1
   const w   = canvas.offsetWidth
@@ -227,7 +245,7 @@ function draw(
 
       const mid = (start + end) / 2
       const pct = total > 0 ? (slices[i].value / total) * 100 : 0
-      const text = sliceLabel(slices[i], pct, labelType, unit)
+      const text = sliceLabel(slices[i], pct, labelType, unit, formatters)
       if (!text) continue
 
       const lx = cx + Math.cos(mid) * labelR
@@ -244,7 +262,7 @@ function draw(
   // ── Outside labels ────────────────────────────────────────────────────────
   if (labelType !== 'none' && labelPosition === 'outside') {
     const outsideLabels = buildOutsideLabels(
-      slices, total, angles, cx, cy, outerR, labelType, unit,
+      slices, total, angles, cx, cy, outerR, labelType, unit, formatters,
     )
 
     ctx.font         = '500 11px system-ui, sans-serif'
@@ -297,6 +315,10 @@ export function PieCanvas({
   labelPosition,
   centerLabel,
   unit,
+  formatters,
+  renderTooltip,
+  renderPluginTooltip,
+  tooltipEnabled,
 }: PieCanvasProps) {
   const wrapRef   = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -305,9 +327,9 @@ export function PieCanvas({
 
   const redraw = useCallback(() => {
     if (canvasRef.current) {
-      draw(canvasRef.current, slices, innerRadius, labelType, labelPosition, centerLabel, hovered, unit)
+      draw(canvasRef.current, slices, innerRadius, labelType, labelPosition, centerLabel, hovered, unit, formatters)
     }
-  }, [slices, innerRadius, labelType, labelPosition, centerLabel, hovered, unit])
+  }, [slices, innerRadius, labelType, labelPosition, centerLabel, hovered, unit, formatters])
 
   useEffect(() => { redraw() }, [redraw])
 
@@ -359,41 +381,39 @@ export function PieCanvas({
         onMouseLeave={handleMouseLeave}
       />
 
-      {tooltip && tooltip.idx >= 0 && (
-        <div style={{
-          position:      'absolute',
-          left:          tooltip.x + 12,
-          top:           tooltip.y - 8,
-          background:    'var(--chartkit-background, #fff)',
-          border:        '1px solid var(--chartkit-border, #e2e8f0)',
-          borderRadius:  6,
-          padding:       '6px 10px',
-          fontSize:      12,
-          pointerEvents: 'none',
-          boxShadow:     '0 2px 8px rgba(0,0,0,0.12)',
-          whiteSpace:    'nowrap',
-          zIndex:        30,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-            <span style={{
-              display:      'inline-block',
-              width:        10,
-              height:       10,
-              borderRadius: 2,
-              background:   slices[tooltip.idx].color,
-              flexShrink:   0,
-            }} />
-            <span style={{ fontWeight: 600, color: 'var(--chartkit-foreground, #111)' }}>
-              {slices[tooltip.idx].label}
-            </span>
-          </div>
-          <div style={{ color: 'var(--chartkit-muted-foreground, #737373)', paddingLeft: 16 }}>
-            {formatNum(slices[tooltip.idx].value, unit)}
-            {' · '}
-            {total > 0 ? ((slices[tooltip.idx].value / total) * 100).toFixed(1) : '0'}%
-          </div>
-        </div>
-      )}
+      {tooltipEnabled && tooltip && tooltip.idx >= 0 && (() => {
+        const slice = slices[tooltip.idx]
+        const percentage = total > 0 ? (slice.value / total) * 100 : 0
+        const localPayload = { slice, sliceIndex: tooltip.idx, percentage, x: tooltip.x, y: tooltip.y }
+        if (renderTooltip) return renderTooltip(localPayload)
+
+        const payload = {
+          chartType: 'pie' as const,
+          x: tooltip.x,
+          y: tooltip.y,
+          items: [{
+            id: slice.id,
+            itemIndex: tooltip.idx,
+            label: formatters.label?.(slice.label, {
+              chartType: 'pie', purpose: 'tooltip', seriesLabel: slice.label,
+            }) ?? slice.label,
+            color: slice.color,
+            value: slice.value,
+            formattedValue: [
+              formatters.value?.(slice.value, {
+                chartType: 'pie', purpose: 'tooltip', seriesLabel: slice.label, unit,
+              }) ?? formatNum(slice.value, unit),
+              formatters.percentage?.(percentage, {
+                chartType: 'pie', purpose: 'tooltip', seriesLabel: slice.label, unit: '%',
+              }) ?? `${percentage.toFixed(1)}%`,
+            ].join(' · '),
+            percentage,
+          }],
+        }
+        return renderPluginTooltip
+          ? renderPluginTooltip(payload)
+          : <DefaultChartTooltip {...payload} />
+      })()}
     </div>
   )
 }

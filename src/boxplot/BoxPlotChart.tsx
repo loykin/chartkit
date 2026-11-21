@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ChartError, ChartLoader } from '../core'
+import { ChartError, ChartLoader, useChartFormatters } from '../core'
 import { BoxPlotCanvas } from './components/BoxPlotCanvas'
 import type { BoxPlotChartProps } from './types'
 
@@ -10,10 +10,12 @@ export function BoxPlotChart({
   yUnit,
   gridStyle,
   axisStyle,
+  formatters: formatterOverrides,
   isLoading,
   error,
 }: BoxPlotChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const formatters = useChartFormatters(formatterOverrides)
 
   if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
@@ -41,6 +43,7 @@ export function BoxPlotChart({
         yUnit={yUnit}
         gridStyle={gridStyle}
         axisStyle={axisStyle}
+        formatters={formatters}
       />
     </div>
   )

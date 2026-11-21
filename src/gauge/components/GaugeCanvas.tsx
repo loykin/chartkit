@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { formatNum, resolveThresholdColor } from '../../core'
-import type { Threshold } from '../../core'
+import type { ChartFormatters, Threshold } from '../../core'
 
 interface GaugeCanvasProps {
   value:       number
@@ -11,6 +11,7 @@ interface GaugeCanvasProps {
   thresholds:  Threshold[]
   arcWidth:    number   // fraction of outerR, e.g. 0.18
   height:      number | 'fill'
+  formatters:  ChartFormatters
 }
 
 // ── Gauge geometry constants ──────────────────────────────────────────────────
@@ -40,6 +41,7 @@ function draw(
   label:      string | undefined,
   thresholds: Threshold[],
   arcWidth:   number,
+  formatters: ChartFormatters,
 ) {
   const dpr = window.devicePixelRatio || 1
   const w   = canvas.offsetWidth
@@ -140,7 +142,11 @@ function draw(
   ctx.textBaseline = 'middle'
   ctx.fillStyle    = fillColor
   ctx.font         = `700 ${valueFSize}px system-ui, sans-serif`
-  ctx.fillText(formatNum(value, unit), cx, textY)
+  ctx.fillText(
+    formatters.value?.(value, { chartType: 'gauge', purpose: 'label', unit }) ?? formatNum(value, unit),
+    cx,
+    textY,
+  )
 
   // ── Min / Max labels ─────────────────────────────────────────────────────
   const labelFSize = Math.max(9, outerR * 0.13)
@@ -150,11 +156,19 @@ function draw(
   const minX = cx + Math.cos(degToRad(START_DEG)) * (outerR + 8)
   const minY = cy + Math.sin(degToRad(START_DEG)) * (outerR + 4)
   ctx.textAlign = 'center'
-  ctx.fillText(String(min), minX, minY)
+  ctx.fillText(
+    formatters.value?.(min, { chartType: 'gauge', purpose: 'axis', unit }) ?? String(min),
+    minX,
+    minY,
+  )
 
   const maxX = cx + Math.cos(degToRad(endDeg)) * (outerR + 8)
   const maxY = cy + Math.sin(degToRad(endDeg)) * (outerR + 4)
-  ctx.fillText(String(max), maxX, maxY)
+  ctx.fillText(
+    formatters.value?.(max, { chartType: 'gauge', purpose: 'axis', unit }) ?? String(max),
+    maxX,
+    maxY,
+  )
 
   // ── Bottom label ─────────────────────────────────────────────────────────
   if (label) {
@@ -162,23 +176,27 @@ function draw(
     ctx.fillStyle    = 'var(--chartkit-muted-foreground, #737373)'
     ctx.textAlign    = 'center'
     ctx.textBaseline = 'top'
-    ctx.fillText(label, cx, textY + valueFSize * 0.65)
+    ctx.fillText(
+      formatters.label?.(label, { chartType: 'gauge', purpose: 'label' }) ?? label,
+      cx,
+      textY + valueFSize * 0.65,
+    )
   }
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function GaugeCanvas({
-  value, min, max, unit, label, thresholds, arcWidth, height,
+  value, min, max, unit, label, thresholds, arcWidth, height, formatters,
 }: GaugeCanvasProps) {
   const wrapRef   = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const redraw = useCallback(() => {
     if (canvasRef.current) {
-      draw(canvasRef.current, value, min, max, unit, label, thresholds, arcWidth)
+      draw(canvasRef.current, value, min, max, unit, label, thresholds, arcWidth, formatters)
     }
-  }, [value, min, max, unit, label, thresholds, arcWidth])
+  }, [value, min, max, unit, label, thresholds, arcWidth, formatters])
 
   useEffect(() => { redraw() }, [redraw])
 

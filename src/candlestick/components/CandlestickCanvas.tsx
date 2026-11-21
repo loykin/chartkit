@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type uPlot from 'uplot'
 import {
   CHART_DEFAULT_LINE_WIDTH,
@@ -7,7 +7,7 @@ import {
   selectionPlugin,
   useChart,
 } from '../../core'
-import type { AxisConfig, LineStyle, SelectionMode, SelectionResult } from '../../core'
+import type { AxisConfig, ChartFormatters, LineStyle, SelectionMode, SelectionResult } from '../../core'
 import type { CandlestickDataPoint } from '../types'
 import { candlestickPlugin } from '../utils/candlestickPlugin'
 
@@ -31,6 +31,7 @@ interface CandlestickCanvasProps {
   timeRange?: [number, number]
   onSelect?: (result: SelectionResult) => void
   onCursorMove?: (chart: uPlot, idx: number | null) => void
+  formatters: ChartFormatters
 }
 
 export function CandlestickCanvas({
@@ -53,14 +54,21 @@ export function CandlestickCanvas({
   timeRange,
   onSelect,
   onCursorMove,
+  formatters,
 }: CandlestickCanvasProps) {
+  const formattersRef = useRef(formatters)
+  formattersRef.current = formatters
+
   const getOptions = useCallback((): uPlot.Options => {
     const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
 
-    const yValues: uPlot.Axis['values'] = yUnit
-      ? (_u, values) => values.map(value => value == null ? '' : `${value.toLocaleString(locale)}\u202f${yUnit}`)
-      : undefined
+    const yValues: uPlot.Axis['values'] = (_u, values) => values.map(value => {
+      if (value == null) return ''
+      return formattersRef.current.value?.(value, {
+        chartType: 'candlestick', purpose: 'axis', axis: 'y', unit: yUnit, locale,
+      }) ?? `${value.toLocaleString(locale)}${yUnit ? `\u202f${yUnit}` : ''}`
+    })
 
     return {
       width: 300,
@@ -85,7 +93,9 @@ export function CandlestickCanvas({
           grid: resolvedGrid,
           values: (_u, values) => values.map(value => {
             if (value == null) return ''
-            return new Date(value * 1000).toLocaleDateString(locale, { month: 'short', day: 'numeric' })
+            return formattersRef.current.time?.(value, {
+              chartType: 'candlestick', purpose: 'axis', axis: 'x', locale,
+            }) ?? new Date(value * 1000).toLocaleDateString(locale, { month: 'short', day: 'numeric' })
           }),
         },
         {
@@ -120,7 +130,8 @@ export function CandlestickCanvas({
     data.map(candle => candle.low),
   ], [data])
 
-  useChart({ containerRef, getOptions, data: alignedData, fillParent: height === 'fill' })
+  const chartRef = useChart({ containerRef, getOptions, data: alignedData, fillParent: height === 'fill' })
+  useEffect(() => { chartRef.current?.redraw() }, [chartRef, formatters])
 
   return null
 }

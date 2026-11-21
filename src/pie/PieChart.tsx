@@ -1,4 +1,4 @@
-import { ChartError, ChartLoader } from '../core'
+import { ChartError, ChartLoader, useChartFormatters, useChartKit } from '../core'
 import { PieCanvas } from './components/PieCanvas'
 import type { PieChartProps } from './types'
 import { formatNum } from '../core'
@@ -12,15 +12,21 @@ export function PieChart({
   centerLabel,
   legendPosition = 'right',
   unit,
+  formatters: formatterOverrides,
+  renderTooltip,
+  tooltip        = true,
   isLoading,
   error,
 }: PieChartProps) {
+  const formatters = useChartFormatters(formatterOverrides)
+  const { renderTooltip: renderPluginTooltip } = useChartKit()
+
   if (error) return <ChartError message={error.message} height={height === 'fill' ? undefined : height} />
 
   if (!slices.length && !isLoading) {
     return (
       <div style={{
-        height,
+        height: height === 'fill' ? '100%' : height,
         display:        'flex',
         alignItems:     'center',
         justifyContent: 'center',
@@ -45,8 +51,8 @@ export function PieChart({
       alignSelf:      'center',
       minWidth:       legendPosition === 'right' ? 120 : undefined,
     }}>
-      {slices.map((s) => (
-        <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+      {slices.map((s, index) => (
+        <div key={s.id ?? `${s.label}-${index}`} style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
           <span style={{
             display:      'inline-block',
             width:        10,
@@ -61,14 +67,22 @@ export function PieChart({
             textOverflow: 'ellipsis',
             whiteSpace:   'nowrap',
           }}>
-            {s.label}
+            {formatters.label?.(s.label, {
+              chartType: 'pie', purpose: 'legend', seriesLabel: s.label,
+            }) ?? s.label}
           </span>
           <span style={{ color: 'var(--chartkit-muted-foreground, #737373)', marginLeft: 'auto', paddingLeft: 8, flexShrink: 0 }}>
-            {total > 0 ? `${((s.value / total) * 100).toFixed(1)}%` : '—'}
+            {total > 0
+              ? formatters.percentage?.((s.value / total) * 100, {
+                  chartType: 'pie', purpose: 'legend', seriesLabel: s.label, unit: '%',
+                }) ?? `${((s.value / total) * 100).toFixed(1)}%`
+              : '—'}
           </span>
           {unit && (
             <span style={{ color: 'var(--chartkit-muted-foreground, #737373)', flexShrink: 0 }}>
-              {formatNum(s.value, unit)}
+              {formatters.value?.(s.value, {
+                chartType: 'pie', purpose: 'legend', seriesLabel: s.label, unit,
+              }) ?? formatNum(s.value, unit)}
             </span>
           )}
         </div>
@@ -97,6 +111,10 @@ export function PieChart({
           labelPosition={labelPosition}
           centerLabel={centerLabel}
           unit={unit}
+          formatters={formatters}
+          renderTooltip={renderTooltip}
+          renderPluginTooltip={renderPluginTooltip}
+          tooltipEnabled={tooltip}
         />
       </div>
 

@@ -13,6 +13,8 @@ export interface CandlestickDataPoint {
 
 export interface CandlestickTooltipPayload {
   candle: CandlestickDataPoint
+  /** Zero-based index in the input data. */
+  datumIndex: number
   /** Cursor x in px relative to the chart wrapper */
   x: number
   /** Cursor y in px relative to the chart wrapper */
@@ -44,4 +46,6 @@ export interface CandlestickChartProps extends BaseChartProps {
   timeRange?: [number, number]
   onTimeRangeChange?: (range: [number, number]) => void
   renderTooltip?: (payload: CandlestickTooltipPayload) => React.ReactNode
+  /** Show the built-in, provider, or chart tooltip. Default true. */
+  tooltip?: boolean
 }

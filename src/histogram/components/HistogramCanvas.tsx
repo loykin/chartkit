@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
 import { useChart, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, formatNum } from '../../core'
-import type { AxisConfig, LineStyle } from '../../core'
+import type { AxisConfig, ChartFormatters, LineStyle } from '../../core'
 
 interface HistogramCanvasProps {
   containerRef: React.RefObject<HTMLDivElement | null>
@@ -20,6 +20,7 @@ interface HistogramCanvasProps {
   yMax?:        number
   gridStyle?:   LineStyle | false
   axisStyle?:   AxisConfig | false
+  formatters:   ChartFormatters
 }
 
 export function HistogramCanvas({
@@ -36,6 +37,7 @@ export function HistogramCanvas({
   yMax,
   gridStyle,
   axisStyle,
+  formatters,
 }: HistogramCanvasProps) {
   // Use refs for formatter-only values so they don't trigger chart recreation.
   // normalize/xUnit/yUnit only affect tick labels — setData + redraw is enough.
@@ -45,6 +47,8 @@ export function HistogramCanvas({
   xUnitRef.current = xUnit
   const yUnitRef = useRef(yUnit)
   yUnitRef.current = yUnit
+  const formattersRef = useRef(formatters)
+  formattersRef.current = formatters
 
   const getOptions = useCallback((): uPlot.Options => {
     const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
@@ -55,6 +59,11 @@ export function HistogramCanvas({
     const xAxisValues: uPlot.Axis['values'] = (_u, vals) =>
       vals.map(v => {
         if (v == null) return ''
+        if (formattersRef.current.value) {
+          return formattersRef.current.value(v, {
+            chartType: 'histogram', purpose: 'axis', axis: 'x', unit: xUnitRef.current,
+          })
+        }
         const n = formatNum(v)
         return xUnitRef.current ? `${n}\u202f${xUnitRef.current}` : n
       })
@@ -62,7 +71,16 @@ export function HistogramCanvas({
     const yAxisValues: uPlot.Axis['values'] = (_u, vals) =>
       vals.map(v => {
         if (v == null) return ''
-        if (normalizeRef.current) return `${formatNum(v)}%`
+        if (normalizeRef.current) {
+          return formattersRef.current.percentage?.(v, {
+            chartType: 'histogram', purpose: 'axis', axis: 'y', unit: '%',
+          }) ?? `${formatNum(v)}%`
+        }
+        if (formattersRef.current.value) {
+          return formattersRef.current.value(v, {
+            chartType: 'histogram', purpose: 'axis', axis: 'y', unit: yUnitRef.current,
+          })
+        }
         const n = formatNum(v)
         return yUnitRef.current ? `${n}\u202f${yUnitRef.current}` : n
       })
@@ -118,7 +136,8 @@ export function HistogramCanvas({
     [edges, counts],
   )
 
-  useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
+  const chartRef = useChart({ containerRef, getOptions, data, fillParent: height === 'fill' })
+  useEffect(() => { chartRef.current?.redraw() }, [chartRef, formatters])
 
   return null
 }

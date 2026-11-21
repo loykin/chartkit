@@ -10,6 +10,7 @@ export interface SeriesStats {
 }
 
 export interface LegendItem {
+  id?:     string
   index:   number         // series index in uPlot (1-based; 0 = timestamps)
   label:   string
   color:   string
@@ -49,6 +50,7 @@ export function useLegendState(series: SeriesConfig[], data: AlignedData) {
 
   // Items are fully derived — no redundant state
   const items: LegendItem[] = series.map((s, i) => ({
+    id:      s.id,
     index:   i + 1,
     label:   s.label,
     color:   s.color,

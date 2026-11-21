@@ -1,4 +1,4 @@
-import type { Threshold } from '../core'
+import type { ChartFormatters, Threshold } from '../core'
 
 export interface StatChartProps {
   /** Current value */
@@ -24,4 +24,6 @@ export interface StatChartProps {
   height?: number | 'fill'
   isLoading?: boolean
   error?: Error | null
+  /** Runtime-only formatter overrides. */
+  formatters?: ChartFormatters
 }

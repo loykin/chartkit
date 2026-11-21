@@ -7,7 +7,7 @@ import { oneDark } from '@codemirror/theme-one-dark'
 import {
   TimeSeriesChart, CandlestickChart, HistogramChart, HeatmapChart, ScatterChart,
   BoxPlotChart, PieChart, StatChart, GaugeChart, BarChart, GRAD_METAL,
-  ChartRenderer,
+  ChartKitProvider, ChartRenderer,
 } from '@loykin/chartkit'
 import type {
   AlignedData, SeriesConfig, AxisConfig, LineStyle,
@@ -15,13 +15,25 @@ import type {
   ScatterSeriesConfig, BoxSeriesConfig, BoxStats,
   PieSliceConfig, PieLabelType,
   BarSeriesConfig, Threshold,
-  ChartSpec, CandlestickDataPoint,
+  ChartKitPlugin, ChartSpec, CandlestickDataPoint,
 } from '@loykin/chartkit'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
 
 const STEP = 60
 const N    = 120
+
+const PLAYGROUND_FORMATTER_PLUGIN: ChartKitPlugin = {
+  name: 'playground-precision',
+  formatters: {
+    value: (value, context) => {
+      const formatted = value.toFixed(1)
+      return context.purpose === 'tooltip' && context.unit
+        ? `${formatted}\u202f${context.unit}`
+        : formatted
+    },
+  },
+}
 
 const midnight = new Date()
 midnight.setHours(0, 0, 0, 0)
@@ -379,6 +391,7 @@ function ConfiguratorDemo() {
             legendFormat={legendFormat}
             renderLegend={useCustomLegend ? items => <CustomLegend items={items} /> : undefined}
             renderTooltip={useTooltip ? payload => <CustomTooltip {...payload} /> : undefined}
+            tooltip={useTooltip}
             selectionMode={selectionMode}
             xShowDate={xShowDate}
             locale={locale}
@@ -409,15 +422,17 @@ function ConfiguratorDemo() {
             Temperature (°C, left) · Humidity (%, right)
           </p>
           <Card>
-            <TimeSeriesChart
-              data={DUAL_DATA}
-              series={DUAL_SERIES}
-              height={200}
-              yUnit="°C"
-              yUnit2="%"
-              legendPosition="bottom"
-              selectionMode="x"
-            />
+            <ChartKitProvider plugins={[PLAYGROUND_FORMATTER_PLUGIN]}>
+              <TimeSeriesChart
+                data={DUAL_DATA}
+                series={DUAL_SERIES}
+                height={200}
+                yUnit="°C"
+                yUnit2="%"
+                legendPosition="bottom"
+                selectionMode="x"
+              />
+            </ChartKitProvider>
           </Card>
         </div>
       </div>

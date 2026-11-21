@@ -1,8 +1,8 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
 import { useChart, selectionPlugin, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, thresholdPlugin } from '../../core'
 import type { SeriesConfig, SelectionMode, SelectionResult } from '../types'
-import type { AxisConfig, LineStyle, Threshold } from '../../core'
+import type { AxisConfig, ChartFormatters, LineStyle, Threshold } from '../../core'
 
 interface ChartCanvasProps {
   containerRef:  React.RefObject<HTMLDivElement | null>
@@ -24,6 +24,7 @@ interface ChartCanvasProps {
   y2Min?:        number
   y2Max?:        number
   thresholds?:   Threshold[]
+  formatters:     ChartFormatters
   onSelect?:     (result: SelectionResult) => void
   onReady?:      (chart: uPlot) => void
   onCursorMove?: (chart: uPlot, idx: number | null) => void
@@ -49,10 +50,14 @@ export function ChartCanvas({
   y2Min,
   y2Max,
   thresholds,
+  formatters,
   onSelect,
   onReady,
   onCursorMove,
 }: ChartCanvasProps) {
+  const formattersRef = useRef(formatters)
+  formattersRef.current = formatters
+
   const getOptions = useCallback((): uPlot.Options => {
     const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
@@ -117,26 +122,38 @@ export function ChartCanvas({
     }
 
     const yInTickMode = yUnitDisplay === 'tick' && !!yUnit
-    const yAxisValues: uPlot.Axis['values'] = yInTickMode
-      ? (_u, vals) => vals.map((v) => {
-          if (v == null) return ''
+    const yAxisValues: uPlot.Axis['values'] = (_u, vals) => vals.map((v) => {
+      if (v == null) return ''
+      if (formattersRef.current.value) {
+        return formattersRef.current.value(v, {
+          chartType: 'timeseries', purpose: 'axis', axis: 'y', unit: yUnit,
+        })
+      }
+      if (yInTickMode) {
           const n = Math.abs(v) >= 1000
             ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
             : Number.isInteger(v) ? String(v) : v.toPrecision(3)
           return `${n}\u202f${yUnit}`
-        })
-      : undefined
+      }
+      return v
+    })
 
     const y2InTickMode = yUnitDisplay === 'tick' && !!yUnit2
-    const y2AxisValues: uPlot.Axis['values'] = y2InTickMode
-      ? (_u, vals) => vals.map((v) => {
-          if (v == null) return ''
+    const y2AxisValues: uPlot.Axis['values'] = (_u, vals) => vals.map((v) => {
+      if (v == null) return ''
+      if (formattersRef.current.value) {
+        return formattersRef.current.value(v, {
+          chartType: 'timeseries', purpose: 'axis', axis: 'y2', unit: yUnit2,
+        })
+      }
+      if (y2InTickMode) {
           const n = Math.abs(v) >= 1000
             ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
             : Number.isInteger(v) ? String(v) : v.toPrecision(3)
           return `${n}\u202f${yUnit2}`
-        })
-      : undefined
+      }
+      return v
+    })
 
     // X-axis time formatter.
     // xShowDate=true → shows date on a second line when the date changes.
@@ -145,6 +162,11 @@ export function ChartCanvas({
       let lastDay = -1
       return vals.map((ts) => {
         if (ts == null) return null
+        if (formattersRef.current.time) {
+          return formattersRef.current.time(ts, {
+            chartType: 'timeseries', purpose: 'axis', axis: 'x', locale,
+          })
+        }
         const d   = new Date(ts * 1000)
         const hh  = String(d.getHours()).padStart(2, '0')
         const mm  = String(d.getMinutes()).padStart(2, '0')
@@ -246,7 +268,11 @@ export function ChartCanvas({
     return [data[0], ...cumulative.reverse()] as uPlot.AlignedData
   }, [data, barStack, series])
 
-  useChart({ containerRef, getOptions, data: resolvedData, fillParent: height === 'fill', onReady })
+  const chartRef = useChart({ containerRef, getOptions, data: resolvedData, fillParent: height === 'fill', onReady })
+
+  useEffect(() => {
+    chartRef.current?.redraw()
+  }, [chartRef, formatters])
 
   return null
 }

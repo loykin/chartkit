@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import type uPlot from 'uplot'
-import { ChartError, ChartLoader } from '../core'
+import { ChartError, ChartLoader, DefaultChartTooltip, useChartFormatters, useChartKit } from '../core'
 import { ChartCanvas } from './components/ChartCanvas'
 import { ChartLegend } from './components/ChartLegend'
 import { useLegendState } from './hooks/useLegendState'
@@ -21,12 +21,14 @@ export function TimeSeriesChart({
   y2Max,
   xShowDate,
   locale,
+  formatters: formatterOverrides,
   gridStyle,
   axisStyle,
   barStack,
   thresholds,
   renderLegend,
   renderTooltip,
+  tooltip        = true,
   selectionMode  = 'x',
   onSelect,
   timeRange,
@@ -35,13 +37,15 @@ export function TimeSeriesChart({
   error,
 }: TimeSeriesChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const formatters = useChartFormatters(formatterOverrides)
+  const { renderTooltip: renderPluginTooltip } = useChartKit()
   const { items, setChart, toggle, updateValues } = useLegendState(series, data)
 
   // Stable ref so renderTooltip changes never recreate the chart
   const renderTooltipRef = useRef(renderTooltip)
   renderTooltipRef.current = renderTooltip
 
-  const [tooltipPayload, setTooltipPayload] = useState<Omit<TooltipPayload, 'items'> | null>(null)
+  const [tooltipPayload, setTooltipPayload] = useState<(Omit<TooltipPayload, 'items'> & { datumIndex: number }) | null>(null)
 
   const handleReady = useCallback((chart: uPlot) => {
     setChart(chart)
@@ -62,7 +66,7 @@ export function TimeSeriesChart({
     const x         = left + (chart.over.offsetLeft ?? 0)
     const y         = top  + (chart.over.offsetTop  ?? 0)
     const timestamp = (chart.data[0]?.[idx] as number) ?? null
-    setTooltipPayload({ x, y, timestamp })
+    setTooltipPayload({ x, y, timestamp, datumIndex: idx })
   }, [updateValues])
 
   // Bridge generic SelectionResult → time-series API
@@ -84,6 +88,7 @@ export function TimeSeriesChart({
       position={legendPosition}
       format={legendFormat}
       onToggle={toggle}
+      formatters={formatters}
     />
   ) : null
 
@@ -111,9 +116,43 @@ export function TimeSeriesChart({
         {isLoading && <ChartLoader />}
         <div ref={containerRef} style={{ width: '100%', height: height === 'fill' ? '100%' : undefined }} />
         {/* Custom tooltip overlay — rendered inside position:relative wrapper */}
-        {renderTooltipRef.current && tooltipPayload && (
+        {tooltip && tooltipPayload && (
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 30, overflow: 'visible' }}>
-            {renderTooltipRef.current({ items, ...tooltipPayload })}
+            {renderTooltipRef.current
+              ? renderTooltipRef.current({ items, ...tooltipPayload })
+              : (() => {
+                  const timestamp = tooltipPayload.timestamp
+                  const payload = {
+                    chartType: 'timeseries' as const,
+                    x: tooltipPayload.x,
+                    y: tooltipPayload.y,
+                    xValue: timestamp,
+                    formattedXValue: timestamp == null
+                      ? undefined
+                      : formatters.time?.(timestamp, {
+                          chartType: 'timeseries', purpose: 'tooltip', axis: 'x', locale,
+                        }) ?? new Date(timestamp * 1000).toLocaleString(locale),
+                    datumIndex: tooltipPayload.datumIndex,
+                    items: items.filter(item => item.visible).map(item => ({
+                      id: item.id,
+                      itemIndex: item.index - 1,
+                      label: formatters.label?.(item.label, {
+                        chartType: 'timeseries', purpose: 'tooltip', seriesLabel: item.label,
+                      }) ?? item.label,
+                      color: item.color,
+                      value: item.value,
+                      formattedValue: item.value == null
+                        ? '—'
+                        : formatters.value?.(item.value, {
+                            chartType: 'timeseries', purpose: 'tooltip',
+                            seriesLabel: item.label, unit: item.unit,
+                          }) ?? `${item.value.toLocaleString()}${item.unit ? `\u202f${item.unit}` : ''}`,
+                    })),
+                  }
+                  return renderPluginTooltip
+                    ? renderPluginTooltip(payload)
+                    : <DefaultChartTooltip {...payload} />
+                })()}
           </div>
         )}
 
@@ -136,6 +175,7 @@ export function TimeSeriesChart({
           axisStyle={axisStyle}
           barStack={barStack}
           thresholds={thresholds}
+          formatters={formatters}
           timeRange={timeRange}
           onSelect={handleSelect}
           onReady={handleReady}
