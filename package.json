@@ -1,7 +1,7 @@
 {
   "name": "@loykin/chartkit",
   "version": "0.0.1-beta.1",
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@12.21.0",
   "description": "A React chart component library built on uPlot — TimeSeriesChart, HistogramChart, and more.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -34,7 +34,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "lucide-react": "^1.17.0"
+    "lucide-react": "^1.77.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",
@@ -43,21 +43,21 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitest/coverage-v8": "^4.1.8",
-    "concurrently": "^10.0.3",
-    "eslint": "^10.4.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "^5.1.1",
+    "concurrently": "^10.0.7",
+    "eslint": "^10.15.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "jiti": "^2.7.0",
-    "prettier": "^3.8.4",
-    "react": "19.3.1",
-    "react-dom": "19.3.1",
-    "tsup": "^8.5.1",
+    "prettier": "^3.10.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsup": "^9.0.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.0",
+    "typescript-eslint": "^8.73.0",
     "uplot": "^1.6.32",
-    "vitest": "^4.1.8"
+    "vitest": "^5.1.1"
   },
   "homepage": "https://loykin.github.io/chartkit/",
   "repository": {
