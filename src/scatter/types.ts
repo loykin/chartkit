@@ -1,6 +1,9 @@
 import type { BaseChartProps } from '../core'
+import type { ChartDatumEvent } from '../core'
 
 export interface ScatterSeriesConfig {
+  /** Stable identity used by runtime events. */
+  id?:         string
   label:      string
   color:      string
   /** x values — each entry pairs with the corresponding ys entry */
@@ -17,4 +20,6 @@ export interface ScatterChartProps extends BaseChartProps {
   xUnit?: string
   /** Unit label shown on the y axis */
   yUnit?: string
+  onDatumClick?: (event: ChartDatumEvent<number>) => void
+  onDatumHover?: (event: ChartDatumEvent<number> | null) => void
 }

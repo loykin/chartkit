@@ -76,6 +76,7 @@ export const CHART_SPEC_SCHEMA = {
                 type: 'object',
                 required: ['label', 'color', 'values'],
                 properties: {
+                  id:     { type: 'string' },
                   label:  { type: 'string' },
                   color:  { type: 'string', description: 'CSS color string' },
                   values: { type: 'array', items: { type: ['number', 'null'] }, description: 'One value per category. null = skip that bar' },
@@ -174,6 +175,7 @@ export const CHART_SPEC_SCHEMA = {
                 type: 'object',
                 required: ['label', 'color', 'xs', 'ys'],
                 properties: {
+                  id:        { type: 'string' },
                   label:     { type: 'string' },
                   color:     { type: 'string' },
                   xs:        { type: 'array', items: { type: 'number' }, description: 'x values' },
@@ -288,6 +290,7 @@ export const CHART_SPEC_SCHEMA = {
           required: ['type', 'values'],
           properties: {
             type:        { const: 'histogram' },
+            id:          { type: 'string', description: 'Stable runtime identity when used directly' },
             values:      { type: 'array', items: { type: 'number' }, description: 'Raw numeric values to bin and display' },
             bins:        { type: 'number', description: 'Number of bins. Default: Sturges rule' },
             color:       { type: 'string', description: 'Bar color (default #3b82f6)' },
@@ -398,13 +401,13 @@ export const CHART_SPEC_SCHEMA = {
 export const CHART_SPEC_DESCRIPTION = `
 Use ChartSpec to render a chart. Set "type" to one of the following and provide the matching fields.
 
-bar:        { categories: string[], series: [{label, color, values: (number|null)[]}], stacked?, orientation? }
+bar:        { categories: string[], series: [{id?, label, color, values: (number|null)[]}], stacked?, orientation? }
 barGauge:   { items: [{id, label, value, min?, max?, color?}], orientation?, valueDisplay?, min?, max?, unit? }
 pie:        { slices: [{label, value, color}], innerRadius?, labelType?, centerLabel?, legendPosition?, tooltip? }
-scatter:    { series: [{label, color, xs: number[], ys: number[]}], xUnit?, yUnit? }
+scatter:    { series: [{id?, label, color, xs: number[], ys: number[]}], xUnit?, yUnit? }
 timeseries: { data: [[unix_timestamps], [series1_values], ...], series: [{label, color, type?}], yUnit?, thresholds?, tooltip? }
 candlestick:{ data: [{time, open, high, low, close, volume?}], upColor?, downColor?, showVolume?, yUnit?, tooltip? }
-histogram:  { values: number[], bins?, color?, normalize? }
+histogram:  { values: number[], id?, bins?, color?, normalize? }
 boxplot:    { categories: string[], series: [{label, color, data: [{min,q1,median,q3,max}]}] }
 gauge:      { value: number, min?, max?, unit?, label?, thresholds? }
 stat:       { value: number|null, label?, unit?, sparkline?, previousValue?, thresholds? }

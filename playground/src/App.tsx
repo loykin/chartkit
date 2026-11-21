@@ -822,11 +822,12 @@ const SC_DATA = generateScatterData()
 
 function ScatterDemo() {
   const [pointSize, setPointSize] = useState(4)
+  const [datumEvent, setDatumEvent] = useState('none')
 
   const series = useMemo<ScatterSeriesConfig[]>(() => [
-    { label: 'Cluster A', color: '#3b82f6', ...SC_DATA.a, pointSize },
-    { label: 'Cluster B', color: '#ef4444', ...SC_DATA.b, pointSize },
-    { label: 'Cluster C', color: '#10b981', ...SC_DATA.c, pointSize },
+    { id: 'cluster-a', label: 'Cluster A', color: '#3b82f6', ...SC_DATA.a, pointSize },
+    { id: 'cluster-b', label: 'Cluster B', color: '#ef4444', ...SC_DATA.b, pointSize },
+    { id: 'cluster-c', label: 'Cluster C', color: '#10b981', ...SC_DATA.c, pointSize },
   ], [pointSize])
 
   return (
@@ -838,11 +839,12 @@ function ScatterDemo() {
             <Btn key={s} active={pointSize === s} onClick={() => setPointSize(s)}>{s}px</Btn>
           ))}
         </CtrlRow>
+        <CtrlRow label="Last datum">{datumEvent}</CtrlRow>
       </ControlPanel>
 
       <Card>
         <SectionHeader>Three clusters — {Object.values(SC_DATA).reduce((s, d) => s + d.xs.length, 0).toLocaleString()} points</SectionHeader>
-        <ScatterChart series={series} height={340} xUnit="ms" yUnit="mb" />
+        <ScatterChart series={series} height={340} xUnit="ms" yUnit="mb" onDatumClick={event => setDatumEvent(`${event.seriesId}:${event.datumIndex}`)} />
       </Card>
     </div>
   )
@@ -893,6 +895,7 @@ function HistogramDemo() {
   const [normalize, setNormalize] = useState(false)
   const [bins,      setBins      ] = useState(30)
   const [color,     setColor     ] = useState('#8b5cf6')
+  const [datumEvent, setDatumEvent] = useState('none')
 
   const COLOR_OPTIONS = [
     { value: '#8b5cf6', label: 'purple' },
@@ -920,10 +923,11 @@ function HistogramDemo() {
             <Btn key={o.value} active={color === o.value} onClick={() => setColor(o.value)}>{o.label}</Btn>
           ))}
         </CtrlRow>
+        <CtrlRow label="Last bin">{datumEvent}</CtrlRow>
       </ControlPanel>
 
       <Card>
-        <HistogramChart values={LATENCIES} height={260} xUnit="ms" normalize={normalize} bins={bins} color={color} fillOpacity={0.75} />
+        <HistogramChart id="latency" values={LATENCIES} height={260} xUnit="ms" normalize={normalize} bins={bins} color={color} fillOpacity={0.75} onDatumClick={event => setDatumEvent(`${event.seriesId}:${event.datumIndex}`)} />
       </Card>
     </div>
   )
@@ -1043,9 +1047,9 @@ const GAUGE_THRESHOLDS: Threshold[] = [
 const BAR_CATEGORIES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
 
 const BAR_SERIES: BarSeriesConfig[] = [
-  { label: 'Service A', color: '#3b82f6', values: [42, 55, 38, 61, 49, 70] },
-  { label: 'Service B', color: '#10b981', values: [28, 34, 45, 32, 58, 41] },
-  { label: 'Service C', color: '#f59e0b', values: [15, 22, 18, 27, 20, 33] },
+  { id: 'service-a', label: 'Service A', color: '#3b82f6', values: [42, 55, 38, 61, 49, 70] },
+  { id: 'service-b', label: 'Service B', color: '#10b981', values: [28, 34, 45, 32, 58, 41] },
+  { id: 'service-c', label: 'Service C', color: '#f59e0b', values: [15, 22, 18, 27, 20, 33] },
 ]
 
 const TS_THRESHOLDS: Threshold[] = [
@@ -1068,6 +1072,7 @@ function NewChartsDemo() {
   const [showThresholds, setShowThresholds] = useState(true)
   const [barGaugeOrientation, setBarGaugeOrientation] = useState<'horizontal' | 'vertical'>('horizontal')
   const [barGaugeEvent, setBarGaugeEvent] = useState('none')
+  const [barDatumEvent, setBarDatumEvent] = useState('none')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -1139,10 +1144,11 @@ function NewChartsDemo() {
           <Btn active={!barStacked} onClick={() => setBarStacked(false)}>grouped</Btn>
           <Btn active={barStacked}  onClick={() => setBarStacked(true)}>stacked</Btn>
         </CtrlRow>
+        <CtrlRow label="Last datum">{barDatumEvent}</CtrlRow>
       </ControlPanel>
       <Card>
         <SectionHeader>Response time by service</SectionHeader>
-        <BarChart categories={BAR_CATEGORIES} series={BAR_SERIES} orientation={barOrientation} stacked={barStacked} height={280} yUnit="ms" />
+        <BarChart categories={BAR_CATEGORIES} series={BAR_SERIES} orientation={barOrientation} stacked={barStacked} height={280} yUnit="ms" onDatumClick={event => setBarDatumEvent(`${event.seriesId}:${event.datumIndex}`)} />
       </Card>
 
       <h2 style={{ fontSize: '0.9375rem', fontWeight: 600, margin: '8px 0 2px' }}>Threshold Lines</h2>

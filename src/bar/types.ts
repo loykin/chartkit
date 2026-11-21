@@ -1,6 +1,8 @@
-import type { BaseChartProps } from '../core'
+import type { BaseChartProps, ChartDatumEvent } from '../core'
 
 export interface BarSeriesConfig {
+  /** Stable identity used by runtime events. */
+  id?:     string
   label:  string
   color:  string
   /** One value per category. Null = skip that bar */
@@ -19,4 +21,6 @@ export interface BarChartProps extends BaseChartProps {
   xUnit?:     string
   /** Unit label on the value axis */
   yUnit?:     string
+  onDatumClick?: (event: ChartDatumEvent<string>) => void
+  onDatumHover?: (event: ChartDatumEvent<string> | null) => void
 }

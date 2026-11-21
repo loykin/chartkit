@@ -1,5 +1,6 @@
 export { useChart } from './hooks/useChart'
 export { selectionPlugin } from './plugins/selectionPlugin'
+export { pointerEventPlugin } from './plugins/pointerEventPlugin'
 export { thresholdPlugin } from './plugins/thresholdPlugin'
 export { hexToRgba, resolveCssVar } from './utils/colors'
 export { makeAxisBorderPlugin } from './utils/axisBorderPlugin'

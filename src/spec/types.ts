@@ -46,13 +46,13 @@ type OmitCandlestickRuntime = Omit<
   'renderTooltip' | 'onSelect' | 'onTimeRangeChange'
 >
 
-export type BarChartSpec     = { type: 'bar'        } & OmitRuntime<BarChartProps>
+export type BarChartSpec     = { type: 'bar'        } & Omit<OmitRuntime<BarChartProps>, 'onDatumClick' | 'onDatumHover'>
 export type BarGaugeSpec     = { type: 'barGauge'   } & Omit<OmitRuntime<BarGaugeChartProps>, 'onItemClick' | 'renderValue'>
 export type PieChartSpec     = { type: 'pie'        } & OmitPieRuntime
-export type ScatterChartSpec = { type: 'scatter'    } & OmitRuntime<ScatterChartProps>
+export type ScatterChartSpec = { type: 'scatter'    } & Omit<OmitRuntime<ScatterChartProps>, 'onDatumClick' | 'onDatumHover'>
 export type TimeSeriesSpec   = { type: 'timeseries' } & OmitTimeSeriesRuntime
 export type CandlestickSpec  = { type: 'candlestick' } & OmitCandlestickRuntime
-export type HistogramSpec    = { type: 'histogram'  } & OmitRuntime<HistogramProps>
+export type HistogramSpec    = { type: 'histogram'  } & Omit<OmitRuntime<HistogramProps>, 'onDatumClick' | 'onDatumHover'>
 export type BoxPlotSpec      = { type: 'boxplot'    } & OmitRuntime<BoxPlotChartProps>
 export type GaugeSpec        = { type: 'gauge'      } & OmitRuntime<GaugeChartProps>
 export type StatSpec         = { type: 'stat'       } & OmitRuntime<StatChartProps>

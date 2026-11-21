@@ -1,8 +1,11 @@
-import type { BaseChartProps } from '../core'
+import type { BaseChartProps, ChartDatumEvent } from '../core'
 
 export interface HistogramProps extends BaseChartProps {
   /** Raw numeric values to bin and display */
   values: number[]
+
+  /** Stable identity emitted by datum events. Default `histogram`. */
+  id?: string
 
   /** Number of bins. Default: Sturges rule — ceil(log₂(n) + 1) */
   bins?: number
@@ -21,6 +24,9 @@ export interface HistogramProps extends BaseChartProps {
 
   /** Unit suffix on y-axis ticks — ignored when normalize=true (shows '%') */
   yUnit?: string
+
+  onDatumClick?: (event: ChartDatumEvent<number>) => void
+  onDatumHover?: (event: ChartDatumEvent<number> | null) => void
 }
 
 /** Output of useBins */

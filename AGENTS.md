@@ -74,6 +74,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 - `ChartFormatters` — optional `value`, `time`, `label`, and `percentage` callbacks used by every chart with chart and display-purpose context; formatter functions never enter `ChartSpec`
 - `ChartStateRenderers` — runtime-only `renderEmpty`, `renderLoading`, and `renderError` slots; charts expose only states that apply to them
 - `ChartDatumEvent` — runtime-only stable series identity, original datum index/value, and client coordinates for pointer interaction
+- `BarSeriesConfig` / `ScatterSeriesConfig` — optional stable `id` used by datum events; index fallback preserves backward compatibility
 
 ## Styling
 

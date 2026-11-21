@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
 import {
   useChart, resolveAxisStyles, makeAxisBorderPlugin,
-  CHART_DEFAULT_LINE_WIDTH, formatNum,
+  CHART_DEFAULT_LINE_WIDTH, formatNum, pointerEventPlugin,
 } from '../../core'
-import type { AxisConfig, ChartFormatters, LineStyle } from '../../core'
+import type { AxisConfig, ChartDatumEvent, ChartFormatters, LineStyle } from '../../core'
 import { barPlugin } from '../utils/barPlugin'
+import { resolveBarDatumEvent } from '../utils/datumEvent'
 import type { BarSeriesConfig } from '../types'
 
 interface BarCanvasProps {
@@ -22,6 +23,8 @@ interface BarCanvasProps {
   gridStyle?:  LineStyle | false
   axisStyle?:  AxisConfig | false
   formatters:  ChartFormatters
+  onDatumClick?: (event: ChartDatumEvent<string>) => void
+  onDatumHover?: (event: ChartDatumEvent<string> | null) => void
 }
 
 export function BarCanvas({
@@ -38,10 +41,17 @@ export function BarCanvas({
   gridStyle,
   axisStyle,
   formatters,
+  onDatumClick,
+  onDatumHover,
 }: BarCanvasProps) {
   const n = categories.length
   const formattersRef = useRef(formatters)
   formattersRef.current = formatters
+  const onDatumClickRef = useRef(onDatumClick)
+  const onDatumHoverRef = useRef(onDatumHover)
+  onDatumClickRef.current = onDatumClick
+  onDatumHoverRef.current = onDatumHover
+  const hasDatumEvents = onDatumClick !== undefined || onDatumHover !== undefined
 
   // Compute value range for auto-scaling
   const [computedMin, computedMax] = useMemo(() => {
@@ -127,9 +137,14 @@ export function BarCanvas({
       plugins: [
         barPlugin(series, orientation, stacked),
         makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
+        ...(hasDatumEvents ? [pointerEventPlugin({
+          resolve: (chart, event) => resolveBarDatumEvent(chart, event, categories, series, orientation, stacked),
+          onClick: event => onDatumClickRef.current?.(event),
+          onHover: event => onDatumHoverRef.current?.(event),
+        })] : []),
       ],
     }
-  }, [categories, series, orientation, stacked, height, xUnit, yUnit, yMin, yMax, gridStyle, axisStyle, computedMin, computedMax, n])
+  }, [categories, series, orientation, stacked, height, xUnit, yUnit, yMin, yMax, gridStyle, axisStyle, computedMin, computedMax, n, hasDatumEvents])
 
   // Dummy data: x indices + one zero series (plugin draws everything)
   const data = useMemo<uPlot.AlignedData>(() => {

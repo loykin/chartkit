@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
-import { useChart, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, formatNum } from '../../core'
-import type { AxisConfig, ChartFormatters, LineStyle } from '../../core'
+import { useChart, hexToRgba, makeAxisBorderPlugin, pointerEventPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, formatNum } from '../../core'
+import type { AxisConfig, ChartDatumEvent, ChartFormatters, LineStyle } from '../../core'
+import { resolveHistogramDatumEvent } from '../utils/datumEvent'
 
 interface HistogramCanvasProps {
   containerRef: React.RefObject<HTMLDivElement | null>
@@ -21,6 +22,9 @@ interface HistogramCanvasProps {
   gridStyle?:   LineStyle | false
   axisStyle?:   AxisConfig | false
   formatters:   ChartFormatters
+  id:           string
+  onDatumClick?: (event: ChartDatumEvent<number>) => void
+  onDatumHover?: (event: ChartDatumEvent<number> | null) => void
 }
 
 export function HistogramCanvas({
@@ -38,6 +42,9 @@ export function HistogramCanvas({
   gridStyle,
   axisStyle,
   formatters,
+  id,
+  onDatumClick,
+  onDatumHover,
 }: HistogramCanvasProps) {
   // Use refs for formatter-only values so they don't trigger chart recreation.
   // normalize/xUnit/yUnit only affect tick labels — setData + redraw is enough.
@@ -49,6 +56,17 @@ export function HistogramCanvas({
   yUnitRef.current = yUnit
   const formattersRef = useRef(formatters)
   formattersRef.current = formatters
+  const onDatumClickRef = useRef(onDatumClick)
+  const onDatumHoverRef = useRef(onDatumHover)
+  const idRef = useRef(id)
+  const edgesRef = useRef(edges)
+  const countsRef = useRef(counts)
+  onDatumClickRef.current = onDatumClick
+  onDatumHoverRef.current = onDatumHover
+  idRef.current = id
+  edgesRef.current = edges
+  countsRef.current = counts
+  const hasDatumEvents = onDatumClick !== undefined || onDatumHover !== undefined
 
   const getOptions = useCallback((): uPlot.Options => {
     const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
@@ -126,10 +144,15 @@ export function HistogramCanvas({
       ],
       plugins: [
         makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
+        ...(hasDatumEvents ? [pointerEventPlugin({
+          resolve: (chart, event) => resolveHistogramDatumEvent(chart, event, idRef.current, edgesRef.current, countsRef.current),
+          onClick: event => onDatumClickRef.current?.(event),
+          onHover: event => onDatumHoverRef.current?.(event),
+        })] : []),
       ],
     }
   // normalize / xUnit / yUnit intentionally omitted — handled via refs above
-  }, [height, color, fillOpacity, yMin, yMax, gridStyle, axisStyle])
+  }, [height, color, fillOpacity, yMin, yMax, gridStyle, axisStyle, hasDatumEvents])
 
   const data = useMemo<uPlot.AlignedData>(
     () => [edges, counts],

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
-import { useChart, resolveAxisStyles, makeAxisBorderPlugin, CHART_DEFAULT_LINE_WIDTH, formatNum } from '../../core'
-import type { AxisConfig, ChartFormatters, LineStyle } from '../../core'
+import { useChart, resolveAxisStyles, makeAxisBorderPlugin, pointerEventPlugin, CHART_DEFAULT_LINE_WIDTH, formatNum } from '../../core'
+import type { AxisConfig, ChartDatumEvent, ChartFormatters, LineStyle } from '../../core'
 import type { ScatterSeriesConfig } from '../types'
+import { resolveScatterDatumEvent } from '../utils/datumEvent'
 
 interface ScatterCanvasProps {
   containerRef: React.RefObject<HTMLDivElement | null>
@@ -13,6 +14,8 @@ interface ScatterCanvasProps {
   gridStyle?:   LineStyle | false
   axisStyle?:   AxisConfig | false
   formatters:   ChartFormatters
+  onDatumClick?: (event: ChartDatumEvent<number>) => void
+  onDatumHover?: (event: ChartDatumEvent<number> | null) => void
 }
 
 /** uPlot path builder that renders scatter points as filled circles (mode: 2). */
@@ -69,9 +72,16 @@ export function ScatterCanvas({
   gridStyle,
   axisStyle,
   formatters,
+  onDatumClick,
+  onDatumHover,
 }: ScatterCanvasProps) {
   const formattersRef = useRef(formatters)
   formattersRef.current = formatters
+  const onDatumClickRef = useRef(onDatumClick)
+  const onDatumHoverRef = useRef(onDatumHover)
+  onDatumClickRef.current = onDatumClick
+  onDatumHoverRef.current = onDatumHover
+  const hasDatumEvents = onDatumClick !== undefined || onDatumHover !== undefined
   const getOptions = useCallback((): uPlot.Options => {
     const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
       resolveAxisStyles(gridStyle, axisStyle)
@@ -127,9 +137,14 @@ export function ScatterCanvas({
       ],
       plugins: [
         makeAxisBorderPlugin(axisLineStyle, axisColor, CHART_DEFAULT_LINE_WIDTH),
+        ...(hasDatumEvents ? [pointerEventPlugin({
+          resolve: (chart, event) => resolveScatterDatumEvent(chart, event, series),
+          onClick: event => onDatumClickRef.current?.(event),
+          onHover: event => onDatumHoverRef.current?.(event),
+        })] : []),
       ],
     }
-  }, [series, height, xUnit, yUnit, gridStyle, axisStyle])
+  }, [series, height, xUnit, yUnit, gridStyle, axisStyle, hasDatumEvents])
 
   // mode: 2 data: [null, [xs1, ys1], [xs2, ys2], ...]
   const data = useMemo(

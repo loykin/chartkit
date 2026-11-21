@@ -517,6 +517,7 @@ visibility and callbacks are runtime-only and excluded from `ChartSpec`.
 
 Datum events contain the original `datumIndex`, x/y values, and viewport `clientX/clientY`.
 Provide `SeriesConfig.id` for stable `seriesId`; series without one fall back to their input index.
+The same runtime-only contract is available on `BarChart`, `ScatterChart`, and `HistogramChart`.
 
 ### `SeriesConfig`
 
@@ -561,12 +562,14 @@ Provide `SeriesConfig.id` for stable `seriesId`; series without one fall back to
 | Prop          | Type      | Default    | Description                              |
 |---------------|-----------|------------|------------------------------------------|
 | `values`      | `number[]`| **required**| Raw values to bin                       |
+| `id`          | `string`  | `'histogram'` | Stable series identity for runtime events |
 | `bins`        | `number`  | Sturges    | Number of bins                           |
 | `color`       | `string`  | `#3b82f6`  | Bar fill color                           |
 | `fillOpacity` | `number`  | `0.8`      | Bar fill opacity 0–1                     |
 | `normalize`   | `boolean` | `false`    | Normalize y-axis to relative frequency % |
 | `xUnit`       | `string`  | —          | X-axis unit suffix                       |
 | `yUnit`       | `string`  | —          | Y-axis unit suffix (ignored when `normalize=true`) |
+| `onDatumClick` / `onDatumHover` | `ChartDatumEvent` callbacks | — | Runtime-only bin interaction |
 
 ### `HeatmapChart`
 
@@ -588,11 +591,13 @@ Provide `SeriesConfig.id` for stable `seriesId`; series without one fall back to
 | `series` | `ScatterSeriesConfig[]` | **required** | One entry per data group |
 | `xUnit`  | `string`                | —            | X-axis unit label        |
 | `yUnit`  | `string`                | —            | Y-axis unit label        |
+| `onDatumClick` / `onDatumHover` | `ChartDatumEvent` callbacks | — | Runtime-only point interaction |
 
 **`ScatterSeriesConfig`**
 
 | Prop        | Type       | Default | Description              |
 |-------------|------------|---------|--------------------------|
+| `id`        | `string`   | —       | Stable event identity    |
 | `label`     | `string`   | required| Display name             |
 | `color`     | `string`   | required| Point color              |
 | `xs`        | `number[]` | required| X values                 |
@@ -704,11 +709,13 @@ item collections scroll inside the configured chart height; vertical bars keep a
 | `orientation` | `'vertical'\|'horizontal'` | `'vertical'` | Bar orientation              |
 | `xUnit`       | `string`            | —            | Unit on the category axis                |
 | `yUnit`       | `string`            | —            | Unit on the value axis                   |
+| `onDatumClick` / `onDatumHover` | `ChartDatumEvent<string>` callbacks | — | Runtime-only bar interaction; `x` is the category label |
 
 **`BarSeriesConfig`**
 
 | Prop     | Type               | Description                          |
 |----------|--------------------|--------------------------------------|
+| `id`     | `string`           | Stable event identity                |
 | `label`  | `string`           | Display name                         |
 | `color`  | `string`           | Bar fill color                       |
 | `values` | `(number\|null)[]` | One value per category; null = skip  |

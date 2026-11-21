@@ -6,6 +6,7 @@ import type { HistogramProps } from './types'
 
 export function HistogramChart({
   values,
+  id           = 'histogram',
   bins,
   height       = 300,
   color        = '#3b82f6',
@@ -23,6 +24,8 @@ export function HistogramChart({
   renderEmpty,
   renderLoading,
   renderError,
+  onDatumClick,
+  onDatumHover,
 }: HistogramProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
@@ -61,6 +64,9 @@ export function HistogramChart({
           gridStyle={gridStyle}
           axisStyle={axisStyle}
           formatters={formatters}
+          id={id}
+          onDatumClick={onDatumClick}
+          onDatumHover={onDatumHover}
         />
       )}
     </div>

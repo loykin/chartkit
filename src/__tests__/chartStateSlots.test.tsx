@@ -36,5 +36,7 @@ describe('chart state render slots', () => {
     expect(schema).not.toContain('renderEmpty')
     expect(schema).not.toContain('renderLoading')
     expect(schema).not.toContain('renderError')
+    expect(schema).not.toContain('onDatumClick')
+    expect(schema).not.toContain('onDatumHover')
   })
 })

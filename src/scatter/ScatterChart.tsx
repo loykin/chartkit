@@ -16,6 +16,8 @@ export function ScatterChart({
   renderEmpty,
   renderLoading,
   renderError,
+  onDatumClick,
+  onDatumHover,
 }: ScatterChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
@@ -40,6 +42,8 @@ export function ScatterChart({
         gridStyle={gridStyle}
         axisStyle={axisStyle}
         formatters={formatters}
+        onDatumClick={onDatumClick}
+        onDatumHover={onDatumHover}
       />
     </div>
   )

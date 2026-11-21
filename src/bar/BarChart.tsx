@@ -21,6 +21,8 @@ export function BarChart({
   renderEmpty,
   renderLoading,
   renderError,
+  onDatumClick,
+  onDatumHover,
 }: BarChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const formatters = useChartFormatters(formatterOverrides)
@@ -49,6 +51,8 @@ export function BarChart({
         gridStyle={gridStyle}
         axisStyle={axisStyle}
         formatters={formatters}
+        onDatumClick={onDatumClick}
+        onDatumHover={onDatumHover}
       />
     </div>
   )
