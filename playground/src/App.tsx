@@ -15,7 +15,7 @@ import type {
   ScatterSeriesConfig, BoxSeriesConfig, BoxStats,
   PieSliceConfig, PieLabelType,
   BarSeriesConfig, Threshold,
-  ChartKitPlugin, ChartSpec, CandlestickDataPoint,
+  ChartKitPlugin, ChartSpec, CandlestickDataPoint, TimeSeriesSyncConfig,
 } from '@loykin/chartkit'
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -34,6 +34,8 @@ const PLAYGROUND_FORMATTER_PLUGIN: ChartKitPlugin = {
     },
   },
 }
+
+const LINKED_ZOOM_SYNC: TimeSeriesSyncConfig = { id: 'linked-zoom' }
 
 const midnight = new Date()
 midnight.setHours(0, 0, 0, 0)
@@ -603,6 +605,7 @@ function LinkedZoomDemo() {
         <SectionHeader>Overview — drag to zoom</SectionHeader>
         <TimeSeriesChart
           data={overviewData} series={overviewSeries}
+          sync={LINKED_ZOOM_SYNC}
           height={72} axisStyle={false} gridStyle={false}
           legendPosition="none" selectionMode="x"
           onTimeRangeChange={setTimeRange} xShowDate={false}
@@ -614,6 +617,7 @@ function LinkedZoomDemo() {
           <SectionHeader>CPU Usage</SectionHeader>
           <TimeSeriesChart
             data={cpuData} series={cpuSeries}
+            sync={LINKED_ZOOM_SYNC}
             height={180} yUnit="%" yMin={0} yMax={100}
             legendPosition="bottom" selectionMode="none"
             timeRange={timeRange ?? undefined}
@@ -623,6 +627,7 @@ function LinkedZoomDemo() {
           <SectionHeader>Latency percentiles</SectionHeader>
           <TimeSeriesChart
             data={latencyData} series={latencySeries}
+            sync={LINKED_ZOOM_SYNC}
             height={180} yUnit="ms"
             legendPosition="bottom" selectionMode="none"
             timeRange={timeRange ?? undefined}
@@ -634,6 +639,7 @@ function LinkedZoomDemo() {
         <SectionHeader>Traffic (dual axis)</SectionHeader>
         <TimeSeriesChart
           data={trafficData} series={trafficSeries}
+          sync={LINKED_ZOOM_SYNC}
           height={160} yUnit="req/s" yUnit2="err/s"
           legendPosition="top" legendFormat="table" selectionMode="none"
           timeRange={timeRange ?? undefined}

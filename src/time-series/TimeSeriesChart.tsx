@@ -21,6 +21,7 @@ export function TimeSeriesChart({
   y2Max,
   xShowDate,
   locale,
+  sync = false,
   formatters: formatterOverrides,
   gridStyle,
   axisStyle,
@@ -171,6 +172,7 @@ export function TimeSeriesChart({
           y2Max={y2Max}
           xShowDate={xShowDate}
           locale={locale}
+          sync={sync}
           gridStyle={gridStyle}
           axisStyle={axisStyle}
           barStack={barStack}

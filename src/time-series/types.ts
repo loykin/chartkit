@@ -18,6 +18,13 @@ export type LegendPosition = 'top' | 'bottom' | 'left' | 'right' | 'none'
  */
 export type LegendFormat = 'list' | 'table'
 
+export interface TimeSeriesSyncConfig {
+  /** Explicit synchronization group shared by related time-series charts. */
+  id: string
+  /** Synchronize series focus and visibility in addition to the cursor. Default true. */
+  series?: boolean
+}
+
 export interface SeriesConfig {
   /** Stable identity used by runtime events and controlled state. */
   id?: string
@@ -77,6 +84,10 @@ export interface TimeSeriesChartProps extends BaseChartProps {
   xShowDate?: boolean
   /** Locale for date formatting (default: browser locale) */
   locale?: string
+
+  // ── Cursor synchronization ───────────────────────────────────────────────
+  /** Join an explicit uPlot synchronization group. Default false. */
+  sync?: false | TimeSeriesSyncConfig
 
   // ── Bar stacking ─────────────────────────────────────────────────────────
   barStack?: boolean

@@ -11,5 +11,6 @@ export type {
   SelectionResult,
   AlignedData,
   TooltipPayload,
+  TimeSeriesSyncConfig,
   Threshold,
 } from './types'

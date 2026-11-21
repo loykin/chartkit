@@ -51,6 +51,7 @@ export type {
   LegendItem,
   AlignedData,
   TooltipPayload,
+  TimeSeriesSyncConfig,
   Threshold,
 } from './time-series'
 

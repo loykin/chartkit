@@ -449,6 +449,7 @@ All types accept the same optional base fields as the individual components (`he
 | `yUnit2`           | `string`                  | —           | Secondary y-axis unit                              |
 | `xShowDate`        | `boolean`                 | `true`      | Show date on second line when it changes           |
 | `locale`           | `string`                  | browser     | Date formatting locale                             |
+| `sync`             | `false \| TimeSeriesSyncConfig` | `false` | Explicit cursor synchronization group              |
 | `formatters`       | `ChartFormatters`         | provider/default | Runtime-only number, time, label, and percentage overrides |
 | `tooltip`          | `boolean`                 | `true`      | Show the built-in, provider, or chart tooltip      |
 | `barStack`         | `boolean`                 | —           | Stack bar series                                   |
@@ -458,6 +459,19 @@ All types accept the same optional base fields as the individual components (`he
 | `onTimeRangeChange`| `(r) => void`             | —           | Fired when x range changes                         |
 | `renderLegend`     | `(items) => ReactNode`    | —           | Custom legend renderer                             |
 | `renderTooltip`    | `(payload) => ReactNode`  | —           | Custom tooltip renderer                            |
+
+Related time-series charts can opt into uPlot cursor synchronization. Unrelated charts remain
+independent by default:
+
+```tsx
+const sync = { id: 'detail-charts', series: false } as const
+
+<TimeSeriesChart data={cpuData} series={cpuSeries} sync={sync} />
+<TimeSeriesChart data={memoryData} series={memorySeries} sync={sync} />
+```
+
+`series: false` synchronizes only the cursor. Synchronization is runtime composition state and is
+intentionally excluded from `ChartSpec`.
 
 ### `SeriesConfig`
 

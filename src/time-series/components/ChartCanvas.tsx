@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
 import { useChart, selectionPlugin, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, thresholdPlugin } from '../../core'
-import type { SeriesConfig, SelectionMode, SelectionResult } from '../types'
+import type { SeriesConfig, SelectionMode, SelectionResult, TimeSeriesSyncConfig } from '../types'
 import type { AxisConfig, ChartFormatters, LineStyle, Threshold } from '../../core'
+import { resolveTimeSeriesSync } from '../utils/sync'
 
 interface ChartCanvasProps {
   containerRef:  React.RefObject<HTMLDivElement | null>
@@ -16,6 +17,7 @@ interface ChartCanvasProps {
   yMax?:         number
   xShowDate?:    boolean
   locale?:       string
+  sync?:         false | TimeSeriesSyncConfig
   gridStyle?:    LineStyle | false
   axisStyle?:    AxisConfig | false
   timeRange?:    [number, number]
@@ -42,6 +44,7 @@ export function ChartCanvas({
   yMax,
   xShowDate = true,
   locale,
+  sync = false,
   gridStyle,
   axisStyle,
   timeRange,
@@ -57,6 +60,8 @@ export function ChartCanvas({
 }: ChartCanvasProps) {
   const formattersRef = useRef(formatters)
   formattersRef.current = formatters
+  const syncId = sync === false ? undefined : sync.id
+  const syncSeries = sync === false ? undefined : sync.series
 
   const getOptions = useCallback((): uPlot.Options => {
     const { mutedFgColor, axisColor, resolvedGrid, resolvedTicks, axisLineStyle } =
@@ -224,7 +229,9 @@ export function ChartCanvas({
       legend:    { show: false },
       cursor:    {
         drag: { x: false, y: false },
-        sync: { key: 'chart' },
+        sync: resolveTimeSeriesSync(
+          syncId === undefined ? false : { id: syncId, series: syncSeries },
+        ),
       },
       series: uSeries,
       scales,
@@ -244,7 +251,7 @@ export function ChartCanvas({
           : []),
       ],
     }
-  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, onSelect, onCursorMove])
+  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, syncId, syncSeries, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, onSelect, onCursorMove])
 
   // Bar stacking: transform data to cumulative sums, then reverse order
   const resolvedData = useMemo<uPlot.AlignedData>(() => {
