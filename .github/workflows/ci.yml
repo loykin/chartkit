@@ -19,8 +19,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 11.11.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -91,9 +89,9 @@ jobs:
 
           TOTAL=$((CRITICAL + HIGH + MEDIUM + LOW))
 
-          if [ $((CRITICAL + HIGH)) -gt 0 ]; then
+          if [ "$((CRITICAL + HIGH))" -gt 0 ]; then
             COLOR=red
-          elif [ $MEDIUM -gt 0 ]; then
+          elif [ "$MEDIUM" -gt 0 ]; then
             COLOR=yellow
           else
             COLOR=brightgreen
@@ -124,8 +122,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 11.11.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
