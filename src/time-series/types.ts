@@ -1,6 +1,6 @@
 import type React from 'react'
 import type uPlot from 'uplot'
-import type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartProps, Threshold } from '../core'
+import type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartProps, ChartDatumEvent, Threshold } from '../core'
 
 // uPlot's aligned data format:
 // [timestamps, series1, series2, ...]  — all arrays must be the same length.
@@ -125,6 +125,10 @@ export interface TimeSeriesChartProps extends BaseChartProps {
   hiddenSeriesIds?: readonly string[]
   /** Emits the next hidden ID set after legend or synchronized visibility changes. */
   onHiddenSeriesIdsChange?: (ids: string[]) => void
+
+  // ── Datum interaction ────────────────────────────────────────────────────
+  onDatumClick?: (event: ChartDatumEvent<number>) => void
+  onDatumHover?: (event: ChartDatumEvent<number> | null) => void
 
   // ── Bar stacking ─────────────────────────────────────────────────────────
   barStack?: boolean

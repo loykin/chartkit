@@ -2,9 +2,10 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import uPlot from 'uplot'
 import { useChart, selectionPlugin, hexToRgba, makeAxisBorderPlugin, resolveAxisStyles, CHART_DEFAULT_LINE_WIDTH, thresholdPlugin } from '../../core'
 import type { SeriesConfig, SelectionMode, SelectionResult, TimeSeriesMarker, TimeSeriesRegion, TimeSeriesSyncConfig } from '../types'
-import type { AxisConfig, ChartFormatters, LineStyle, Threshold } from '../../core'
+import type { AxisConfig, ChartDatumEvent, ChartFormatters, LineStyle, Threshold } from '../../core'
 import { resolveTimeSeriesSync } from '../utils/sync'
 import { timeOverlayPlugin } from '../plugins/timeOverlayPlugin'
+import { datumEventPlugin } from '../plugins/datumEventPlugin'
 
 interface ChartCanvasProps {
   containerRef:  React.RefObject<HTMLDivElement | null>
@@ -36,6 +37,8 @@ interface ChartCanvasProps {
   onSeriesVisibilityChange?: (index: number, visible: boolean) => void
   onMarkerClick?: (marker: TimeSeriesMarker) => void
   onRegionClick?: (region: TimeSeriesRegion) => void
+  onDatumClick?: (event: ChartDatumEvent<number>) => void
+  onDatumHover?: (event: ChartDatumEvent<number> | null) => void
 }
 
 export function ChartCanvas({
@@ -68,6 +71,8 @@ export function ChartCanvas({
   onSeriesVisibilityChange,
   onMarkerClick,
   onRegionClick,
+  onDatumClick,
+  onDatumHover,
 }: ChartCanvasProps) {
   const formattersRef = useRef(formatters)
   formattersRef.current = formatters
@@ -78,6 +83,12 @@ export function ChartCanvas({
   const onRegionClickRef = useRef(onRegionClick)
   onMarkerClickRef.current = onMarkerClick
   onRegionClickRef.current = onRegionClick
+  const onDatumClickRef = useRef(onDatumClick)
+  const onDatumHoverRef = useRef(onDatumHover)
+  onDatumClickRef.current = onDatumClick
+  onDatumHoverRef.current = onDatumHover
+  const hasDatumClickHandler = onDatumClick !== undefined
+  const hasDatumHoverHandler = onDatumHover !== undefined
   const syncId = sync === false ? undefined : sync.id
   const syncSeries = sync === false ? undefined : sync.series
 
@@ -263,6 +274,13 @@ export function ChartCanvas({
           onMarkerClick: marker => onMarkerClickRef.current?.(marker),
           onRegionClick: region => onRegionClickRef.current?.(region),
         })] : []),
+        ...((hasDatumClickHandler || hasDatumHoverHandler) ? [datumEventPlugin({
+          data,
+          series,
+          toInputSeriesIndex: chartIndex => isBarStack ? series.length - chartIndex : chartIndex - 1,
+          onClick: event => onDatumClickRef.current?.(event),
+          onHover: event => onDatumHoverRef.current?.(event),
+        })] : []),
         selectionPlugin({ mode: selectionMode, onSelect }),
         ...(onCursorMove
           ? [{
@@ -286,7 +304,7 @@ export function ChartCanvas({
           : []),
       ],
     }
-  }, [series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, syncId, syncSeries, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, markers, regions, onSelect, onCursorMove, hasSeriesVisibilityHandler])
+  }, [data, series, height, selectionMode, yUnit, yUnitDisplay, xShowDate, locale, syncId, syncSeries, yMin, yMax, yUnit2, y2Min, y2Max, gridStyle, axisStyle, timeRange, barStack, thresholds, markers, regions, onSelect, onCursorMove, hasSeriesVisibilityHandler, hasDatumClickHandler, hasDatumHoverHandler])
 
   // Bar stacking: transform data to cumulative sums, then reverse order
   const resolvedData = useMemo<uPlot.AlignedData>(() => {

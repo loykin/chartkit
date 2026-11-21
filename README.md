@@ -464,6 +464,8 @@ state, so they expose only `renderLoading` and `renderError`.
 | `sync`             | `false \| TimeSeriesSyncConfig` | `false` | Explicit cursor synchronization group              |
 | `hiddenSeriesIds`  | `readonly string[]`       | uncontrolled | Controlled hidden series IDs; requires stable `SeriesConfig.id` values |
 | `onHiddenSeriesIdsChange` | `(ids: string[]) => void` | — | Emits legend and synchronized visibility changes |
+| `onDatumClick`     | `(event: ChartDatumEvent) => void` | — | Nearest visible series datum on pointer click |
+| `onDatumHover`     | `(event: ChartDatumEvent \| null) => void` | — | Nearest visible series datum while hovering |
 | `formatters`       | `ChartFormatters`         | provider/default | Runtime-only number, time, label, and percentage overrides |
 | `tooltip`          | `boolean \| TooltipPolicy` | `true`     | Show tooltip; select `all`, `nearest`, and `maxItems` |
 | `selectTooltipItems` | `(items, cursor) => items` | —         | Runtime-only custom item selection before rendering |
@@ -512,6 +514,9 @@ const [hiddenSeriesIds, setHiddenSeriesIds] = useState<string[]>([])
 
 Series without an `id` retain backward-compatible uncontrolled legend behavior. Controlled
 visibility and callbacks are runtime-only and excluded from `ChartSpec`.
+
+Datum events contain the original `datumIndex`, x/y values, and viewport `clientX/clientY`.
+Provide `SeriesConfig.id` for stable `seriesId`; series without one fall back to their input index.
 
 ### `SeriesConfig`
 

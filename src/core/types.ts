@@ -53,6 +53,15 @@ export interface ChartStateRenderers {
   renderError?: (error: Error) => React.ReactNode
 }
 
+export interface ChartDatumEvent<X = number> {
+  seriesId: string
+  datumIndex: number
+  x: X
+  y: number | null
+  clientX: number
+  clientY: number
+}
+
 export interface BaseChartProps extends ChartStateRenderers {
   /**
    * Canvas height. Pass a number for a fixed px height, or `'fill'` to expand

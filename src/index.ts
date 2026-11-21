@@ -108,6 +108,7 @@ export type { BarGaugeChartProps, BarGaugeItem } from './bar-gauge'
 // Shared primitives (re-exported for consumers who compose custom charts)
 export type {
   BaseChartProps,
+  ChartDatumEvent,
   ChartStateRenderers,
   LineStyle,
   AxisConfig,

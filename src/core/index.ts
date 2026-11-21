@@ -23,4 +23,4 @@ export type {
   ChartKitRuntime,
   ChartKitProviderProps,
 } from './runtime'
-export type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartProps, ChartStateRenderers, Threshold } from './types'
+export type { LineStyle, AxisConfig, SelectionMode, SelectionResult, BaseChartProps, ChartDatumEvent, ChartStateRenderers, Threshold } from './types'

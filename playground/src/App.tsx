@@ -1164,16 +1164,19 @@ function NewChartsDemo() {
 
 function StatesDemo() {
   const [isLoading, setIsLoading] = useState(false)
+  const [datumEvent, setDatumEvent] = useState('none')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <Card>
         <SectionHeader>Sparkline (axisStyle=false  gridStyle=false  legendPosition="none")</SectionHeader>
+        <div style={{ fontSize: 12, marginBottom: 4 }}>Last datum: {datumEvent}</div>
         <TimeSeriesChart
           data={cpuData}
-          series={[{ label: 'CPU', color: '#3b82f6', type: 'area', fillGradient: true }]}
+          series={[{ id: 'cpu', label: 'CPU', color: '#3b82f6', type: 'area', fillGradient: true }]}
           height={60} axisStyle={false} gridStyle={false}
           legendPosition="none" selectionMode="none" xShowDate={false}
+          onDatumClick={event => setDatumEvent(`${event.seriesId}:${event.datumIndex}`)}
         />
       </Card>
 

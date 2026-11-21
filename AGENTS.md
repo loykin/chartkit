@@ -73,6 +73,7 @@ Pattern: `AI output (JSON) → ChartSpec → <ChartRenderer /> → chart`
 - `ChartKitProvider` — runtime-only plugin boundary for shared formatter and tooltip overrides; per-chart overrides take precedence over provider plugins, which fall back to built-in rendering
 - `ChartFormatters` — optional `value`, `time`, `label`, and `percentage` callbacks used by every chart with chart and display-purpose context; formatter functions never enter `ChartSpec`
 - `ChartStateRenderers` — runtime-only `renderEmpty`, `renderLoading`, and `renderError` slots; charts expose only states that apply to them
+- `ChartDatumEvent` — runtime-only stable series identity, original datum index/value, and client coordinates for pointer interaction
 
 ## Styling
 

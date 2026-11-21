@@ -25,6 +25,8 @@ export function TimeSeriesChart({
   sync = false,
   hiddenSeriesIds,
   onHiddenSeriesIdsChange,
+  onDatumClick,
+  onDatumHover,
   formatters: formatterOverrides,
   gridStyle,
   axisStyle,
@@ -246,6 +248,8 @@ export function TimeSeriesChart({
           onSeriesVisibilityChange={setSeriesVisibility}
           onMarkerClick={onMarkerClick}
           onRegionClick={onRegionClick}
+          onDatumClick={onDatumClick}
+          onDatumHover={onDatumHover}
         />
       </div>
 

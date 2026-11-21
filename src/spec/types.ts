@@ -34,6 +34,8 @@ type OmitTimeSeriesRuntime = Omit<
   | 'sync'
   | 'hiddenSeriesIds'
   | 'onHiddenSeriesIdsChange'
+  | 'onDatumClick'
+  | 'onDatumHover'
   | 'selectTooltipItems'
   | 'onMarkerClick'
   | 'onRegionClick'
